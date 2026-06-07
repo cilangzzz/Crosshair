@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Crosshair Pro" Height="600" Width="900"
         WindowStartupLocation="CenterScreen"
-        Background="#1a1a2e"
+        Background="{DynamicResource BackgroundBrush}"
         ResizeMode="CanResize"
         MinWidth="800" MinHeight="550">
 
@@ -15,228 +15,191 @@
         <vm:MainViewModel/>
     </Window.DataContext>
 
-    <Window.Resources>
-        <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#00FF00"/>
-            <Setter Property="Foreground" Value="#000000"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="15,8"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#00CC00"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="SecondaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#3d3d5c"/>
-            <Setter Property="Foreground" Value="#ffffff"/>
-            <Setter Property="Padding" Value="15,8"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#4d4d6c"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="CustomSlider" TargetType="Slider">
-            <Setter Property="Background" Value="#3d3d5c"/>
-            <Setter Property="Foreground" Value="#00FF00"/>
-            <Setter Property="Height" Value="20"/>
-        </Style>
-
-        <Style x:Key="CustomTextBox" TargetType="TextBox">
-            <Setter Property="Background" Value="#2d2d44"/>
-            <Setter Property="Foreground" Value="#ffffff"/>
-            <Setter Property="BorderBrush" Value="#3d3d5c"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="8,5"/>
-            <Setter Property="TextAlignment" Value="Center"/>
-        </Style>
-    </Window.Resources>
-
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 标题栏 -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
-            <TextBlock Text="Crosshair Pro" FontSize="24" FontWeight="Bold" Foreground="#00FF00"/>
-            <TextBlock Text=" v1.0" FontSize="14" Foreground="#888899" VerticalAlignment="Bottom" Margin="5,0,0,5"/>
+        <!-- ── Title Bar ── -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+            <TextBlock Text="CROSSHAIR PRO"
+                       FontSize="{DynamicResource FontSizeDisplay}"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource AccentBrush}"
+                       FontFamily="{DynamicResource FontFamilyMono}"/>
+            <TextBlock Text=" v1.0"
+                       FontSize="{DynamicResource FontSizeCaption}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       VerticalAlignment="Bottom" Margin="6,0,0,4"/>
         </StackPanel>
 
-        <!-- 主内容区 -->
+        <!-- ── Main Content ── -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="350"/>
+                <ColumnDefinition Width="360"/>
             </Grid.ColumnDefinitions>
 
-            <!-- 左侧：预览区 -->
-            <Border Grid.Column="0" Background="#2d2d44" CornerRadius="8" Margin="0,0,10,0">
+            <!-- Left: Preview Area -->
+            <Border Grid.Column="0" Style="{StaticResource PreviewCard}" Margin="0,0,12,0">
                 <Grid x:Name="PreviewContainer">
-                    <TextBlock Text="准心预览" FontSize="14" Foreground="#888899"
-                               HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,15,0,0"/>
+                    <TextBlock Text="PREVIEW"
+                               Style="{StaticResource SectionHeader}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Top"
+                               Margin="0,12,0,0"/>
 
-                    <!-- 网格背景 -->
-                    <Canvas x:Name="GridCanvas" Margin="20,40,20,20" ClipToBounds="True"/>
+                    <!-- Grid background -->
+                    <Canvas x:Name="GridCanvas" Margin="20,36,20,20" ClipToBounds="True"/>
 
-                    <!-- 准心渲染区域 -->
-                    <Canvas x:Name="CrosshairCanvas" Margin="20,40,20,20" ClipToBounds="True"/>
+                    <!-- Crosshair render area -->
+                    <Canvas x:Name="CrosshairCanvas" Margin="20,36,20,20" ClipToBounds="True"/>
 
-                    <!-- 状态指示 -->
+                    <!-- Status indicator -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10">
-                        <TextBlock Text="{Binding StatusMessage}" Foreground="#888899" FontSize="12"/>
+                        <TextBlock Text="{Binding StatusMessage}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="{DynamicResource FontSizeCaption}"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- 右侧：控制面板 -->
-            <Border Grid.Column="1" Background="#2d2d44" CornerRadius="8" Padding="15">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <!-- Right: Control Panel -->
+            <Border Grid.Column="1" Style="{StaticResource CardBorder}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4">
                     <StackPanel>
-                        <!-- 样式选择 -->
-                        <TextBlock Text="准心样式" Foreground="#ffffff" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <!-- Crosshair Style -->
+                        <TextBlock Text="STYLE" Style="{StaticResource SectionHeader}"/>
                         <ComboBox x:Name="StyleComboBox"
                                   SelectedIndex="{Binding SelectedStyleIndex, Mode=TwoWay}"
-                                  Margin="0,0,0,15"
-                                  Background="#3d3d5c" Foreground="#ffffff"/>
+                                  Margin="0,0,0,16"/>
 
-                        <!-- 大小 -->
-                        <TextBlock Text="大小" Foreground="#ffffff" FontWeight="Bold" Margin="0,5,0,5"/>
-                        <Grid Margin="0,0,0,10">
+                        <!-- Size -->
+                        <TextBlock Text="SIZE" Style="{StaticResource SectionHeader}"/>
+                        <Grid Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="56"/>
                             </Grid.ColumnDefinitions>
-                            <Slider Grid.Column="0" Value="{Binding Config.Size, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="1" Maximum="100" Style="{StaticResource CustomSlider}"/>
-                            <TextBox Grid.Column="1" Text="{Binding Config.Size, Mode=TwoWay}"
-                                     Style="{StaticResource CustomTextBox}" Margin="5,0,0,0"/>
+                            <Slider Grid.Column="0"
+                                    Value="{Binding Config.Size, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Minimum="1" Maximum="100"
+                                    Style="{StaticResource CustomSlider}"/>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding Config.Size, Mode=TwoWay}"
+                                     Style="{StaticResource CustomTextBox}"
+                                     Margin="8,0,0,0"/>
                         </Grid>
 
-                        <!-- 间隙 -->
-                        <TextBlock Text="间隙" Foreground="#ffffff" FontWeight="Bold" Margin="0,5,0,5"/>
-                        <Grid Margin="0,0,0,10">
+                        <!-- Gap -->
+                        <TextBlock Text="GAP" Style="{StaticResource SectionHeader}"/>
+                        <Grid Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="56"/>
                             </Grid.ColumnDefinitions>
-                            <Slider Grid.Column="0" Value="{Binding Config.Gap, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="0" Maximum="50" Style="{StaticResource CustomSlider}"/>
-                            <TextBox Grid.Column="1" Text="{Binding Config.Gap, Mode=TwoWay}"
-                                     Style="{StaticResource CustomTextBox}" Margin="5,0,0,0"/>
+                            <Slider Grid.Column="0"
+                                    Value="{Binding Config.Gap, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Minimum="0" Maximum="50"
+                                    Style="{StaticResource CustomSlider}"/>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding Config.Gap, Mode=TwoWay}"
+                                     Style="{StaticResource CustomTextBox}"
+                                     Margin="8,0,0,0"/>
                         </Grid>
 
-                        <!-- 厚度 -->
-                        <TextBlock Text="厚度" Foreground="#ffffff" FontWeight="Bold" Margin="0,5,0,5"/>
-                        <Grid Margin="0,0,0,10">
+                        <!-- Thickness -->
+                        <TextBlock Text="THICKNESS" Style="{StaticResource SectionHeader}"/>
+                        <Grid Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="56"/>
                             </Grid.ColumnDefinitions>
-                            <Slider Grid.Column="0" Value="{Binding Config.Thickness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="1" Maximum="10" Style="{StaticResource CustomSlider}"/>
-                            <TextBox Grid.Column="1" Text="{Binding Config.Thickness, Mode=TwoWay}"
-                                     Style="{StaticResource CustomTextBox}" Margin="5,0,0,0"/>
+                            <Slider Grid.Column="0"
+                                    Value="{Binding Config.Thickness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Minimum="1" Maximum="10"
+                                    Style="{StaticResource CustomSlider}"/>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding Config.Thickness, Mode=TwoWay}"
+                                     Style="{StaticResource CustomTextBox}"
+                                     Margin="8,0,0,0"/>
                         </Grid>
 
-                        <!-- 透明度 -->
-                        <TextBlock Text="透明度" Foreground="#ffffff" FontWeight="Bold" Margin="0,5,0,5"/>
-                        <Grid Margin="0,0,0,10">
+                        <!-- Opacity -->
+                        <TextBlock Text="OPACITY" Style="{StaticResource SectionHeader}"/>
+                        <Grid Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="56"/>
                             </Grid.ColumnDefinitions>
-                            <Slider Grid.Column="0" Value="{Binding Config.Opacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="0" Maximum="100" Style="{StaticResource CustomSlider}"/>
-                            <TextBox Grid.Column="1" Text="{Binding Config.Opacity, Mode=TwoWay}"
-                                     Style="{StaticResource CustomTextBox}" Margin="5,0,0,0"/>
+                            <Slider Grid.Column="0"
+                                    Value="{Binding Config.Opacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Minimum="0" Maximum="100"
+                                    Style="{StaticResource CustomSlider}"/>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding Config.Opacity, Mode=TwoWay}"
+                                     Style="{StaticResource CustomTextBox}"
+                                     Margin="8,0,0,0"/>
                         </Grid>
 
-                        <!-- 中心大小 -->
-                        <TextBlock Text="中心大小" Foreground="#ffffff" FontWeight="Bold" Margin="0,5,0,5"/>
-                        <Grid Margin="0,0,0,10">
+                        <!-- Center Size -->
+                        <TextBlock Text="CENTER SIZE" Style="{StaticResource SectionHeader}"/>
+                        <Grid Margin="0,0,0,16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="56"/>
                             </Grid.ColumnDefinitions>
-                            <Slider Grid.Column="0" Value="{Binding Config.CenterSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="0" Maximum="30" Style="{StaticResource CustomSlider}"/>
-                            <TextBox Grid.Column="1" Text="{Binding Config.CenterSize, Mode=TwoWay}"
-                                     Style="{StaticResource CustomTextBox}" Margin="5,0,0,0"/>
+                            <Slider Grid.Column="0"
+                                    Value="{Binding Config.CenterSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Minimum="0" Maximum="30"
+                                    Style="{StaticResource CustomSlider}"/>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding Config.CenterSize, Mode=TwoWay}"
+                                     Style="{StaticResource CustomTextBox}"
+                                     Margin="8,0,0,0"/>
                         </Grid>
 
-                        <!-- 颜色 -->
-                        <TextBlock Text="颜色" Foreground="#ffffff" FontWeight="Bold" Margin="0,5,0,5"/>
-                        <ItemsControl ItemsSource="{Binding PresetColors}" Margin="0,0,0,15">
+                        <!-- Color -->
+                        <TextBlock Text="COLOR" Style="{StaticResource SectionHeader}"/>
+                        <ItemsControl ItemsSource="{Binding PresetColors}" Margin="0,0,0,16">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <RadioButton Content="■" FontSize="24" Margin="3" Foreground="{Binding}"
+                                    <RadioButton Foreground="{Binding}"
+                                                 Style="{StaticResource ColorSwatchRadio}"
                                                  Command="{Binding DataContext.SetColorCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                 CommandParameter="{Binding}">
-                                        <RadioButton.Style>
-                                            <Style TargetType="RadioButton">
-                                                <Setter Property="Template">
-                                                    <Setter.Value>
-                                                        <ControlTemplate TargetType="RadioButton">
-                                                            <Border Background="Transparent" CornerRadius="4" Padding="2">
-                                                                <ContentPresenter/>
-                                                            </Border>
-                                                        </ControlTemplate>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </Style>
-                                        </RadioButton.Style>
-                                    </RadioButton>
+                                                 CommandParameter="{Binding}"/>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <!-- 高级设置 -->
-                        <Expander Header="高级设置" Foreground="#ffffff" Margin="0,0,0,10">
-                            <StackPanel Margin="0,10,0,0">
-                                <CheckBox Content="启用描边" Foreground="#ffffff"
-                                          IsChecked="{Binding Config.Effects.Outline.Enabled, Mode=TwoWay}" Margin="0,5"/>
-                                <Grid Margin="20,5,0,10">
+                        <!-- Advanced Settings -->
+                        <TextBlock Text="ADVANCED" Style="{StaticResource SectionHeader}"/>
+                        <Expander Header="Effects" Margin="0,0,0,12">
+                            <StackPanel Margin="0,8,0,0">
+                                <CheckBox Content="Enable Outline"
+                                          IsChecked="{Binding Config.Effects.Outline.Enabled, Mode=TwoWay}"
+                                          Margin="0,4"/>
+                                <Grid Margin="24,4,0,12">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="50"/>
+                                        <ColumnDefinition Width="56"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="描边粗细" Foreground="#888899"/>
-                                    <TextBox Grid.Column="1" Text="{Binding Config.Effects.Outline.Thickness, Mode=TwoWay}"
+                                    <TextBlock Grid.Column="0" Text="Outline Thickness"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center"/>
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding Config.Effects.Outline.Thickness, Mode=TwoWay}"
                                              Style="{StaticResource CustomTextBox}"/>
                                 </Grid>
-                                <CheckBox Content="启用阴影" Foreground="#ffffff"
-                                          IsChecked="{Binding Config.Effects.Shadow.Enabled, Mode=TwoWay}" Margin="0,5"/>
+                                <CheckBox Content="Enable Shadow"
+                                          IsChecked="{Binding Config.Effects.Shadow.Enabled, Mode=TwoWay}"
+                                          Margin="0,4"/>
                             </StackPanel>
                         </Expander>
                     </StackPanel>
@@ -244,35 +207,47 @@
             </Border>
         </Grid>
 
-        <!-- 底部工具栏 -->
-        <Grid Grid.Row="2" Margin="0,15,0,0">
+        <!-- ── Bottom Toolbar ── -->
+        <Grid Grid.Row="2" Margin="0,16,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <TextBlock Text="当前预设: " Foreground="#888899" VerticalAlignment="Center"/>
-                <ComboBox Width="150" Margin="5,0" Background="#3d3d5c" Foreground="#ffffff">
-                    <ComboBoxItem Content="默认配置" IsSelected="True"/>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="PRESET"
+                           Style="{StaticResource SectionHeader}"
+                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <ComboBox Width="150">
+                    <ComboBoxItem Content="Default" IsSelected="True"/>
                 </ComboBox>
             </StackPanel>
 
             <StackPanel Grid.Column="2" Orientation="Horizontal">
-                <Button Content="保存预设" Style="{StaticResource SecondaryButton}" Margin="5"/>
-                <Button Content="导入" Style="{StaticResource SecondaryButton}" Margin="5"/>
-                <Button Content="导出" Style="{StaticResource SecondaryButton}" Margin="5"/>
-                <Button Content="重置" Command="{Binding ResetConfigCommand}" Style="{StaticResource SecondaryButton}" Margin="5"/>
-                <Button Content="切换准心" Command="{Binding ToggleCrosshairCommand}" Style="{StaticResource PrimaryButton}" Margin="5,0,0,0"/>
+                <Button Content="Save" Style="{StaticResource SecondaryButton}" Margin="0,0,6,0"/>
+                <Button Content="Import" Style="{StaticResource SecondaryButton}" Margin="0,0,6,0"/>
+                <Button Content="Export" Style="{StaticResource SecondaryButton}" Margin="0,0,6,0"/>
+                <Button Content="Reset" Command="{Binding ResetConfigCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0"/>
+                <Button Content="Toggle" Command="{Binding ToggleCrosshairCommand}" Style="{StaticResource PrimaryButton}"/>
             </StackPanel>
         </Grid>
 
-        <!-- 状态栏 -->
-        <Border Grid.Row="2" Margin="0,50,0,-25" Background="#2d2d44" CornerRadius="4" Padding="10,5">
+        <!-- ── Status Bar ── -->
+        <Border Grid.Row="3" Margin="0,12,0,0"
+                Background="{DynamicResource SurfaceBrush}"
+                CornerRadius="{StaticResource RadiusSm}"
+                Padding="12,6">
             <Grid>
-                <TextBlock Text="{Binding StatusMessage}" Foreground="#888899" HorizontalAlignment="Left"/>
-                <TextBlock Text="快捷键: Ctrl+Shift+X 切换准心" Foreground="#888899" HorizontalAlignment="Right"/>
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           FontSize="{DynamicResource FontSizeCaption}"
+                           HorizontalAlignment="Left"/>
+                <TextBlock Text="Ctrl+Shift+X Toggle"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           FontSize="{DynamicResource FontSizeCaption}"
+                           FontFamily="{DynamicResource FontFamilyMono}"
+                           HorizontalAlignment="Right"/>
             </Grid>
         </Border>
     </Grid>

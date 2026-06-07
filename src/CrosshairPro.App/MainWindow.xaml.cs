@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -8,6 +9,7 @@ using CrosshairPro.Core.Enums;
 using CrosshairPro.Core.Interfaces;
 using CrosshairPro.Core.Models;
 using CrosshairPro.Infrastructure.Hotkey;
+using Hardcodet.Wpf.TaskbarNotification;
 
 namespace CrosshairPro.App;
 
@@ -16,6 +18,8 @@ public partial class MainWindow : Window
     private readonly MainViewModel _viewModel;
     private readonly OverlayWindow _overlayWindow;
     private readonly IHotkeyManager _hotkeyManager;
+    private TaskbarIcon? _trayIcon;
+    private bool _isReallyClosing;
 
     public MainWindow()
     {
@@ -41,6 +45,7 @@ public partial class MainWindow : Window
         StyleComboBox.ItemsSource = _viewModel.CrosshairStyleNames;
 
         RegisterHotkeys();
+        SetupTrayIcon();
 
         // 等覆盖窗口 Loaded 后再同步配置并渲染
         _overlayWindow.Loaded += (s, e) =>
@@ -52,8 +57,89 @@ public partial class MainWindow : Window
 
         // 初始绘制预览
         Loaded += (s, e) => DrawPreview();
+    }
 
-        Closed += OnWindowClosed;
+    /// <summary>
+    /// 设置系统托盘图标
+    /// </summary>
+    private void SetupTrayIcon()
+    {
+        _trayIcon = new TaskbarIcon
+        {
+            ToolTipText = "Crosshair Pro - 准心已启用",
+            DoubleClickCommand = new RelayCommand(() => ShowMainWindow())
+        };
+
+        // 使用系统默认应用程序图标
+        try
+        {
+            _trayIcon.Icon = System.Drawing.SystemIcons.Application;
+        }
+        catch
+        {
+            // 忽略图标加载失败
+        }
+
+        // 右键菜单
+        var menu = new ContextMenu();
+
+        var showItem = new MenuItem { Header = "打开主窗口" };
+        showItem.Click += (s, e) => ShowMainWindow();
+        menu.Items.Add(showItem);
+
+        var toggleItem = new MenuItem { Header = "切换准心显示" };
+        toggleItem.Click += (s, e) =>
+        {
+            _overlayWindow.ToggleVisibility();
+            _viewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
+        };
+        menu.Items.Add(toggleItem);
+
+        menu.Items.Add(new Separator());
+
+        var exitItem = new MenuItem { Header = "退出" };
+        exitItem.Click += (s, e) => ReallyExit();
+        menu.Items.Add(exitItem);
+
+        _trayIcon.ContextMenu = menu;
+    }
+
+    /// <summary>
+    /// 显示主窗口
+    /// </summary>
+    private void ShowMainWindow()
+    {
+        Show();
+        WindowState = WindowState.Normal;
+        Activate();
+    }
+
+    /// <summary>
+    /// 真正退出程序
+    /// </summary>
+    private void ReallyExit()
+    {
+        _isReallyClosing = true;
+        _trayIcon?.Dispose();
+        _hotkeyManager.Dispose();
+        _overlayWindow.Close();
+        Close();
+        Application.Current.Shutdown();
+    }
+
+    /// <summary>
+    /// 拦截关闭事件 → 最小化到托盘而非退出
+    /// </summary>
+    protected override void OnClosing(CancelEventArgs e)
+    {
+        if (!_isReallyClosing)
+        {
+            e.Cancel = true;
+            Hide();
+            return;
+        }
+
+        base.OnClosing(e);
     }
 
     /// <summary>
@@ -78,14 +164,13 @@ public partial class MainWindow : Window
         bool hasOutline = cfg.Effects.Outline.Enabled;
 
         // 画网格
-        var gridPen = new Pen(new SolidColorBrush(Color.FromArgb(30, 255, 255, 255)), 0.5);
+        var gridBrush = new SolidColorBrush(Color.FromArgb(30, 255, 255, 255));
         for (double x = 0; x < canvas.ActualWidth; x += 30)
-            grid.Children.Add(new Line { X1 = x, Y1 = 0, X2 = x, Y2 = canvas.ActualHeight, Stroke = gridPen.Brush, StrokeThickness = 0.5 });
+            grid.Children.Add(new Line { X1 = x, Y1 = 0, X2 = x, Y2 = canvas.ActualHeight, Stroke = gridBrush, StrokeThickness = 0.5 });
         for (double y = 0; y < canvas.ActualHeight; y += 30)
-            grid.Children.Add(new Line { X1 = 0, Y1 = y, X2 = canvas.ActualWidth, Y2 = y, Stroke = gridPen.Brush, StrokeThickness = 0.5 });
-        // 十字辅助线
-        grid.Children.Add(new Line { X1 = cx, Y1 = 0, X2 = cx, Y2 = canvas.ActualHeight, Stroke = gridPen.Brush, StrokeThickness = 1 });
-        grid.Children.Add(new Line { X1 = 0, Y1 = cy, X2 = canvas.ActualWidth, Y2 = cy, Stroke = gridPen.Brush, StrokeThickness = 1 });
+            grid.Children.Add(new Line { X1 = 0, Y1 = y, X2 = canvas.ActualWidth, Y2 = y, Stroke = gridBrush, StrokeThickness = 0.5 });
+        grid.Children.Add(new Line { X1 = cx, Y1 = 0, X2 = cx, Y2 = canvas.ActualHeight, Stroke = gridBrush, StrokeThickness = 1 });
+        grid.Children.Add(new Line { X1 = 0, Y1 = cy, X2 = canvas.ActualWidth, Y2 = cy, Stroke = gridBrush, StrokeThickness = 1 });
 
         double size = cfg.Size;
         double gap = cfg.Gap;
@@ -93,11 +178,8 @@ public partial class MainWindow : Window
         double halfSize = size / 2;
         double halfGap = gap / 2;
 
-        // 中心点（Dot 样式除外，Dot 自带中心点绘制）
         if (cfg.CenterSize > 0 && cfg.Style != CrosshairStyle.Dot)
-        {
             DrawDot(canvas, cx, cy, cfg.CenterSize / 2.0, brush, hasOutline, outlineBrush, cfg);
-        }
 
         switch (cfg.Style)
         {
@@ -107,22 +189,18 @@ public partial class MainWindow : Window
                 DrawLine(canvas, cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg);
                 DrawLine(canvas, cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg);
                 break;
-
             case CrosshairStyle.Dot:
                 DrawDot(canvas, cx, cy, cfg.CenterSize / 2.0, brush, hasOutline, outlineBrush, cfg);
                 break;
-
             case CrosshairStyle.Circle:
                 DrawCircle(canvas, cx, cy, halfSize, brush, thick, hasOutline, outlineBrush, cfg);
                 if (cfg.CenterSize > 0)
                     DrawDot(canvas, cx, cy, cfg.CenterSize / 2.0, brush, false, outlineBrush, cfg);
                 break;
-
             case CrosshairStyle.TShape:
                 DrawLine(canvas, cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, cfg);
                 DrawLine(canvas, cx - halfGap - halfSize, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg);
                 break;
-
             case CrosshairStyle.XShape:
                 double off = halfGap * 0.707;
                 double len = halfSize * 0.707;
@@ -131,9 +209,7 @@ public partial class MainWindow : Window
                 DrawLine(canvas, cx - off, cy + off, cx - off - len, cy + off + len, brush, thick, hasOutline, outlineBrush, cfg);
                 DrawLine(canvas, cx + off, cy + off, cx + off + len, cy + off + len, brush, thick, hasOutline, outlineBrush, cfg);
                 break;
-
             case CrosshairStyle.CustomImage:
-                // 暂用十字替代
                 DrawLine(canvas, cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, cfg);
                 DrawLine(canvas, cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, cfg);
                 DrawLine(canvas, cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg);
@@ -145,26 +221,13 @@ public partial class MainWindow : Window
     private void DrawLine(Canvas c, double x1, double y1, double x2, double y2, Brush brush, double thick, bool hasOutline, Brush outlineBrush, CrosshairConfig cfg)
     {
         if (hasOutline)
-        {
-            c.Children.Add(new Line
-            {
-                X1 = x1, Y1 = y1, X2 = x2, Y2 = y2,
-                Stroke = outlineBrush,
-                StrokeThickness = thick + cfg.Effects.Outline.Thickness * 2
-            });
-        }
-        c.Children.Add(new Line
-        {
-            X1 = x1, Y1 = y1, X2 = x2, Y2 = y2,
-            Stroke = brush,
-            StrokeThickness = thick
-        });
+            c.Children.Add(new Line { X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Stroke = outlineBrush, StrokeThickness = thick + cfg.Effects.Outline.Thickness * 2 });
+        c.Children.Add(new Line { X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Stroke = brush, StrokeThickness = thick });
     }
 
     private void DrawDot(Canvas c, double cx, double cy, double radius, Brush brush, bool hasOutline, Brush outlineBrush, CrosshairConfig cfg)
     {
         if (hasOutline)
-        {
             c.Children.Add(new Ellipse
             {
                 Width = radius * 2 + cfg.Effects.Outline.Thickness * 2,
@@ -173,7 +236,6 @@ public partial class MainWindow : Window
                 StrokeThickness = cfg.Effects.Outline.Thickness,
                 Margin = new Thickness(cx - radius - cfg.Effects.Outline.Thickness, cy - radius - cfg.Effects.Outline.Thickness, 0, 0)
             });
-        }
         c.Children.Add(new Ellipse
         {
             Width = radius * 2,
@@ -186,7 +248,6 @@ public partial class MainWindow : Window
     private void DrawCircle(Canvas c, double cx, double cy, double radius, Brush brush, double thick, bool hasOutline, Brush outlineBrush, CrosshairConfig cfg)
     {
         if (hasOutline)
-        {
             c.Children.Add(new Ellipse
             {
                 Width = radius * 2 + cfg.Effects.Outline.Thickness * 2,
@@ -195,7 +256,6 @@ public partial class MainWindow : Window
                 StrokeThickness = thick + cfg.Effects.Outline.Thickness * 2,
                 Margin = new Thickness(cx - radius - cfg.Effects.Outline.Thickness, cy - radius - cfg.Effects.Outline.Thickness, 0, 0)
             });
-        }
         c.Children.Add(new Ellipse
         {
             Width = radius * 2,
@@ -248,11 +308,16 @@ public partial class MainWindow : Window
             _viewModel.StatusMessage = _overlayWindow.IsCrosshairVisible ? "准心已启用" : "准心已禁用";
         });
     }
+}
 
-    private void OnWindowClosed(object? sender, EventArgs e)
-    {
-        _hotkeyManager.Dispose();
-        _overlayWindow.Close();
-        Application.Current.Shutdown();
-    }
+/// <summary>
+/// 简单的 ICommand 实现，用于托盘菜单的 DoubleClick
+/// </summary>
+public class RelayCommand : System.Windows.Input.ICommand
+{
+    private readonly Action _execute;
+    public RelayCommand(Action execute) => _execute = execute;
+    public event EventHandler? CanExecuteChanged;
+    public bool CanExecute(object? parameter) => true;
+    public void Execute(object? parameter) => _execute();
 }
