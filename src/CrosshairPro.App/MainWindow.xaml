@@ -6,6 +6,7 @@
         xmlns:vm="clr-namespace:CrosshairPro.App.ViewModels"
         mc:Ignorable="d"
         Title="Crosshair Pro" Height="600" Width="900"
+        Icon="Assets/app-icon.ico"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BackgroundBrush}"
         ResizeMode="CanResize"

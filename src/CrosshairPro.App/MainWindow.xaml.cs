@@ -77,18 +77,23 @@ public partial class MainWindow : Window
             DoubleClickCommand = new RelayCommand(() => ShowMainWindow())
         };
 
-        // 使用系统默认应用程序图标
+        // 加载应用图标
         try
         {
-            _trayIcon.Icon = System.Drawing.SystemIcons.Application;
+            var iconUri = new Uri("pack://application:,,,/Assets/app-icon.ico", UriKind.Absolute);
+            var iconStream = Application.GetResourceStream(iconUri)?.Stream;
+            if (iconStream != null)
+                _trayIcon.Icon = new System.Drawing.Icon(iconStream);
+            else
+                _trayIcon.Icon = System.Drawing.SystemIcons.Application;
         }
         catch
         {
-            // 忽略图标加载失败
+            _trayIcon.Icon = System.Drawing.SystemIcons.Application;
         }
 
         // 右键菜单
-        var menu = new ContextMenu();
+        var menu = new ContextMenu { StaysOpen = false };
 
         var showItem = new MenuItem { Header = "打开主窗口" };
         showItem.Click += (s, e) => ShowMainWindow();
@@ -166,14 +171,14 @@ public partial class MainWindow : Window
 
         var cfg = _viewModel.Config;
 
-        // 透明度：Canvas 整体透明
-        canvas.Opacity = cfg.Opacity / 100.0;
-
         // 亮度：调整颜色明暗
         var baseColor = (Color)ColorConverter.ConvertFromString(cfg.Color);
         var color = ApplyBrightness(baseColor, cfg.Brightness);
         var brush = new SolidColorBrush(color);
         var outlineBrush = Brushes.Black;
+
+        // 透明度：在每个 Shape 上单独设置
+        double shapeOpacity = cfg.Opacity / 100.0;
         bool hasOutline = cfg.Effects.Outline.Enabled;
 
         // 画网格
@@ -192,53 +197,53 @@ public partial class MainWindow : Window
         double halfGap = gap / 2;
 
         if (cfg.CenterSize > 0 && cfg.Style != CrosshairStyle.Dot)
-            DrawDot(canvas, cx, cy, cfg.CenterSize / 2.0, brush, hasOutline, outlineBrush, cfg);
+            DrawDot(canvas, cx, cy, cfg.CenterSize / 2.0, brush, hasOutline, outlineBrush, cfg, shapeOpacity);
 
         switch (cfg.Style)
         {
             case CrosshairStyle.Cross:
-                DrawLine(canvas, cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, cfg);
-                DrawLine(canvas, cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, cfg);
-                DrawLine(canvas, cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg);
-                DrawLine(canvas, cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg);
+                DrawLine(canvas, cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                DrawLine(canvas, cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                DrawLine(canvas, cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                DrawLine(canvas, cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
                 break;
             case CrosshairStyle.Dot:
-                DrawDot(canvas, cx, cy, cfg.CenterSize / 2.0, brush, hasOutline, outlineBrush, cfg);
+                DrawDot(canvas, cx, cy, cfg.CenterSize / 2.0, brush, hasOutline, outlineBrush, cfg, shapeOpacity);
                 break;
             case CrosshairStyle.Circle:
-                DrawCircle(canvas, cx, cy, halfSize, brush, thick, hasOutline, outlineBrush, cfg);
+                DrawCircle(canvas, cx, cy, halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
                 if (cfg.CenterSize > 0)
-                    DrawDot(canvas, cx, cy, cfg.CenterSize / 2.0, brush, false, outlineBrush, cfg);
+                    DrawDot(canvas, cx, cy, cfg.CenterSize / 2.0, brush, false, outlineBrush, cfg, shapeOpacity);
                 break;
             case CrosshairStyle.TShape:
-                DrawLine(canvas, cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, cfg);
-                DrawLine(canvas, cx - halfGap - halfSize, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg);
+                DrawLine(canvas, cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                DrawLine(canvas, cx - halfGap - halfSize, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
                 break;
             case CrosshairStyle.XShape:
                 double off = halfGap * 0.707;
                 double len = halfSize * 0.707;
-                DrawLine(canvas, cx - off, cy - off, cx - off - len, cy - off - len, brush, thick, hasOutline, outlineBrush, cfg);
-                DrawLine(canvas, cx + off, cy - off, cx + off + len, cy - off - len, brush, thick, hasOutline, outlineBrush, cfg);
-                DrawLine(canvas, cx - off, cy + off, cx - off - len, cy + off + len, brush, thick, hasOutline, outlineBrush, cfg);
-                DrawLine(canvas, cx + off, cy + off, cx + off + len, cy + off + len, brush, thick, hasOutline, outlineBrush, cfg);
+                DrawLine(canvas, cx - off, cy - off, cx - off - len, cy - off - len, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                DrawLine(canvas, cx + off, cy - off, cx + off + len, cy - off - len, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                DrawLine(canvas, cx - off, cy + off, cx - off - len, cy + off + len, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                DrawLine(canvas, cx + off, cy + off, cx + off + len, cy + off + len, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
                 break;
             case CrosshairStyle.CustomImage:
-                DrawLine(canvas, cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, cfg);
-                DrawLine(canvas, cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, cfg);
-                DrawLine(canvas, cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg);
-                DrawLine(canvas, cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg);
+                DrawLine(canvas, cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                DrawLine(canvas, cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                DrawLine(canvas, cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                DrawLine(canvas, cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
                 break;
         }
     }
 
-    private void DrawLine(Canvas c, double x1, double y1, double x2, double y2, Brush brush, double thick, bool hasOutline, Brush outlineBrush, CrosshairConfig cfg)
+    private void DrawLine(Canvas c, double x1, double y1, double x2, double y2, Brush brush, double thick, bool hasOutline, Brush outlineBrush, CrosshairConfig cfg, double opacity)
     {
         if (hasOutline)
-            c.Children.Add(new Line { X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Stroke = outlineBrush, StrokeThickness = thick + cfg.Effects.Outline.Thickness * 2 });
-        c.Children.Add(new Line { X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Stroke = brush, StrokeThickness = thick });
+            c.Children.Add(new Line { X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Stroke = outlineBrush, StrokeThickness = thick + cfg.Effects.Outline.Thickness * 2, Opacity = opacity });
+        c.Children.Add(new Line { X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Stroke = brush, StrokeThickness = thick, Opacity = opacity });
     }
 
-    private void DrawDot(Canvas c, double cx, double cy, double radius, Brush brush, bool hasOutline, Brush outlineBrush, CrosshairConfig cfg)
+    private void DrawDot(Canvas c, double cx, double cy, double radius, Brush brush, bool hasOutline, Brush outlineBrush, CrosshairConfig cfg, double opacity)
     {
         if (hasOutline)
             c.Children.Add(new Ellipse
@@ -247,18 +252,20 @@ public partial class MainWindow : Window
                 Height = radius * 2 + cfg.Effects.Outline.Thickness * 2,
                 Stroke = outlineBrush,
                 StrokeThickness = cfg.Effects.Outline.Thickness,
-                Margin = new Thickness(cx - radius - cfg.Effects.Outline.Thickness, cy - radius - cfg.Effects.Outline.Thickness, 0, 0)
+                Margin = new Thickness(cx - radius - cfg.Effects.Outline.Thickness, cy - radius - cfg.Effects.Outline.Thickness, 0, 0),
+                Opacity = opacity
             });
         c.Children.Add(new Ellipse
         {
             Width = radius * 2,
             Height = radius * 2,
             Fill = brush,
-            Margin = new Thickness(cx - radius, cy - radius, 0, 0)
+            Margin = new Thickness(cx - radius, cy - radius, 0, 0),
+            Opacity = opacity
         });
     }
 
-    private void DrawCircle(Canvas c, double cx, double cy, double radius, Brush brush, double thick, bool hasOutline, Brush outlineBrush, CrosshairConfig cfg)
+    private void DrawCircle(Canvas c, double cx, double cy, double radius, Brush brush, double thick, bool hasOutline, Brush outlineBrush, CrosshairConfig cfg, double opacity)
     {
         if (hasOutline)
             c.Children.Add(new Ellipse
@@ -267,7 +274,8 @@ public partial class MainWindow : Window
                 Height = radius * 2 + cfg.Effects.Outline.Thickness * 2,
                 Stroke = outlineBrush,
                 StrokeThickness = thick + cfg.Effects.Outline.Thickness * 2,
-                Margin = new Thickness(cx - radius - cfg.Effects.Outline.Thickness, cy - radius - cfg.Effects.Outline.Thickness, 0, 0)
+                Margin = new Thickness(cx - radius - cfg.Effects.Outline.Thickness, cy - radius - cfg.Effects.Outline.Thickness, 0, 0),
+                Opacity = opacity
             });
         c.Children.Add(new Ellipse
         {
@@ -275,7 +283,8 @@ public partial class MainWindow : Window
             Height = radius * 2,
             Stroke = brush,
             StrokeThickness = thick,
-            Margin = new Thickness(cx - radius, cy - radius, 0, 0)
+            Margin = new Thickness(cx - radius, cy - radius, 0, 0),
+            Opacity = opacity
         });
     }
 

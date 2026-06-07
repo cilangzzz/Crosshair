@@ -89,18 +89,17 @@ public sealed class OverlayWindow : Window
         double cx = Width / 2;
         double cy = Height / 2;
 
-        // 透明度：控制 Canvas 整体透明（真正的透明效果）
-        _canvas.Opacity = _config.Opacity / 100.0;
-
         // 亮度：调整颜色明暗（100=原色，0=黑色，200=白色）
         var baseColor = (Color)ColorConverter.ConvertFromString(_config.Color);
         var color = ApplyBrightness(baseColor, _config.Brightness);
         var brush = new SolidColorBrush(color);
         brush.Freeze();
 
+        // 透明度：在每个 Shape 上单独设置（Canvas.Opacity 在 AllowsTransparency 窗口中会导致整个窗口不可见）
+        double shapeOpacity = _config.Opacity / 100.0;
+
         var outlineBrush = Brushes.Black;
         bool hasOutline = _config.Effects.Outline.Enabled;
-        double outlineExtra = hasOutline ? _config.Effects.Outline.Thickness * 2 : 0;
 
         double size = _config.Size;
         double gap = _config.Gap;
@@ -112,51 +111,50 @@ public sealed class OverlayWindow : Window
         if (_config.CenterSize > 0 &&
             _config.Style != CrosshairStyle.Dot)
         {
-            AddDot(cx, cy, _config.CenterSize / 2.0, brush, hasOutline, outlineBrush);
+            AddDot(cx, cy, _config.CenterSize / 2.0, brush, hasOutline, outlineBrush, shapeOpacity);
         }
 
         switch (_config.Style)
         {
             case CrosshairStyle.Cross:
-                AddLine(cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush);
-                AddLine(cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush);
-                AddLine(cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush);
-                AddLine(cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush);
+                AddLine(cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                AddLine(cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                AddLine(cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                AddLine(cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, shapeOpacity);
                 break;
 
             case CrosshairStyle.Dot:
-                AddDot(cx, cy, _config.CenterSize > 0 ? _config.CenterSize / 2.0 : 4, brush, hasOutline, outlineBrush);
+                AddDot(cx, cy, _config.CenterSize > 0 ? _config.CenterSize / 2.0 : 4, brush, hasOutline, outlineBrush, shapeOpacity);
                 break;
 
             case CrosshairStyle.Circle:
-                AddCircle(cx, cy, halfSize, brush, thick, hasOutline, outlineBrush);
+                AddCircle(cx, cy, halfSize, brush, thick, hasOutline, outlineBrush, shapeOpacity);
                 break;
 
             case CrosshairStyle.TShape:
-                AddLine(cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush);
-                AddLine(cx - halfGap - halfSize, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush);
+                AddLine(cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                AddLine(cx - halfGap - halfSize, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, shapeOpacity);
                 break;
 
             case CrosshairStyle.XShape:
                 double off = halfGap * 0.707;
                 double len = halfSize * 0.707;
-                AddLine(cx - off, cy - off, cx - off - len, cy - off - len, brush, thick, hasOutline, outlineBrush);
-                AddLine(cx + off, cy - off, cx + off + len, cy - off - len, brush, thick, hasOutline, outlineBrush);
-                AddLine(cx - off, cy + off, cx - off - len, cy + off + len, brush, thick, hasOutline, outlineBrush);
-                AddLine(cx + off, cy + off, cx + off + len, cy + off + len, brush, thick, hasOutline, outlineBrush);
+                AddLine(cx - off, cy - off, cx - off - len, cy - off - len, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                AddLine(cx + off, cy - off, cx + off + len, cy - off - len, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                AddLine(cx - off, cy + off, cx - off - len, cy + off + len, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                AddLine(cx + off, cy + off, cx + off + len, cy + off + len, brush, thick, hasOutline, outlineBrush, shapeOpacity);
                 break;
 
             case CrosshairStyle.CustomImage:
-                // 回退到十字
-                AddLine(cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush);
-                AddLine(cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush);
-                AddLine(cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush);
-                AddLine(cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush);
+                AddLine(cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                AddLine(cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                AddLine(cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                AddLine(cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, shapeOpacity);
                 break;
         }
     }
 
-    private void AddLine(double x1, double y1, double x2, double y2, Brush brush, double thick, bool hasOutline, Brush outlineBrush)
+    private void AddLine(double x1, double y1, double x2, double y2, Brush brush, double thick, bool hasOutline, Brush outlineBrush, double opacity)
     {
         if (hasOutline)
         {
@@ -166,7 +164,8 @@ public sealed class OverlayWindow : Window
                 Stroke = outlineBrush,
                 StrokeThickness = thick + _config.Effects.Outline.Thickness * 2,
                 StrokeStartLineCap = PenLineCap.Flat,
-                StrokeEndLineCap = PenLineCap.Flat
+                StrokeEndLineCap = PenLineCap.Flat,
+                Opacity = opacity
             });
         }
         _canvas.Children.Add(new Line
@@ -175,11 +174,12 @@ public sealed class OverlayWindow : Window
             Stroke = brush,
             StrokeThickness = thick,
             StrokeStartLineCap = PenLineCap.Flat,
-            StrokeEndLineCap = PenLineCap.Flat
+            StrokeEndLineCap = PenLineCap.Flat,
+            Opacity = opacity
         });
     }
 
-    private void AddDot(double cx, double cy, double radius, Brush brush, bool hasOutline, Brush outlineBrush)
+    private void AddDot(double cx, double cy, double radius, Brush brush, bool hasOutline, Brush outlineBrush, double opacity)
     {
         if (hasOutline)
         {
@@ -190,7 +190,8 @@ public sealed class OverlayWindow : Window
                 Stroke = outlineBrush,
                 StrokeThickness = _config.Effects.Outline.Thickness,
                 Margin = new Thickness(cx - radius - _config.Effects.Outline.Thickness,
-                                       cy - radius - _config.Effects.Outline.Thickness, 0, 0)
+                                       cy - radius - _config.Effects.Outline.Thickness, 0, 0),
+                Opacity = opacity
             });
         }
         _canvas.Children.Add(new Ellipse
@@ -198,11 +199,12 @@ public sealed class OverlayWindow : Window
             Width = radius * 2,
             Height = radius * 2,
             Fill = brush,
-            Margin = new Thickness(cx - radius, cy - radius, 0, 0)
+            Margin = new Thickness(cx - radius, cy - radius, 0, 0),
+            Opacity = opacity
         });
     }
 
-    private void AddCircle(double cx, double cy, double radius, Brush brush, double thick, bool hasOutline, Brush outlineBrush)
+    private void AddCircle(double cx, double cy, double radius, Brush brush, double thick, bool hasOutline, Brush outlineBrush, double opacity)
     {
         if (hasOutline)
         {
@@ -213,7 +215,8 @@ public sealed class OverlayWindow : Window
                 Stroke = outlineBrush,
                 StrokeThickness = thick + _config.Effects.Outline.Thickness * 2,
                 Margin = new Thickness(cx - radius - _config.Effects.Outline.Thickness,
-                                       cy - radius - _config.Effects.Outline.Thickness, 0, 0)
+                                       cy - radius - _config.Effects.Outline.Thickness, 0, 0),
+                Opacity = opacity
             });
         }
         _canvas.Children.Add(new Ellipse
@@ -222,7 +225,8 @@ public sealed class OverlayWindow : Window
             Height = radius * 2,
             Stroke = brush,
             StrokeThickness = thick,
-            Margin = new Thickness(cx - radius, cy - radius, 0, 0)
+            Margin = new Thickness(cx - radius, cy - radius, 0, 0),
+            Opacity = opacity
         });
     }
 
