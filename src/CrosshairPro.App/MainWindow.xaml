@@ -146,6 +146,23 @@
                                      Margin="8,0,0,0"/>
                         </Grid>
 
+                        <!-- Brightness -->
+                        <TextBlock Text="BRIGHTNESS" Style="{StaticResource SectionHeader}"/>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="56"/>
+                            </Grid.ColumnDefinitions>
+                            <Slider Grid.Column="0"
+                                    Value="{Binding Config.Brightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Minimum="0" Maximum="200"
+                                    Style="{StaticResource CustomSlider}"/>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding Config.Brightness, Mode=TwoWay}"
+                                     Style="{StaticResource NumericTextBox}"
+                                     Margin="8,0,0,0"/>
+                        </Grid>
+
                         <!-- Center Size -->
                         <TextBlock Text="CENTER SIZE" Style="{StaticResource SectionHeader}"/>
                         <Grid Margin="0,0,0,16">

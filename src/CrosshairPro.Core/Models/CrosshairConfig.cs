@@ -116,6 +116,7 @@ public partial class CrosshairConfig : ObservableObject
         Thickness = other.Thickness;
         Color = other.Color;
         Opacity = other.Opacity;
+        Brightness = other.Brightness;
         CenterSize = other.CenterSize;
         Rotation = other.Rotation;
         CustomImagePath = other.CustomImagePath;

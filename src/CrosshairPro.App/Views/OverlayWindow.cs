@@ -89,9 +89,13 @@ public sealed class OverlayWindow : Window
         double cx = Width / 2;
         double cy = Height / 2;
 
-        var color = (Color)ColorConverter.ConvertFromString(_config.Color);
+        // 透明度：控制 Canvas 整体透明（真正的透明效果）
+        _canvas.Opacity = _config.Opacity / 100.0;
+
+        // 亮度：调整颜色明暗（100=原色，0=黑色，200=白色）
+        var baseColor = (Color)ColorConverter.ConvertFromString(_config.Color);
+        var color = ApplyBrightness(baseColor, _config.Brightness);
         var brush = new SolidColorBrush(color);
-        brush.Opacity = _config.Opacity / 100.0;
         brush.Freeze();
 
         var outlineBrush = Brushes.Black;
@@ -220,5 +224,17 @@ public sealed class OverlayWindow : Window
             StrokeThickness = thick,
             Margin = new Thickness(cx - radius, cy - radius, 0, 0)
         });
+    }
+
+    /// <summary>
+    /// 应用亮度：100=原色，0=全黑，200=全白
+    /// </summary>
+    private static Color ApplyBrightness(Color color, int brightness)
+    {
+        double factor = brightness / 100.0;
+        return Color.FromRgb(
+            (byte)Math.Min(255, color.R * factor),
+            (byte)Math.Min(255, color.G * factor),
+            (byte)Math.Min(255, color.B * factor));
     }
 }

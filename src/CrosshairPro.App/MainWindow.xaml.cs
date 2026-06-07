@@ -165,8 +165,14 @@ public partial class MainWindow : Window
         double cy = canvas.ActualHeight / 2;
 
         var cfg = _viewModel.Config;
-        var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(cfg.Color));
-        brush.Opacity = cfg.Opacity / 100.0;
+
+        // 透明度：Canvas 整体透明
+        canvas.Opacity = cfg.Opacity / 100.0;
+
+        // 亮度：调整颜色明暗
+        var baseColor = (Color)ColorConverter.ConvertFromString(cfg.Color);
+        var color = ApplyBrightness(baseColor, cfg.Brightness);
+        var brush = new SolidColorBrush(color);
         var outlineBrush = Brushes.Black;
         bool hasOutline = cfg.Effects.Outline.Enabled;
 
@@ -314,6 +320,15 @@ public partial class MainWindow : Window
             _viewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
             _viewModel.StatusMessage = _overlayWindow.IsCrosshairVisible ? "准心已启用" : "准心已禁用";
         });
+    }
+
+    private static Color ApplyBrightness(Color color, int brightness)
+    {
+        double factor = brightness / 100.0;
+        return Color.FromRgb(
+            (byte)Math.Min(255, color.R * factor),
+            (byte)Math.Min(255, color.G * factor),
+            (byte)Math.Min(255, color.B * factor));
     }
 }
 
