@@ -69,7 +69,7 @@
 
             <!-- Right: Control Panel -->
             <Border Grid.Column="1" Style="{StaticResource CardBorder}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="4">
+                <ScrollViewer Style="{StaticResource CustomScrollViewer}" Padding="4">
                     <StackPanel>
                         <!-- Crosshair Style -->
                         <TextBlock Text="STYLE" Style="{StaticResource SectionHeader}"/>

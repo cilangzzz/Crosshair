@@ -60,6 +60,11 @@ public partial class MainViewModel : ObservableObject
     public event EventHandler? ConfigUpdated;
 
     /// <summary>
+    /// 切换准心请求事件 - MainWindow 订阅此事件操作 OverlayWindow
+    /// </summary>
+    public event EventHandler? ToggleCrosshairRequested;
+
+    /// <summary>
     /// 准心样式名称列表
     /// </summary>
     public string[] CrosshairStyleNames { get; } = new[]
@@ -109,6 +114,7 @@ public partial class MainViewModel : ObservableObject
     {
         IsCrosshairVisible = !IsCrosshairVisible;
         StatusMessage = IsCrosshairVisible ? "准心已启用" : "准心已禁用";
+        ToggleCrosshairRequested?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>

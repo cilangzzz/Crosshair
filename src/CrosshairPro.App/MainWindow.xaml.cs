@@ -41,6 +41,13 @@ public partial class MainWindow : Window
             DrawPreview();
         };
 
+        // ViewModel 的 ToggleCrosshairRequested 事件 → 操作覆盖窗口
+        _viewModel.ToggleCrosshairRequested += (s, e) =>
+        {
+            _overlayWindow.ToggleVisibility();
+            _viewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
+        };
+
         // 样式 ComboBox 初始化
         StyleComboBox.ItemsSource = _viewModel.CrosshairStyleNames;
 

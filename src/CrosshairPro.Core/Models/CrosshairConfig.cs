@@ -33,6 +33,9 @@ public partial class CrosshairConfig : ObservableObject
     private int _opacity = 100;
 
     [ObservableProperty]
+    private int _brightness = 100;
+
+    [ObservableProperty]
     private int _centerSize = 4;
 
     [ObservableProperty]
@@ -62,6 +65,7 @@ public partial class CrosshairConfig : ObservableObject
             Thickness = Thickness,
             Color = Color,
             Opacity = Opacity,
+            Brightness = Brightness,
             CenterSize = CenterSize,
             Rotation = Rotation,
             CustomImagePath = CustomImagePath,

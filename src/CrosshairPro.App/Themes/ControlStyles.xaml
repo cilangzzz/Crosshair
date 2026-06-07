@@ -247,28 +247,26 @@
     </Style>
 
     <!-- ── SLIDER ── -->
-    <!-- Uses PART_Track for proper value binding -->
+    <!-- Simple Grid-based template with PART_Track for value binding -->
 
     <Style x:Key="CustomSlider" TargetType="Slider">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
-        <Setter Property="Height" Value="24"/>
+        <Setter Property="Height" Value="28"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Slider">
-                    <Grid VerticalAlignment="Center">
-                        <!-- Track rail background -->
-                        <Border Height="4" VerticalAlignment="Center"
-                                Background="{StaticResource ControlBrush}"
-                                CornerRadius="2"/>
-                        <!-- Track: manages thumb position ↔ slider value -->
+                    <Grid VerticalAlignment="Center" Margin="0,4">
+                        <!-- Track rail -->
+                        <Border x:Name="trackBg" Height="4" VerticalAlignment="Center"
+                                Background="{StaticResource ControlBrush}" CornerRadius="2"/>
+                        <!-- Track element (handles thumb positioning and value changes) -->
                         <Track x:Name="PART_Track" VerticalAlignment="Center">
                             <Track.DecreaseRepeatButton>
                                 <RepeatButton Command="{x:Static Slider.DecreaseLarge}">
                                     <RepeatButton.Template>
                                         <ControlTemplate TargetType="RepeatButton">
-                                            <Border Height="4" Background="{TemplateBinding Foreground}"
-                                                    CornerRadius="2"/>
+                                            <Rectangle Fill="{StaticResource AccentBrush}" RadiusX="2" RadiusY="2"/>
                                         </ControlTemplate>
                                     </RepeatButton.Template>
                                 </RepeatButton>
@@ -277,50 +275,55 @@
                                 <RepeatButton Command="{x:Static Slider.IncreaseLarge}">
                                     <RepeatButton.Template>
                                         <ControlTemplate TargetType="RepeatButton">
-                                            <Border Background="Transparent"/>
+                                            <Rectangle Fill="Transparent"/>
                                         </ControlTemplate>
                                     </RepeatButton.Template>
                                 </RepeatButton>
                             </Track.IncreaseRepeatButton>
                             <Track.Thumb>
-                                <Thumb x:Name="Thumb">
-                                    <Thumb.Template>
-                                        <ControlTemplate TargetType="Thumb">
-                                            <Ellipse x:Name="thumbEllipse"
-                                                     Width="14" Height="14"
-                                                     Fill="{StaticResource AccentBrush}"
-                                                     Stroke="{StaticResource BackgroundBrush}"
-                                                     StrokeThickness="2"/>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Trigger.EnterActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimation Storyboard.TargetName="thumbEllipse"
-                                                                                 Storyboard.TargetProperty="Width"
-                                                                                 To="16" Duration="0:0:0.12"/>
-                                                                <DoubleAnimation Storyboard.TargetName="thumbEllipse"
-                                                                                 Storyboard.TargetProperty="Height"
-                                                                                 To="16" Duration="0:0:0.12"/>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </Trigger.EnterActions>
-                                                    <Trigger.ExitActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimation Storyboard.TargetName="thumbEllipse"
-                                                                                 Storyboard.TargetProperty="Width"
-                                                                                 To="14" Duration="0:0:0.12"/>
-                                                                <DoubleAnimation Storyboard.TargetName="thumbEllipse"
-                                                                                 Storyboard.TargetProperty="Height"
-                                                                                 To="14" Duration="0:0:0.12"/>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </Trigger.ExitActions>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Thumb.Template>
+                                <Thumb Cursor="Hand">
+                                    <Thumb.Style>
+                                        <Style TargetType="Thumb">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Thumb">
+                                                        <Ellipse x:Name="thumbDot" Width="14" Height="14"
+                                                                 Fill="{StaticResource AccentBrush}"
+                                                                 Stroke="{StaticResource BackgroundBrush}"
+                                                                 StrokeThickness="2"/>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Trigger.EnterActions>
+                                                                    <BeginStoryboard>
+                                                                        <Storyboard>
+                                                                            <DoubleAnimation Storyboard.TargetName="thumbDot"
+                                                                                             Storyboard.TargetProperty="Width"
+                                                                                             To="18" Duration="0:0:0.12"/>
+                                                                            <DoubleAnimation Storyboard.TargetName="thumbDot"
+                                                                                             Storyboard.TargetProperty="Height"
+                                                                                             To="18" Duration="0:0:0.12"/>
+                                                                        </Storyboard>
+                                                                    </BeginStoryboard>
+                                                                </Trigger.EnterActions>
+                                                                <Trigger.ExitActions>
+                                                                    <BeginStoryboard>
+                                                                        <Storyboard>
+                                                                            <DoubleAnimation Storyboard.TargetName="thumbDot"
+                                                                                             Storyboard.TargetProperty="Width"
+                                                                                             To="14" Duration="0:0:0.12"/>
+                                                                            <DoubleAnimation Storyboard.TargetName="thumbDot"
+                                                                                             Storyboard.TargetProperty="Height"
+                                                                                             To="14" Duration="0:0:0.12"/>
+                                                                        </Storyboard>
+                                                                    </BeginStoryboard>
+                                                                </Trigger.ExitActions>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Thumb.Style>
                                 </Thumb>
                             </Track.Thumb>
                         </Track>
@@ -502,12 +505,25 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="{StaticResource RadiusSm}"
                                 SnapsToDevicePixels="True"/>
-                        <!-- Contentpresenter for selected item -->
+                        <!-- ToggleButton: covers entire control, triggers IsDropDownOpen -->
+                        <ToggleButton x:Name="toggleButton"
+                                      Grid.ColumnSpan="2"
+                                      IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                      Focusable="False"
+                                      ClickMode="Release">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border Background="Transparent"/>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <!-- Selected item display -->
                         <ContentPresenter x:Name="contentPresenter"
                                           Grid.Column="0"
                                           Margin="{TemplateBinding Padding}"
                                           HorizontalAlignment="Left"
                                           VerticalAlignment="Center"
+                                          IsHitTestVisible="False"
                                           Content="{TemplateBinding SelectionBoxItem}"
                                           ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                                           ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"/>
@@ -515,6 +531,7 @@
                         <Border Grid.Column="1"
                                 Width="24" Margin="0,0,2,0"
                                 Background="Transparent"
+                                IsHitTestVisible="False"
                                 HorizontalAlignment="Right">
                             <Path x:Name="arrow"
                                   Data="M 0,0 L 4,4 L 8,0"
@@ -530,19 +547,19 @@
                         <!-- Popup -->
                         <Popup x:Name="Popup"
                                AllowsTransparency="True"
-                               IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                               IsOpen="{TemplateBinding IsDropDownOpen}"
                                Placement="Bottom"
-                               PopupAnimation="Slide"
                                HorizontalOffset="-1"
-                               VerticalOffset="2">
+                               VerticalOffset="2"
+                               PopupAnimation="Slide">
                             <Border x:Name="dropDownBorder"
-                                    MinWidth="{TemplateBinding ActualWidth}"
-                                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                    MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                    MaxHeight="{Binding MaxDropDownHeight, RelativeSource={RelativeSource TemplatedParent}}"
                                     Background="{StaticResource ControlBrush}"
                                     BorderBrush="{StaticResource BorderBrush}"
                                     BorderThickness="1"
                                     CornerRadius="{StaticResource RadiusSm}">
-                                <ScrollViewer>
+                                <ScrollViewer MaxHeight="{Binding MaxDropDownHeight, RelativeSource={RelativeSource TemplatedParent}}">
                                     <ItemsPresenter/>
                                 </ScrollViewer>
                             </Border>
@@ -570,7 +587,7 @@
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
                         </Trigger>
-                        <!-- DropDown open: highlight border -->
+                        <!-- DropDown open: highlight border + arrow -->
                         <Trigger Property="IsDropDownOpen" Value="True">
                             <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
                             <Setter TargetName="arrow" Property="Stroke" Value="{StaticResource AccentBrush}"/>
@@ -908,6 +925,101 @@
                 </Trigger.ExitActions>
             </Trigger>
         </Style.Triggers>
+    </Style>
+
+    <!-- ── SCROLLBAR (Vertical) ── -->
+    <!-- Thin dark track with accent thumb, auto-hides when not in use -->
+
+    <Style x:Key="CustomScrollBar" TargetType="ScrollBar">
+        <Setter Property="Width" Value="8"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <!-- Track background -->
+                        <Border Grid.Row="1"
+                                Background="{StaticResource ControlBrush}"
+                                CornerRadius="4"
+                                Margin="1,0"/>
+                        <!-- Thumb track -->
+                        <Track x:Name="PART_Track" Grid.Row="1" IsDirectionReversed="True">
+                            <Track.Thumb>
+                                <Thumb x:Name="thumb" Cursor="Hand">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border x:Name="thumbBorder"
+                                                    Background="{StaticResource BorderFocusBrush}"
+                                                    CornerRadius="4"
+                                                    Margin="1,4"/>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Trigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <ColorAnimation Storyboard.TargetName="thumbBorder"
+                                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                                To="#5A5A80" Duration="0:0:0.15"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.EnterActions>
+                                                    <Trigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <ColorAnimation Storyboard.TargetName="thumbBorder"
+                                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                                To="#3D3D60" Duration="0:0:0.15"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.ExitActions>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ScrollViewer style that applies the custom scrollbar -->
+    <Style x:Key="CustomScrollViewer" TargetType="ScrollViewer">
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollViewer">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ScrollContentPresenter Grid.Column="0"
+                                                CanContentScroll="True"
+                                                CanHorizontallyScroll="False"
+                                                CanVerticallyScroll="True"
+                                                Content="{TemplateBinding Content}"
+                                                ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                        <ScrollBar x:Name="PART_VerticalScrollBar"
+                                   Grid.Column="1"
+                                   Orientation="Vertical"
+                                   Value="{TemplateBinding VerticalOffset}"
+                                   ViewportSize="{TemplateBinding ViewportHeight}"
+                                   Maximum="{TemplateBinding ScrollableHeight}"
+                                   Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
+                                   Style="{StaticResource CustomScrollBar}"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
 </ResourceDictionary>
