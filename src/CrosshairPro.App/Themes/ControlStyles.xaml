@@ -8,7 +8,11 @@
     <!-- ═══════════════════════════════════════════════════════════
          CONTROL STYLES — CrosshairPro
          Precision gaming UI, dark-mode, neon accent
+         All hover/focus transitions: 150ms CubicEase
          ═══════════════════════════════════════════════════════════ -->
+
+    <!-- Shared easing for snappy gaming feel -->
+    <CubicEase x:Key="SnappyEase" EasingMode="EaseOut"/>
 
     <!-- ── SECTION HEADER ── -->
     <!-- All-caps label style for control group titles -->
@@ -34,7 +38,7 @@
     </Style>
 
     <!-- ── PRIMARY BUTTON ── -->
-    <!-- Neon green CTA: toggling crosshair, key actions -->
+    <!-- Neon green CTA with smooth color transition -->
 
     <Style x:Key="PrimaryButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
@@ -53,18 +57,46 @@
                             CornerRadius="{StaticResource RadiusSm}"
                             Padding="{TemplateBinding Padding}"
                             SnapsToDevicePixels="True">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <!-- Hover: smooth green → darker green -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource AccentHoverBrush}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#00CC00" Duration="0:0:0.15">
+                                            <ColorAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </ColorAnimation.EasingFunction>
+                                        </ColorAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#00FF00" Duration="0:0:0.15">
+                                            <ColorAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </ColorAnimation.EasingFunction>
+                                        </ColorAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
+                        <!-- Pressed: instant darker -->
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{StaticResource AccentDimBrush}"/>
                         </Trigger>
+                        <!-- Disabled -->
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="border" Property="Background" Value="{StaticResource ControlBrush}"/>
-                            <Setter Property="Foreground" Value="{StaticResource TextDisabledBrush}"/>
+                            <Setter TargetName="content" Property="Opacity" Value="0.4"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -73,7 +105,7 @@
     </Style>
 
     <!-- ── SECONDARY BUTTON ── -->
-    <!-- Dark surface button: save, import, export, reset -->
+    <!-- Dark surface button with animated border highlight -->
 
     <Style x:Key="SecondaryButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource ControlBrush}"/>
@@ -94,16 +126,57 @@
                             CornerRadius="{StaticResource RadiusSm}"
                             Padding="{TemplateBinding Padding}"
                             SnapsToDevicePixels="True">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <!-- Hover: smooth bg + border transition -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBrush}"/>
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BorderFocusBrush}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#262645" Duration="0:0:0.15">
+                                            <ColorAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </ColorAnimation.EasingFunction>
+                                        </ColorAnimation>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#3D3D60" Duration="0:0:0.15">
+                                            <ColorAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </ColorAnimation.EasingFunction>
+                                        </ColorAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#1E1E36" Duration="0:0:0.15">
+                                            <ColorAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </ColorAnimation.EasingFunction>
+                                        </ColorAnimation>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#2A2A4A" Duration="0:0:0.15">
+                                            <ColorAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </ColorAnimation.EasingFunction>
+                                        </ColorAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
+                        <!-- Pressed: instant darker -->
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBrush}"/>
                         </Trigger>
+                        <!-- Disabled -->
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="border" Property="Opacity" Value="0.4"/>
                         </Trigger>
@@ -114,7 +187,7 @@
     </Style>
 
     <!-- ── ACCENT BUTTON ── -->
-    <!-- Purple accent: secondary actions, decorative emphasis -->
+    <!-- Purple accent with smooth hover transition -->
 
     <Style x:Key="AccentButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource SecondaryAccentBrush}"/>
@@ -137,7 +210,32 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource SecondaryAccentHoverBrush}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#9580FF" Duration="0:0:0.15">
+                                            <ColorAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </ColorAnimation.EasingFunction>
+                                        </ColorAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#7B61FF" Duration="0:0:0.15">
+                                            <ColorAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </ColorAnimation.EasingFunction>
+                                        </ColorAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{StaticResource SecondaryAccentBrush}"/>
@@ -149,8 +247,7 @@
     </Style>
 
     <!-- ── SLIDER ── -->
-    <!-- Track + thumb with accent color, compact height -->
-    <!-- Uses PART_Track (WPF named part) for proper value binding -->
+    <!-- Uses PART_Track for proper value binding -->
 
     <Style x:Key="CustomSlider" TargetType="Slider">
         <Setter Property="Background" Value="Transparent"/>
@@ -196,9 +293,30 @@
                                                      StrokeThickness="2"/>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="thumbEllipse" Property="Fill" Value="{StaticResource AccentHoverBrush}"/>
-                                                    <Setter TargetName="thumbEllipse" Property="Width" Value="16"/>
-                                                    <Setter TargetName="thumbEllipse" Property="Height" Value="16"/>
+                                                    <Trigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetName="thumbEllipse"
+                                                                                 Storyboard.TargetProperty="Width"
+                                                                                 To="16" Duration="0:0:0.12"/>
+                                                                <DoubleAnimation Storyboard.TargetName="thumbEllipse"
+                                                                                 Storyboard.TargetProperty="Height"
+                                                                                 To="16" Duration="0:0:0.12"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.EnterActions>
+                                                    <Trigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetName="thumbEllipse"
+                                                                                 Storyboard.TargetProperty="Width"
+                                                                                 To="14" Duration="0:0:0.12"/>
+                                                                <DoubleAnimation Storyboard.TargetName="thumbEllipse"
+                                                                                 Storyboard.TargetProperty="Height"
+                                                                                 To="14" Duration="0:0:0.12"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.ExitActions>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -213,7 +331,7 @@
     </Style>
 
     <!-- ── TEXTBOX ── -->
-    <!-- Dark input with focus border highlight -->
+    <!-- Animated border color on focus/hover -->
 
     <Style x:Key="CustomTextBox" TargetType="TextBox">
         <Setter Property="Background" Value="{StaticResource ControlBrush}"/>
@@ -238,12 +356,61 @@
                                       Margin="{TemplateBinding Padding}"/>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <!-- Focus: smooth accent border -->
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#00FF00" Duration="0:0:0.2">
+                                            <ColorAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </ColorAnimation.EasingFunction>
+                                        </ColorAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#2A2A4A" Duration="0:0:0.2">
+                                            <ColorAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </ColorAnimation.EasingFunction>
+                                        </ColorAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BorderFocusBrush}"/>
-                        </Trigger>
+                        <!-- Hover (when not focused): subtle border highlight -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                                <Condition Property="IsFocused" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#3D3D60" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#2A2A4A" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.ExitActions>
+                        </MultiTrigger>
+                        <!-- Disabled -->
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="border" Property="Opacity" Value="0.4"/>
                         </Trigger>
@@ -253,7 +420,15 @@
         </Setter>
     </Style>
 
+    <!-- Compact numeric TextBox (slider value display) -->
+    <Style x:Key="NumericTextBox" TargetType="TextBox" BasedOn="{StaticResource CustomTextBox}">
+        <Setter Property="Padding" Value="4,3"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+
     <!-- ── COMBOBOX ── -->
+    <!-- Full dark-themed template with dropdown button -->
 
     <Style x:Key="CustomComboBox" TargetType="ComboBox">
         <Setter Property="Background" Value="{StaticResource ControlBrush}"/>
@@ -263,10 +438,160 @@
         <Setter Property="Padding" Value="8,5"/>
         <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="ComboBoxItem">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                    <Setter Property="Padding" Value="8,4"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ComboBoxItem">
+                                <Border x:Name="itemBorder"
+                                        Background="Transparent"
+                                        Padding="{TemplateBinding Padding}"
+                                        SnapsToDevicePixels="True">
+                                    <ContentPresenter/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsHighlighted" Value="True">
+                                        <Setter TargetName="itemBorder" Property="Background" Value="{StaticResource ControlHoverBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <ColorAnimation Storyboard.TargetName="itemBorder"
+                                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                    To="#262645" Duration="0:0:0.1"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                        <Trigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <ColorAnimation Storyboard.TargetName="itemBorder"
+                                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                    To="Transparent" Duration="0:0:0.1"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.ExitActions>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- Main border -->
+                        <Border x:Name="border"
+                                Grid.ColumnSpan="2"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{StaticResource RadiusSm}"
+                                SnapsToDevicePixels="True"/>
+                        <!-- Contentpresenter for selected item -->
+                        <ContentPresenter x:Name="contentPresenter"
+                                          Grid.Column="0"
+                                          Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Center"
+                                          Content="{TemplateBinding SelectionBoxItem}"
+                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                          ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"/>
+                        <!-- Dropdown arrow -->
+                        <Border Grid.Column="1"
+                                Width="24" Margin="0,0,2,0"
+                                Background="Transparent"
+                                HorizontalAlignment="Right">
+                            <Path x:Name="arrow"
+                                  Data="M 0,0 L 4,4 L 8,0"
+                                  Stroke="{StaticResource TextSecondaryBrush}"
+                                  StrokeThickness="1.5"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  Width="8" Height="6"/>
+                        </Border>
+                        <!-- Popup -->
+                        <Popup x:Name="Popup"
+                               AllowsTransparency="True"
+                               IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                               Placement="Bottom"
+                               PopupAnimation="Slide"
+                               HorizontalOffset="-1"
+                               VerticalOffset="2">
+                            <Border x:Name="dropDownBorder"
+                                    MinWidth="{TemplateBinding ActualWidth}"
+                                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                    Background="{StaticResource ControlBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource RadiusSm}">
+                                <ScrollViewer>
+                                    <ItemsPresenter/>
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- Hover border -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#3D3D60" Duration="0:0:0.12"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="border"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#2A2A4A" Duration="0:0:0.12"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <!-- DropDown open: highlight border -->
+                        <Trigger Property="IsDropDownOpen" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                            <Setter TargetName="arrow" Property="Stroke" Value="{StaticResource AccentBrush}"/>
+                        </Trigger>
+                        <!-- Disabled -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Opacity" Value="0.4"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Compact ComboBox variant (for toolbar areas) -->
+    <Style x:Key="CompactComboBox" TargetType="ComboBox" BasedOn="{StaticResource CustomComboBox}">
+        <Setter Property="Padding" Value="6,4"/>
     </Style>
 
     <!-- ── CHECKBOX ── -->
-    <!-- Neon green check mark on dark background -->
+    <!-- Animated check mark with color transition -->
 
     <Style x:Key="CustomCheckBox" TargetType="CheckBox">
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
@@ -290,18 +615,72 @@
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round"
                                   StrokeLineJoin="Round"
                                   VerticalAlignment="Center" HorizontalAlignment="Center"
-                                  Width="14" Height="14"/>
+                                  Width="14" Height="14"
+                                  Opacity="0"/>
                         </Border>
                         <ContentPresenter VerticalAlignment="Center"/>
                     </StackPanel>
                     <ControlTemplate.Triggers>
+                        <!-- Checked: animated border + mark appearance -->
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="checkBorder" Property="Background" Value="{StaticResource AccentTintBrush}"/>
-                            <Setter TargetName="checkBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
-                            <Setter TargetName="checkMark" Property="Stroke" Value="{StaticResource AccentBrush}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="checkBorder"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#00FF00" Duration="0:0:0.15"/>
+                                        <ColorAnimation Storyboard.TargetName="checkBorder"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#0D260D" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="checkMark"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.2">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <ColorAnimation Storyboard.TargetName="checkMark"
+                                                        Storyboard.TargetProperty="(Path.Stroke).(SolidColorBrush.Color)"
+                                                        To="#00FF00" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="checkBorder"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#2A2A4A" Duration="0:0:0.15"/>
+                                        <ColorAnimation Storyboard.TargetName="checkBorder"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#1E1E36" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="checkMark"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
+                        <!-- Hover -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="checkBorder" Property="BorderBrush" Value="{StaticResource BorderFocusBrush}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="checkBorder"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#3D3D60" Duration="0:0:0.12"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="checkBorder"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#2A2A4A" Duration="0:0:0.12"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -310,7 +689,7 @@
     </Style>
 
     <!-- ── EXPANDER ── -->
-    <!-- Minimal header, no border when collapsed -->
+    <!-- Animated arrow rotation on expand/collapse -->
 
     <Style x:Key="CustomExpander" TargetType="Expander">
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
@@ -353,7 +732,7 @@
                                               Margin="0,0,10,0"
                                               RenderTransformOrigin="0.5,0.5">
                                             <Path.RenderTransform>
-                                                <RotateTransform Angle="0"/>
+                                                <RotateTransform x:Name="arrowRotation" Angle="0"/>
                                             </Path.RenderTransform>
                                         </Path>
                                         <!-- Header content -->
@@ -361,15 +740,6 @@
                                                           Content="{Binding Header, RelativeSource={RelativeSource AncestorType=Expander}}"
                                                           VerticalAlignment="Center"/>
                                     </Grid>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="arrow" Property="RenderTransform">
-                                                <Setter.Value>
-                                                    <RotateTransform Angle="90"/>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </ToggleButton.Template>
                         </ToggleButton>
@@ -380,7 +750,34 @@
                                           Visibility="Collapsed"/>
                     </Grid>
                     <ControlTemplate.Triggers>
+                        <!-- Expanded: animate arrow rotation + show content -->
                         <Trigger Property="IsExpanded" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="arrowRotation"
+                                                         Storyboard.TargetProperty="Angle"
+                                                         To="90" Duration="0:0:0.2">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="arrowRotation"
+                                                         Storyboard.TargetProperty="Angle"
+                                                         To="0" Duration="0:0:0.2">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                             <Setter TargetName="ExpandSite" Property="Visibility" Value="Visible"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -390,7 +787,7 @@
     </Style>
 
     <!-- ── COLOR SWATCH RADIO BUTTON ── -->
-    <!-- Circular color picker swatch with selection ring -->
+    <!-- Animated selection ring + hover scale -->
 
     <Style x:Key="ColorSwatchRadio" TargetType="RadioButton">
         <Setter Property="Width" Value="28"/>
@@ -404,7 +801,8 @@
                         <!-- Selection ring -->
                         <Ellipse x:Name="selectionRing"
                                  Width="28" Height="28"
-                                 Stroke="Transparent" StrokeThickness="2"/>
+                                 Stroke="Transparent" StrokeThickness="2"
+                                 Opacity="0"/>
                         <!-- Color fill -->
                         <Ellipse x:Name="colorFill"
                                  Width="20" Height="20"
@@ -412,11 +810,50 @@
                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Grid>
                     <ControlTemplate.Triggers>
+                        <!-- Checked: animated ring appearance -->
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="selectionRing" Property="Stroke" Value="{StaticResource AccentBrush}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="selectionRing"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.15"/>
+                                        <ColorAnimation Storyboard.TargetName="selectionRing"
+                                                        Storyboard.TargetProperty="(Ellipse.Stroke).(SolidColorBrush.Color)"
+                                                        To="#00FF00" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="selectionRing"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
+                        <!-- Hover: subtle scale pulse -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="colorFill" Property="Opacity" Value="0.8"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="colorFill"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0.8" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="colorFill"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -436,13 +873,41 @@
     </Style>
 
     <!-- ── PREVIEW CARD ── -->
-    <!-- Special card for preview area with accent border glow -->
+    <!-- Animated border glow on hover -->
 
     <Style x:Key="PreviewCard" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="{StaticResource RadiusLg}"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                            To="#3D3D60" Duration="0:0:0.25">
+                                <ColorAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </ColorAnimation.EasingFunction>
+                            </ColorAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                            To="#2A2A4A" Duration="0:0:0.25">
+                                <ColorAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </ColorAnimation.EasingFunction>
+                            </ColorAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.ExitActions>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
 </ResourceDictionary>

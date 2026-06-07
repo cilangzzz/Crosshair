@@ -75,6 +75,7 @@
                         <TextBlock Text="STYLE" Style="{StaticResource SectionHeader}"/>
                         <ComboBox x:Name="StyleComboBox"
                                   SelectedIndex="{Binding SelectedStyleIndex, Mode=TwoWay}"
+                                  Style="{StaticResource CustomComboBox}"
                                   Margin="0,0,0,16"/>
 
                         <!-- Size -->
@@ -90,7 +91,7 @@
                                     Style="{StaticResource CustomSlider}"/>
                             <TextBox Grid.Column="1"
                                      Text="{Binding Config.Size, Mode=TwoWay}"
-                                     Style="{StaticResource CustomTextBox}"
+                                     Style="{StaticResource NumericTextBox}"
                                      Margin="8,0,0,0"/>
                         </Grid>
 
@@ -107,7 +108,7 @@
                                     Style="{StaticResource CustomSlider}"/>
                             <TextBox Grid.Column="1"
                                      Text="{Binding Config.Gap, Mode=TwoWay}"
-                                     Style="{StaticResource CustomTextBox}"
+                                     Style="{StaticResource NumericTextBox}"
                                      Margin="8,0,0,0"/>
                         </Grid>
 
@@ -124,7 +125,7 @@
                                     Style="{StaticResource CustomSlider}"/>
                             <TextBox Grid.Column="1"
                                      Text="{Binding Config.Thickness, Mode=TwoWay}"
-                                     Style="{StaticResource CustomTextBox}"
+                                     Style="{StaticResource NumericTextBox}"
                                      Margin="8,0,0,0"/>
                         </Grid>
 
@@ -141,7 +142,7 @@
                                     Style="{StaticResource CustomSlider}"/>
                             <TextBox Grid.Column="1"
                                      Text="{Binding Config.Opacity, Mode=TwoWay}"
-                                     Style="{StaticResource CustomTextBox}"
+                                     Style="{StaticResource NumericTextBox}"
                                      Margin="8,0,0,0"/>
                         </Grid>
 
@@ -158,7 +159,7 @@
                                     Style="{StaticResource CustomSlider}"/>
                             <TextBox Grid.Column="1"
                                      Text="{Binding Config.CenterSize, Mode=TwoWay}"
-                                     Style="{StaticResource CustomTextBox}"
+                                     Style="{StaticResource NumericTextBox}"
                                      Margin="8,0,0,0"/>
                         </Grid>
 
@@ -195,7 +196,7 @@
                                                VerticalAlignment="Center"/>
                                     <TextBox Grid.Column="1"
                                              Text="{Binding Config.Effects.Outline.Thickness, Mode=TwoWay}"
-                                             Style="{StaticResource CustomTextBox}"/>
+                                             Style="{StaticResource NumericTextBox}"/>
                                 </Grid>
                                 <CheckBox Content="Enable Shadow"
                                           IsChecked="{Binding Config.Effects.Shadow.Enabled, Mode=TwoWay}"
@@ -219,7 +220,7 @@
                 <TextBlock Text="PRESET"
                            Style="{StaticResource SectionHeader}"
                            VerticalAlignment="Center" Margin="0,0,8,0"/>
-                <ComboBox Width="150">
+                <ComboBox Width="150" Style="{StaticResource CompactComboBox}">
                     <ComboBoxItem Content="Default" IsSelected="True"/>
                 </ComboBox>
             </StackPanel>
