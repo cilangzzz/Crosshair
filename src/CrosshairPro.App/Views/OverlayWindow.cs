@@ -1,5 +1,8 @@
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using CrosshairPro.Core.Enums;
@@ -15,6 +18,18 @@ public sealed class OverlayWindow : Window
     private readonly Canvas _canvas;
     private readonly CrosshairConfig _config;
     private bool _isVisible = true;
+    private IntPtr _hwnd;
+
+    // Win32 constants
+    private const int GWL_EXSTYLE = -20;
+    private const int WS_EX_TRANSPARENT = 0x00000020;
+    private const int WS_EX_TOOLWINDOW = 0x00000080;
+
+    [DllImport("user32.dll")]
+    private static extern int GetWindowLong(IntPtr hwnd, int index);
+
+    [DllImport("user32.dll")]
+    private static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
 
     public event EventHandler? CrosshairVisibilityChanged;
     public bool IsCrosshairVisible => _isVisible;
@@ -43,7 +58,18 @@ public sealed class OverlayWindow : Window
 
         Content = _canvas;
 
-        // 窗口加载完成后初始渲染
+        // 窗口加载完成后设置 Win32 属性并初始渲染
+        SourceInitialized += (s, e) =>
+        {
+            _hwnd = new WindowInteropHelper(this).Handle;
+
+            // 设置扩展样式：鼠标穿透 + 工具窗口（不影响游戏光标）
+            // 注意：不加 WS_EX_LAYERED，WPF 的 AllowsTransparency 已经处理了分层窗口
+            int exStyle = GetWindowLong(_hwnd, GWL_EXSTYLE);
+            SetWindowLong(_hwnd, GWL_EXSTYLE,
+                exStyle | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW);
+        };
+
         Loaded += (s, e) => RenderCrosshair();
 
         // Config 内部任何属性变化 → 重绘
