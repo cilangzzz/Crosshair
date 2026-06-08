@@ -1,6 +1,10 @@
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using CrosshairPro.App.ViewModels;
@@ -15,6 +19,12 @@ namespace CrosshairPro.App;
 
 public partial class MainWindow : Window
 {
+    // DWM API for window corner rounding (Windows 11+)
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
+    private const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
+    private const int DWMWCP_ROUND = 2;
     private readonly MainViewModel _viewModel;
     private readonly OverlayWindow _overlayWindow;
     private readonly IHotkeyManager _hotkeyManager;
@@ -24,6 +34,9 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        // Apply rounded corners (Windows 11+)
+        SourceInitialized += OnSourceInitialized;
 
         _hotkeyManager = new HotkeyManager();
 
@@ -46,6 +59,39 @@ public partial class MainWindow : Window
         {
             _overlayWindow.ToggleVisibility();
             _viewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
+        };
+
+        // 保存预设 → 弹出命名对话框
+        _viewModel.SavePresetRequested += async (s, e) =>
+        {
+            var name = ShowInputDialog("保存预设", "请输入预设名称:", _viewModel.CurrentPresetName);
+            if (!string.IsNullOrWhiteSpace(name))
+                await _viewModel.SavePresetWithNameAsync(name);
+        };
+
+        // 导入预设 → 打开文件对话框
+        _viewModel.ImportPresetRequested += async (s, e) =>
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "JSON 文件 (*.json)|*.json|所有文件 (*.*)|*.*",
+                Title = "导入预设"
+            };
+            if (dlg.ShowDialog() == true)
+                await _viewModel.ImportPresetFromFileAsync(dlg.FileName);
+        };
+
+        // 导出预设 → 打开保存对话框
+        _viewModel.ExportPresetRequested += async (s, e) =>
+        {
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "JSON 文件 (*.json)|*.json",
+                Title = "导出预设",
+                FileName = _viewModel.CurrentPresetName
+            };
+            if (dlg.ShowDialog() == true)
+                await _viewModel.ExportPresetToFileAsync(dlg.FileName);
         };
 
         // 样式 ComboBox 初始化
@@ -338,6 +384,382 @@ public partial class MainWindow : Window
             (byte)Math.Min(255, color.R * factor),
             (byte)Math.Min(255, color.G * factor),
             (byte)Math.Min(255, color.B * factor));
+    }
+
+    /// <summary>
+    /// 简单的输入对话框
+    /// </summary>
+    private string? ShowInputDialog(string title, string prompt, string defaultValue = "")
+    {
+        // Use design token colors
+        var bgBrush = (SolidColorBrush)FindResource("BackgroundBrush");
+        var surfaceBrush = (SolidColorBrush)FindResource("SurfaceBrush");
+        var controlBrush = (SolidColorBrush)FindResource("ControlBrush");
+        var borderBrush = (SolidColorBrush)FindResource("BorderBrush");
+        var textPrimary = (SolidColorBrush)FindResource("TextPrimaryBrush");
+        var textSecondary = (SolidColorBrush)FindResource("TextSecondaryBrush");
+        var accentBrush = (SolidColorBrush)FindResource("AccentBrush");
+
+        var dialog = new Window
+        {
+            Title = title,
+            Width = 360,
+            Height = 185,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            ResizeMode = ResizeMode.NoResize,
+            WindowStyle = WindowStyle.None,
+            AllowsTransparency = true,
+            Background = Brushes.Transparent,
+            Owner = this
+        };
+
+        var border = new Border
+        {
+            Background = bgBrush,
+            BorderBrush = borderBrush,
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Margin = new Thickness(6),
+            Effect = new System.Windows.Media.Effects.DropShadowEffect
+            {
+                Color = Colors.Black,
+                BlurRadius = 16,
+                ShadowDepth = 2,
+                Opacity = 0.4
+            }
+        };
+
+        var panel = new StackPanel { Margin = new Thickness(16, 12, 16, 12) };
+
+        // Title
+        panel.Children.Add(new TextBlock
+        {
+            Text = title,
+            Foreground = accentBrush,
+            FontSize = 14,
+            FontWeight = FontWeights.SemiBold,
+            FontFamily = new FontFamily("Cascadia Code, Consolas"),
+            Margin = new Thickness(0, 0, 0, 8)
+        });
+
+        // Prompt
+        panel.Children.Add(new TextBlock
+        {
+            Text = prompt,
+            Foreground = textSecondary,
+            FontSize = 12,
+            Margin = new Thickness(0, 0, 0, 6)
+        });
+
+        // Input
+        var textBox = new TextBox
+        {
+            Text = defaultValue,
+            Background = controlBrush,
+            Foreground = textPrimary,
+            CaretBrush = accentBrush,
+            BorderBrush = borderBrush,
+            BorderThickness = new Thickness(1),
+            Padding = new Thickness(8, 5, 8, 5),
+            FontSize = 13,
+            Margin = new Thickness(0, 0, 0, 12)
+        };
+        textBox.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
+        panel.Children.Add(textBox);
+
+        // Buttons
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right
+        };
+
+        string? result = null;
+
+        var cancelBtn = new Button
+        {
+            Content = "Cancel",
+            Padding = new Thickness(16, 6, 16, 6),
+            Margin = new Thickness(0, 0, 8, 0),
+            Background = controlBrush,
+            Foreground = textPrimary,
+            BorderBrush = borderBrush,
+            BorderThickness = new Thickness(1),
+            Cursor = System.Windows.Input.Cursors.Hand
+        };
+        cancelBtn.Click += (s, e) => dialog.Close();
+
+        var okBtn = new Button
+        {
+            Content = "Save",
+            Padding = new Thickness(16, 6, 16, 6),
+            Background = accentBrush,
+            Foreground = Brushes.Black,
+            FontWeight = FontWeights.Bold,
+            BorderThickness = new Thickness(0),
+            Cursor = System.Windows.Input.Cursors.Hand
+        };
+        okBtn.Click += (s, e) => { result = textBox.Text; dialog.Close(); };
+
+        buttonPanel.Children.Add(cancelBtn);
+        buttonPanel.Children.Add(okBtn);
+        panel.Children.Add(buttonPanel);
+
+        border.Child = panel;
+        dialog.Content = border;
+
+        // Enter/Escape key handling
+        textBox.KeyDown += (s, e) =>
+        {
+            if (e.Key == System.Windows.Input.Key.Enter) { result = textBox.Text; dialog.Close(); }
+            if (e.Key == System.Windows.Input.Key.Escape) dialog.Close();
+        };
+
+        dialog.MouseLeftButtonDown += (s, e) => dialog.DragMove();
+
+        textBox.SelectAll();
+        textBox.Focus();
+        dialog.ShowDialog();
+
+        return result;
+    }
+
+    // ── Preset Management Popup ──
+
+    private void PresetManageButton_Click(object sender, RoutedEventArgs e)
+    {
+        var bgBrush = (SolidColorBrush)FindResource("BackgroundBrush");
+        var surfaceBrush = (SolidColorBrush)FindResource("SurfaceBrush");
+        var controlBrush = (SolidColorBrush)FindResource("ControlBrush");
+        var controlHoverBrush = (SolidColorBrush)FindResource("ControlHoverBrush");
+        var borderBrush = (SolidColorBrush)FindResource("BorderBrush");
+        var textPrimary = (SolidColorBrush)FindResource("TextPrimaryBrush");
+        var textSecondary = (SolidColorBrush)FindResource("TextSecondaryBrush");
+        var accentBrush = (SolidColorBrush)FindResource("AccentBrush");
+        var errorColor = (SolidColorBrush)FindResource("ErrorBrush");
+
+        var popup = new Window
+        {
+            Title = "Manage Presets",
+            Width = 340,
+            Height = 360,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            ResizeMode = ResizeMode.NoResize,
+            WindowStyle = WindowStyle.None,
+            AllowsTransparency = true,
+            Background = Brushes.Transparent,
+            Owner = this
+        };
+
+        var outerBorder = new Border
+        {
+            Background = bgBrush,
+            BorderBrush = borderBrush,
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Margin = new Thickness(8),
+            Effect = new System.Windows.Media.Effects.DropShadowEffect
+            {
+                Color = Colors.Black, BlurRadius = 16, ShadowDepth = 2, Opacity = 0.4
+            }
+        };
+
+        var root = new DockPanel { Margin = new Thickness(0) };
+
+        // ── Header ──
+        var header = new DockPanel { Margin = new Thickness(16, 12, 16, 4) };
+        header.Children.Add(new TextBlock
+        {
+            Text = "MANAGE PRESETS",
+            Foreground = accentBrush,
+            FontSize = 13,
+            FontWeight = FontWeights.SemiBold,
+            FontFamily = new FontFamily("Cascadia Code, Consolas"),
+            VerticalAlignment = VerticalAlignment.Center
+        });
+        var closeBtn = new Button
+        {
+            Content = "×", FontSize = 16, FontWeight = FontWeights.Bold,
+            Width = 28, Height = 28, Padding = new Thickness(0),
+            Background = Brushes.Transparent, Foreground = textSecondary,
+            BorderThickness = new Thickness(0), Cursor = System.Windows.Input.Cursors.Hand,
+            HorizontalAlignment = HorizontalAlignment.Right
+        };
+        closeBtn.Click += (s, ev) => popup.Close();
+        DockPanel.SetDock(closeBtn, Dock.Right);
+        header.Children.Add(closeBtn);
+        DockPanel.SetDock(header, Dock.Top);
+        root.Children.Add(header);
+
+        // ── Import / Export (top, below header) ──
+        var topBar = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Margin = new Thickness(16, 4, 16, 8)
+        };
+        var importBtn = new Button
+        {
+            Content = "＋ Import", Padding = new Thickness(10, 4, 10, 4),
+            Style = (Style)FindResource("SecondaryButton"), Margin = new Thickness(0, 0, 6, 0)
+        };
+        importBtn.Click += (s, ev) => { popup.Close(); _viewModel.ImportPresetCommand.Execute(null); };
+        var exportBtn = new Button
+        {
+            Content = "↗ Export", Padding = new Thickness(10, 4, 10, 4),
+            Style = (Style)FindResource("SecondaryButton")
+        };
+        exportBtn.Click += (s, ev) => { popup.Close(); _viewModel.ExportPresetCommand.Execute(null); };
+        topBar.Children.Add(importBtn);
+        topBar.Children.Add(exportBtn);
+        DockPanel.SetDock(topBar, Dock.Top);
+        root.Children.Add(topBar);
+
+        // ── Preset list (each item has name + delete × button) ──
+        var listBox = new ListBox
+        {
+            Background = surfaceBrush,
+            Foreground = textPrimary,
+            BorderThickness = new Thickness(0),
+            Margin = new Thickness(16, 0, 16, 16),
+            Padding = new Thickness(0),
+            ItemsSource = _viewModel.Presets,
+            SelectedItem = _viewModel.SelectedPreset
+        };
+
+        // DataTemplate: [Name] ............ [×]
+        var itemTemplate = new DataTemplate();
+        var panelFactory = new FrameworkElementFactory(typeof(DockPanel));
+
+        // Delete button (docked right)
+        var delFactory = new FrameworkElementFactory(typeof(Button));
+        delFactory.SetValue(Button.ContentProperty, "×");
+        delFactory.SetValue(Button.FontSizeProperty, 13.0);
+        delFactory.SetValue(Button.FontWeightProperty, FontWeights.Bold);
+        delFactory.SetValue(Button.WidthProperty, 24.0);
+        delFactory.SetValue(Button.HeightProperty, 24.0);
+        delFactory.SetValue(Button.PaddingProperty, new Thickness(0));
+        delFactory.SetValue(Button.BackgroundProperty, Brushes.Transparent);
+        delFactory.SetValue(Button.ForegroundProperty, errorColor);
+        delFactory.SetValue(Button.BorderThicknessProperty, new Thickness(0.0));
+        delFactory.SetValue(Button.CursorProperty, System.Windows.Input.Cursors.Hand);
+        delFactory.SetValue(Button.VerticalAlignmentProperty, VerticalAlignment.Center);
+        delFactory.SetValue(DockPanel.DockProperty, Dock.Right);
+        delFactory.SetValue(Button.CommandProperty, _viewModel.DeletePresetCommand);
+        delFactory.SetValue(Button.CommandParameterProperty, new Binding());
+        delFactory.AddHandler(Button.ClickEvent, new RoutedEventHandler((s, ev) =>
+        {
+            // Prevent selecting the item when clicking delete
+            ev.Handled = true;
+        }));
+
+        // Name text
+        var textFactory = new FrameworkElementFactory(typeof(TextBlock));
+        textFactory.SetValue(TextBlock.TextProperty, new Binding("Name"));
+        textFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
+        textFactory.SetValue(TextBlock.MarginProperty, new Thickness(12, 0, 8, 0));
+
+        panelFactory.AppendChild(delFactory);
+        panelFactory.AppendChild(textFactory);
+        itemTemplate.VisualTree = panelFactory;
+        listBox.ItemTemplate = itemTemplate;
+
+        // Item container style
+        listBox.ItemContainerStyle = new Style(typeof(ListBoxItem))
+        {
+            Setters =
+            {
+                new Setter(ListBoxItem.PaddingProperty, new Thickness(8, 6, 8, 6)),
+                new Setter(ListBoxItem.ForegroundProperty, textPrimary),
+                new Setter(ListBoxItem.BackgroundProperty, Brushes.Transparent),
+                new Setter(ListBoxItem.BorderThicknessProperty, new Thickness(0)),
+                new Setter(ListBoxItem.TemplateProperty, CreateListBoxItemTemplate(controlBrush, controlHoverBrush))
+            }
+        };
+
+        root.Children.Add(listBox);
+
+        outerBorder.Child = root;
+        popup.Content = outerBorder;
+        popup.MouseLeftButtonDown += (s, ev) => popup.DragMove();
+        popup.ShowDialog();
+    }
+
+    private static ControlTemplate CreateListBoxItemTemplate(Brush bg, Brush hoverBg)
+    {
+        var template = new ControlTemplate(typeof(ListBoxItem));
+        var borderFactory = new FrameworkElementFactory(typeof(Border));
+        borderFactory.Name = "itemBorder";
+        borderFactory.SetValue(Border.BackgroundProperty, bg);
+        borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
+        borderFactory.SetValue(Border.MarginProperty, new Thickness(0, 1, 0, 1));
+
+        var presenter = new FrameworkElementFactory(typeof(ContentPresenter));
+        presenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+        presenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+        borderFactory.AppendChild(presenter);
+
+        template.VisualTree = borderFactory;
+
+        var selectedTrigger = new Trigger { Property = ListBoxItem.IsSelectedProperty, Value = true };
+        selectedTrigger.Setters.Add(new Setter(Border.BackgroundProperty, hoverBg, "itemBorder"));
+        template.Triggers.Add(selectedTrigger);
+
+        return template;
+    }
+
+    // ── Window Chrome ──
+
+    private void OnSourceInitialized(object? sender, EventArgs e)
+    {
+        // Apply rounded corners on Windows 11+
+        try
+        {
+            var hwnd = new WindowInteropHelper(this).Handle;
+            int preference = DWMWCP_ROUND;
+            DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref preference, sizeof(int));
+        }
+        catch
+        {
+            // Not Windows 11+, ignore
+        }
+    }
+
+    // ── Title Bar Button Handlers ──
+
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ClickCount == 2)
+        {
+            // Double-click title bar → toggle maximize
+            ToggleMaximize();
+        }
+        else
+        {
+            DragMove();
+        }
+    }
+
+    private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleMaximize();
+    }
+
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Hide to tray instead of exiting
+        Hide();
+    }
+
+    private void ToggleMaximize()
+    {
+        WindowState = WindowState == WindowState.Maximized
+            ? WindowState.Normal
+            : WindowState.Maximized;
     }
 }
 

@@ -31,6 +31,8 @@ public partial class Preset : ObservableObject
     [ObservableProperty]
     private bool _isDefault;
 
+    public override string ToString() => Name;
+
     /// <summary>
     /// 创建深拷贝
     /// </summary>

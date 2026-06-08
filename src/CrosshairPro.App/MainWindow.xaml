@@ -4,19 +4,30 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:CrosshairPro.App.ViewModels"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="Crosshair Pro" Height="600" Width="900"
         Icon="Assets/app-icon.ico"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BackgroundBrush}"
-        ResizeMode="CanResize"
+        WindowStyle="None"
+        ResizeMode="CanResizeWithGrip"
         MinWidth="800" MinHeight="550">
+
+    <!-- WindowChrome: native resize, no caption area (buttons handle their own clicks) -->
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="0"
+                            GlassFrameThickness="0"
+                            ResizeBorderThickness="6"
+                            CornerRadius="0"
+                            UseAeroCaptionButtons="False"/>
+    </shell:WindowChrome.WindowChrome>
 
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
 
-    <Grid Margin="20">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -24,42 +35,61 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- ── Title Bar ── -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-            <TextBlock Text="CROSSHAIR PRO"
-                       FontSize="{DynamicResource FontSizeDisplay}"
-                       FontWeight="Bold"
-                       Foreground="{DynamicResource AccentBrush}"
-                       FontFamily="{DynamicResource FontFamilyMono}"/>
-            <TextBlock Text=" v1.0"
-                       FontSize="{DynamicResource FontSizeCaption}"
-                       Foreground="{DynamicResource TextSecondaryBrush}"
-                       VerticalAlignment="Bottom" Margin="6,0,0,4"/>
-        </StackPanel>
+        <!-- ══ Custom Title Bar ══ -->
+        <!-- DockPanel: buttons docked RIGHT first, drag fills remaining -->
+        <DockPanel Grid.Row="0" Height="36" LastChildFill="True"
+                   Background="{DynamicResource BackgroundBrush}">
+            <!-- Window buttons (dock right, get mouse priority) -->
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button x:Name="MinimizeButton" Content="&#x2013;"
+                        FontSize="14" FontWeight="Bold"
+                        Width="46" Height="36"
+                        Style="{StaticResource TitleBarButton}"
+                        Click="MinimizeButton_Click"/>
+                <Button x:Name="MaximizeButton" Content="&#x25A1;"
+                        FontSize="12" FontWeight="Bold"
+                        Width="46" Height="36"
+                        Style="{StaticResource TitleBarButton}"
+                        Click="MaximizeButton_Click"/>
+                <Button x:Name="CloseButton" Content="&#x00D7;"
+                        FontSize="16" FontWeight="Bold"
+                        Width="46" Height="36"
+                        Style="{StaticResource TitleBarCloseButton}"
+                        Click="CloseButton_Click"/>
+            </StackPanel>
+            <!-- Drag area (fills remaining space, needs background for hit-testing) -->
+            <Grid MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
+                  Background="Transparent">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0"
+                            IsHitTestVisible="False">
+                    <Image Source="Assets/app-icon.ico" Width="16" Height="16"
+                           Margin="0,0,8,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <TextBlock Text="CROSSHAIR PRO"
+                               FontSize="13" FontWeight="SemiBold"
+                               Foreground="{DynamicResource AccentBrush}"
+                               FontFamily="{DynamicResource FontFamilyMono}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text=" v1.0" FontSize="11"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               VerticalAlignment="Center" Margin="6,0,0,0"/>
+                </StackPanel>
+            </Grid>
+        </DockPanel>
 
-        <!-- ── Main Content ── -->
-        <Grid Grid.Row="1">
+        <!-- ══ Main Content ══ -->
+        <Grid Grid.Row="1" Margin="20,12,20,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="360"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left: Preview Area -->
+            <!-- Preview -->
             <Border Grid.Column="0" Style="{StaticResource PreviewCard}" Margin="0,0,12,0">
                 <Grid x:Name="PreviewContainer">
-                    <TextBlock Text="PREVIEW"
-                               Style="{StaticResource SectionHeader}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Top"
-                               Margin="0,12,0,0"/>
-
-                    <!-- Grid background -->
+                    <TextBlock Text="PREVIEW" Style="{StaticResource SectionHeader}"
+                               HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,12,0,0"/>
                     <Canvas x:Name="GridCanvas" Margin="20,36,20,20" ClipToBounds="True"/>
-
-                    <!-- Crosshair render area -->
                     <Canvas x:Name="CrosshairCanvas" Margin="20,36,20,20" ClipToBounds="True"/>
-
-                    <!-- Status indicator -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10">
                         <TextBlock Text="{Binding StatusMessage}"
                                    Foreground="{DynamicResource TextSecondaryBrush}"
@@ -68,120 +98,58 @@
                 </Grid>
             </Border>
 
-            <!-- Right: Control Panel -->
+            <!-- Control Panel -->
             <Border Grid.Column="1" Style="{StaticResource CardBorder}">
                 <ScrollViewer Style="{StaticResource CustomScrollViewer}" Padding="4">
                     <StackPanel>
-                        <!-- Crosshair Style -->
                         <TextBlock Text="STYLE" Style="{StaticResource SectionHeader}"/>
                         <ComboBox x:Name="StyleComboBox"
                                   SelectedIndex="{Binding SelectedStyleIndex, Mode=TwoWay}"
                                   Style="{StaticResource CustomComboBox}"
                                   Margin="0,0,0,16"/>
 
-                        <!-- Size -->
                         <TextBlock Text="SIZE" Style="{StaticResource SectionHeader}"/>
                         <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="56"/>
-                            </Grid.ColumnDefinitions>
-                            <Slider Grid.Column="0"
-                                    Value="{Binding Config.Size, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="1" Maximum="100"
-                                    Style="{StaticResource CustomSlider}"/>
-                            <TextBox Grid.Column="1"
-                                     Text="{Binding Config.Size, Mode=TwoWay}"
-                                     Style="{StaticResource NumericTextBox}"
-                                     Margin="8,0,0,0"/>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                            <Slider Grid.Column="0" Value="{Binding Config.Size, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="1" Maximum="100" Style="{StaticResource CustomSlider}"/>
+                            <TextBox Grid.Column="1" Text="{Binding Config.Size, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
                         </Grid>
 
-                        <!-- Gap -->
                         <TextBlock Text="GAP" Style="{StaticResource SectionHeader}"/>
                         <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="56"/>
-                            </Grid.ColumnDefinitions>
-                            <Slider Grid.Column="0"
-                                    Value="{Binding Config.Gap, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="0" Maximum="50"
-                                    Style="{StaticResource CustomSlider}"/>
-                            <TextBox Grid.Column="1"
-                                     Text="{Binding Config.Gap, Mode=TwoWay}"
-                                     Style="{StaticResource NumericTextBox}"
-                                     Margin="8,0,0,0"/>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                            <Slider Grid.Column="0" Value="{Binding Config.Gap, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="50" Style="{StaticResource CustomSlider}"/>
+                            <TextBox Grid.Column="1" Text="{Binding Config.Gap, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
                         </Grid>
 
-                        <!-- Thickness -->
                         <TextBlock Text="THICKNESS" Style="{StaticResource SectionHeader}"/>
                         <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="56"/>
-                            </Grid.ColumnDefinitions>
-                            <Slider Grid.Column="0"
-                                    Value="{Binding Config.Thickness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="1" Maximum="10"
-                                    Style="{StaticResource CustomSlider}"/>
-                            <TextBox Grid.Column="1"
-                                     Text="{Binding Config.Thickness, Mode=TwoWay}"
-                                     Style="{StaticResource NumericTextBox}"
-                                     Margin="8,0,0,0"/>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                            <Slider Grid.Column="0" Value="{Binding Config.Thickness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="1" Maximum="10" Style="{StaticResource CustomSlider}"/>
+                            <TextBox Grid.Column="1" Text="{Binding Config.Thickness, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
                         </Grid>
 
-                        <!-- Opacity -->
                         <TextBlock Text="OPACITY" Style="{StaticResource SectionHeader}"/>
                         <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="56"/>
-                            </Grid.ColumnDefinitions>
-                            <Slider Grid.Column="0"
-                                    Value="{Binding Config.Opacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="0" Maximum="100"
-                                    Style="{StaticResource CustomSlider}"/>
-                            <TextBox Grid.Column="1"
-                                     Text="{Binding Config.Opacity, Mode=TwoWay}"
-                                     Style="{StaticResource NumericTextBox}"
-                                     Margin="8,0,0,0"/>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                            <Slider Grid.Column="0" Value="{Binding Config.Opacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="100" Style="{StaticResource CustomSlider}"/>
+                            <TextBox Grid.Column="1" Text="{Binding Config.Opacity, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
                         </Grid>
 
-                        <!-- Brightness -->
                         <TextBlock Text="BRIGHTNESS" Style="{StaticResource SectionHeader}"/>
                         <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="56"/>
-                            </Grid.ColumnDefinitions>
-                            <Slider Grid.Column="0"
-                                    Value="{Binding Config.Brightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="0" Maximum="200"
-                                    Style="{StaticResource CustomSlider}"/>
-                            <TextBox Grid.Column="1"
-                                     Text="{Binding Config.Brightness, Mode=TwoWay}"
-                                     Style="{StaticResource NumericTextBox}"
-                                     Margin="8,0,0,0"/>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                            <Slider Grid.Column="0" Value="{Binding Config.Brightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="200" Style="{StaticResource CustomSlider}"/>
+                            <TextBox Grid.Column="1" Text="{Binding Config.Brightness, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
                         </Grid>
 
-                        <!-- Center Size -->
                         <TextBlock Text="CENTER SIZE" Style="{StaticResource SectionHeader}"/>
                         <Grid Margin="0,0,0,16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="56"/>
-                            </Grid.ColumnDefinitions>
-                            <Slider Grid.Column="0"
-                                    Value="{Binding Config.CenterSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="0" Maximum="30"
-                                    Style="{StaticResource CustomSlider}"/>
-                            <TextBox Grid.Column="1"
-                                     Text="{Binding Config.CenterSize, Mode=TwoWay}"
-                                     Style="{StaticResource NumericTextBox}"
-                                     Margin="8,0,0,0"/>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                            <Slider Grid.Column="0" Value="{Binding Config.CenterSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="30" Style="{StaticResource CustomSlider}"/>
+                            <TextBox Grid.Column="1" Text="{Binding Config.CenterSize, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
                         </Grid>
 
-                        <!-- Color -->
                         <TextBlock Text="COLOR" Style="{StaticResource SectionHeader}"/>
                         <ItemsControl ItemsSource="{Binding PresetColors}" Margin="0,0,0,16">
                             <ItemsControl.ItemsPanel>
@@ -197,28 +165,16 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <!-- Advanced Settings -->
                         <TextBlock Text="ADVANCED" Style="{StaticResource SectionHeader}"/>
                         <Expander Header="Effects" Margin="0,0,0,12">
                             <StackPanel Margin="0,8,0,0">
-                                <CheckBox Content="Enable Outline"
-                                          IsChecked="{Binding Config.Effects.Outline.Enabled, Mode=TwoWay}"
-                                          Margin="0,4"/>
+                                <CheckBox Content="Enable Outline" IsChecked="{Binding Config.Effects.Outline.Enabled, Mode=TwoWay}" Margin="0,4"/>
                                 <Grid Margin="24,4,0,12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="56"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Outline Thickness"
-                                               Foreground="{DynamicResource TextSecondaryBrush}"
-                                               VerticalAlignment="Center"/>
-                                    <TextBox Grid.Column="1"
-                                             Text="{Binding Config.Effects.Outline.Thickness, Mode=TwoWay}"
-                                             Style="{StaticResource NumericTextBox}"/>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Outline Thickness" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Column="1" Text="{Binding Config.Effects.Outline.Thickness, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
                                 </Grid>
-                                <CheckBox Content="Enable Shadow"
-                                          IsChecked="{Binding Config.Effects.Shadow.Enabled, Mode=TwoWay}"
-                                          Margin="0,4"/>
+                                <CheckBox Content="Enable Shadow" IsChecked="{Binding Config.Effects.Shadow.Enabled, Mode=TwoWay}" Margin="0,4"/>
                             </StackPanel>
                         </Expander>
                     </StackPanel>
@@ -226,47 +182,49 @@
             </Border>
         </Grid>
 
-        <!-- ── Bottom Toolbar ── -->
-        <Grid Grid.Row="2" Margin="0,16,0,0">
+        <!-- ══ Bottom Toolbar ══ -->
+        <Grid Grid.Row="2" Margin="20,16,20,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-
+            <!-- Left: Preset selector + Edit button -->
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="PRESET"
-                           Style="{StaticResource SectionHeader}"
+                <TextBlock Text="PRESET" Style="{StaticResource SectionHeader}"
                            VerticalAlignment="Center" Margin="0,0,8,0"/>
-                <ComboBox Width="150" Style="{StaticResource CompactComboBox}">
-                    <ComboBoxItem Content="Default" IsSelected="True"/>
-                </ComboBox>
+                <ComboBox Width="140" Style="{StaticResource CompactComboBox}"
+                          ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}"
+                          DisplayMemberPath="Name" Margin="0,0,4,0"/>
+                <Button Content="&#x270E;" FontSize="14"
+                        Width="32" Height="32"
+                        Style="{StaticResource SecondaryButton}"
+                        Padding="0" Click="PresetManageButton_Click"
+                        ToolTip="Manage Presets"/>
             </StackPanel>
-
+            <!-- Right: Save, Reset, Toggle -->
             <StackPanel Grid.Column="2" Orientation="Horizontal">
-                <Button Content="Save" Style="{StaticResource SecondaryButton}" Margin="0,0,6,0"/>
-                <Button Content="Import" Style="{StaticResource SecondaryButton}" Margin="0,0,6,0"/>
-                <Button Content="Export" Style="{StaticResource SecondaryButton}" Margin="0,0,6,0"/>
-                <Button Content="Reset" Command="{Binding ResetConfigCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0"/>
-                <Button Content="Toggle" Command="{Binding ToggleCrosshairCommand}" Style="{StaticResource PrimaryButton}"/>
+                <Button Content="Save" Command="{Binding SavePresetCommand}"
+                        Style="{StaticResource SecondaryButton}" Margin="0,0,6,0"/>
+                <Button Content="Reset" Command="{Binding ResetConfigCommand}"
+                        Style="{StaticResource SecondaryButton}" Margin="0,0,10,0"/>
+                <Button Content="Toggle" Command="{Binding ToggleCrosshairCommand}"
+                        Style="{StaticResource PrimaryButton}"/>
             </StackPanel>
         </Grid>
 
-        <!-- ── Status Bar ── -->
-        <Border Grid.Row="3" Margin="0,12,0,0"
+        <!-- ══ Status Bar ══ -->
+        <Border Grid.Row="3" Margin="20,12,20,16"
                 Background="{DynamicResource SurfaceBrush}"
-                CornerRadius="{StaticResource RadiusSm}"
-                Padding="12,6">
+                CornerRadius="{StaticResource RadiusSm}" Padding="12,6">
             <Grid>
                 <TextBlock Text="{Binding StatusMessage}"
                            Foreground="{DynamicResource TextSecondaryBrush}"
-                           FontSize="{DynamicResource FontSizeCaption}"
-                           HorizontalAlignment="Left"/>
+                           FontSize="{DynamicResource FontSizeCaption}" HorizontalAlignment="Left"/>
                 <TextBlock Text="Ctrl+Shift+X Toggle"
                            Foreground="{DynamicResource TextSecondaryBrush}"
                            FontSize="{DynamicResource FontSizeCaption}"
-                           FontFamily="{DynamicResource FontFamilyMono}"
-                           HorizontalAlignment="Right"/>
+                           FontFamily="{DynamicResource FontFamilyMono}" HorizontalAlignment="Right"/>
             </Grid>
         </Border>
     </Grid>
