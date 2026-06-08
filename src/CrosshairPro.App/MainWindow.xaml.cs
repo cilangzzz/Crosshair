@@ -25,6 +25,13 @@ public partial class MainWindow : Window
 
     private const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
     private const int DWMWCP_ROUND = 2;
+
+    // Win32 cursor position
+    [DllImport("user32.dll")]
+    private static extern bool GetCursorPos(out POINT lpPoint);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT { public int X; public int Y; }
     private readonly MainViewModel _viewModel;
     private readonly OverlayWindow _overlayWindow;
     private readonly IHotkeyManager _hotkeyManager;
@@ -59,6 +66,22 @@ public partial class MainWindow : Window
         {
             _overlayWindow.ToggleVisibility();
             _viewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
+        };
+
+        // 选择自定义图片 → 打开文件对话框
+        _viewModel.SelectImageRequested += (s, e) =>
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "图片文件 (*.png;*.jpg;*.bmp)|*.png;*.jpg;*.bmp|所有文件 (*.*)|*.*",
+                Title = "选择准心图片"
+            };
+            if (dlg.ShowDialog() == true)
+            {
+                _viewModel.Config.CustomImagePath = dlg.FileName;
+                _overlayWindow.UpdateConfig(_viewModel.Config);
+                DrawPreview();
+            }
         };
 
         // 保存预设 → 弹出命名对话框
@@ -119,7 +142,13 @@ public partial class MainWindow : Window
     {
         _trayIcon = new TaskbarIcon
         {
-            ToolTipText = "Crosshair Pro - 准心已启用",
+            ToolTipText = "Crosshair Pro",
+            TrayToolTip = new ToolTip
+            {
+                Content = "Crosshair Pro",
+                Background = (SolidColorBrush)FindResource("SurfaceBrush"),
+                Foreground = (SolidColorBrush)FindResource("TextPrimaryBrush")
+            },
             DoubleClickCommand = new RelayCommand(() => ShowMainWindow())
         };
 
@@ -139,7 +168,16 @@ public partial class MainWindow : Window
         }
 
         // 右键菜单
-        var menu = new ContextMenu { StaysOpen = false };
+        var menu = new ContextMenu();
+        // 在 Resources 中覆盖 Separator 样式，消除白线
+        var sepBorder = new FrameworkElementFactory(typeof(Border));
+        sepBorder.SetValue(Border.HeightProperty, 1.0);
+        sepBorder.SetValue(Border.BackgroundProperty, (SolidColorBrush)FindResource("BorderBrush"));
+        sepBorder.SetValue(Border.MarginProperty, new Thickness(8, 4, 8, 4));
+        var sepTemplate = new ControlTemplate(typeof(Separator)) { VisualTree = sepBorder };
+        var sepStyle = new Style(typeof(Separator));
+        sepStyle.Setters.Add(new Setter(Separator.TemplateProperty, sepTemplate));
+        menu.Resources[typeof(Separator)] = sepStyle;
 
         var showItem = new MenuItem { Header = "打开主窗口" };
         showItem.Click += (s, e) => ShowMainWindow();
@@ -159,7 +197,30 @@ public partial class MainWindow : Window
         exitItem.Click += (s, e) => ReallyExit();
         menu.Items.Add(exitItem);
 
-        _trayIcon.ContextMenu = menu;
+        // 手动处理右键：定位到鼠标位置（像素→WPF单位）
+        _trayIcon.TrayRightMouseDown += (s, e) =>
+        {
+            GetCursorPos(out var pos);
+            var source = PresentationSource.FromVisual(this);
+            if (source?.CompositionTarget != null)
+            {
+                var transform = source.CompositionTarget.TransformFromDevice;
+                var wpfPos = transform.Transform(new System.Windows.Point(pos.X, pos.Y));
+                menu.HorizontalOffset = wpfPos.X;
+                menu.VerticalOffset = wpfPos.Y;
+            }
+            else
+            {
+                menu.HorizontalOffset = pos.X;
+                menu.VerticalOffset = pos.Y;
+            }
+            menu.Placement = System.Windows.Controls.Primitives.PlacementMode.AbsolutePoint;
+            menu.StaysOpen = true;
+            menu.IsOpen = true;
+        };
+
+        // 关键：在 Opened 事件中重新设置 StaysOpen=false，WPF 才会绑定外部点击关闭逻辑
+        menu.Opened += (s, e) => menu.StaysOpen = false;
     }
 
     /// <summary>
@@ -262,7 +323,8 @@ public partial class MainWindow : Window
                     DrawDot(canvas, cx, cy, cfg.CenterSize / 2.0, brush, false, outlineBrush, cfg, shapeOpacity);
                 break;
             case CrosshairStyle.TShape:
-                DrawLine(canvas, cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                // 倒T形：竖线朝下（FPS标准）
+                DrawLine(canvas, cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
                 DrawLine(canvas, cx - halfGap - halfSize, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
                 break;
             case CrosshairStyle.XShape:
@@ -274,10 +336,17 @@ public partial class MainWindow : Window
                 DrawLine(canvas, cx + off, cy + off, cx + off + len, cy + off + len, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
                 break;
             case CrosshairStyle.CustomImage:
-                DrawLine(canvas, cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                DrawLine(canvas, cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                DrawLine(canvas, cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                DrawLine(canvas, cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                if (!string.IsNullOrEmpty(cfg.CustomImagePath) && File.Exists(cfg.CustomImagePath))
+                {
+                    DrawImage(canvas, cx, cy, cfg.CustomImagePath, size, shapeOpacity);
+                }
+                else
+                {
+                    DrawLine(canvas, cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                    DrawLine(canvas, cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                    DrawLine(canvas, cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                    DrawLine(canvas, cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
+                }
                 break;
         }
     }
@@ -332,6 +401,41 @@ public partial class MainWindow : Window
             Margin = new Thickness(cx - radius, cy - radius, 0, 0),
             Opacity = opacity
         });
+    }
+
+    private void DrawImage(Canvas c, double cx, double cy, string path, double size, double opacity)
+    {
+        try
+        {
+            var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+            bitmap.BeginInit();
+            bitmap.UriSource = new Uri(path, UriKind.Absolute);
+            bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+            bitmap.EndInit();
+            bitmap.Freeze();
+
+            double scale = size / Math.Max(bitmap.PixelWidth, bitmap.PixelHeight);
+            double w = bitmap.PixelWidth * scale;
+            double h = bitmap.PixelHeight * scale;
+
+            var image = new System.Windows.Controls.Image
+            {
+                Source = bitmap,
+                Width = w,
+                Height = h,
+                Opacity = opacity
+            };
+
+            Canvas.SetLeft(image, cx - w / 2);
+            Canvas.SetTop(image, cy - h / 2);
+            c.Children.Add(image);
+        }
+        catch
+        {
+            // 图片加载失败时回退到十字
+            DrawLine(c, cx - 10, cy, cx + 10, cy, Brushes.Red, 2, false, Brushes.Black, new CrosshairConfig(), opacity);
+            DrawLine(c, cx, cy - 10, cx, cy + 10, Brushes.Red, 2, false, Brushes.Black, new CrosshairConfig(), opacity);
+        }
     }
 
     private void RegisterHotkeys()
@@ -522,6 +626,224 @@ public partial class MainWindow : Window
         dialog.ShowDialog();
 
         return result;
+    }
+
+    // ── Custom Color Picker ──
+
+    private void CustomColor_Click(object sender, RoutedEventArgs e)
+    {
+        var color = ShowColorPickerDialog();
+        if (color != null)
+        {
+            _viewModel.SetColorCommand.Execute(color);
+            // Update the custom radio button's foreground to show selected color
+            if (sender is RadioButton rb)
+                rb.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
+        }
+    }
+
+    private string? ShowColorPickerDialog()
+    {
+        var bgBrush = (SolidColorBrush)FindResource("BackgroundBrush");
+        var surfaceBrush = (SolidColorBrush)FindResource("SurfaceBrush");
+        var controlBrush = (SolidColorBrush)FindResource("ControlBrush");
+        var borderBrush = (SolidColorBrush)FindResource("BorderBrush");
+        var textPrimary = (SolidColorBrush)FindResource("TextPrimaryBrush");
+        var textSecondary = (SolidColorBrush)FindResource("TextSecondaryBrush");
+        var accentBrush = (SolidColorBrush)FindResource("AccentBrush");
+
+        // Parse current color
+        byte r = 0, g = 255, b = 0;
+        try
+        {
+            var c = (Color)ColorConverter.ConvertFromString(_viewModel.Config.Color);
+            r = c.R; g = c.G; b = c.B;
+        }
+        catch { }
+
+        var dialog = new Window
+        {
+            Title = "Pick Color",
+            Width = 300,
+            Height = 340,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            ResizeMode = ResizeMode.NoResize,
+            WindowStyle = WindowStyle.None,
+            AllowsTransparency = true,
+            Background = Brushes.Transparent,
+            Owner = this
+        };
+
+        var outer = new Border
+        {
+            Background = bgBrush,
+            BorderBrush = borderBrush,
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Margin = new Thickness(6),
+            Effect = new System.Windows.Media.Effects.DropShadowEffect
+            {
+                Color = Colors.Black, BlurRadius = 16, ShadowDepth = 2, Opacity = 0.4
+            }
+        };
+
+        var panel = new StackPanel { Margin = new Thickness(16, 12, 16, 12) };
+
+        // Title
+        panel.Children.Add(new TextBlock
+        {
+            Text = "CUSTOM COLOR",
+            Foreground = accentBrush,
+            FontSize = 13,
+            FontWeight = FontWeights.SemiBold,
+            FontFamily = new FontFamily("Cascadia Code, Consolas"),
+            Margin = new Thickness(0, 0, 0, 12)
+        });
+
+        // Color preview
+        var preview = new Border
+        {
+            Height = 40,
+            CornerRadius = new CornerRadius(6),
+            Background = new SolidColorBrush(Color.FromRgb(r, g, b)),
+            BorderBrush = borderBrush,
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(0, 0, 0, 12)
+        };
+        panel.Children.Add(preview);
+
+        // RGB sliders
+        var rSlider = AddColorSlider(panel, "R", r, textPrimary, textSecondary, controlBrush, accentBrush);
+        var gSlider = AddColorSlider(panel, "G", g, textPrimary, textSecondary, controlBrush, accentBrush);
+        var bSlider = AddColorSlider(panel, "B", b, textPrimary, textSecondary, controlBrush, accentBrush);
+
+        // Hex input
+        var hexPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 12) };
+        hexPanel.Children.Add(new TextBlock
+        {
+            Text = "#", Foreground = textSecondary, FontSize = 13,
+            VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 4, 0)
+        });
+        var hexBox = new TextBox
+        {
+            Text = $"{r:X2}{g:X2}{b:X2}",
+            Width = 80,
+            Background = controlBrush,
+            Foreground = textPrimary,
+            BorderBrush = borderBrush,
+            BorderThickness = new Thickness(1),
+            Padding = new Thickness(6, 4, 6, 4),
+            FontFamily = new FontFamily("Cascadia Code, Consolas"),
+            MaxLength = 6
+        };
+        hexPanel.Children.Add(hexBox);
+        panel.Children.Add(hexPanel);
+
+        // Update preview from sliders
+        void UpdatePreview()
+        {
+            var color = Color.FromRgb((byte)rSlider.Value, (byte)gSlider.Value, (byte)bSlider.Value);
+            preview.Background = new SolidColorBrush(color);
+            hexBox.Text = $"{color.R:X2}{color.G:X2}{color.B:X2}";
+        }
+        rSlider.ValueChanged += (s, ev) => UpdatePreview();
+        gSlider.ValueChanged += (s, ev) => UpdatePreview();
+        bSlider.ValueChanged += (s, ev) => UpdatePreview();
+
+        // Hex input → sliders
+        hexBox.TextChanged += (s, ev) =>
+        {
+            if (hexBox.Text.Length == 6)
+            {
+                try
+                {
+                    var c = (Color)ColorConverter.ConvertFromString("#" + hexBox.Text);
+                    rSlider.Value = c.R;
+                    gSlider.Value = c.G;
+                    bSlider.Value = c.B;
+                }
+                catch { }
+            }
+        };
+
+        // Buttons
+        var btnPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+        string? result = null;
+
+        var cancelBtn = new Button
+        {
+            Content = "Cancel",
+            Style = (Style)FindResource("SecondaryButton"),
+            Margin = new Thickness(0, 0, 8, 0)
+        };
+        cancelBtn.Click += (s, ev) => dialog.Close();
+
+        var okBtn = new Button
+        {
+            Content = "OK",
+            Style = (Style)FindResource("PrimaryButton")
+        };
+        okBtn.Click += (s, ev) =>
+        {
+            var c = Color.FromRgb((byte)rSlider.Value, (byte)gSlider.Value, (byte)bSlider.Value);
+            result = $"#{c.R:X2}{c.G:X2}{c.B:X2}";
+            dialog.Close();
+        };
+
+        btnPanel.Children.Add(cancelBtn);
+        btnPanel.Children.Add(okBtn);
+        panel.Children.Add(btnPanel);
+
+        outer.Child = panel;
+        dialog.Content = outer;
+        dialog.MouseLeftButtonDown += (s, ev) => dialog.DragMove();
+        dialog.ShowDialog();
+
+        return result;
+    }
+
+    private static Slider AddColorSlider(Panel parent, string label, byte value,
+        Brush textPrimary, Brush textSecondary, Brush controlBrush, Brush accentBrush)
+    {
+        var row = new Grid { Margin = new Thickness(0, 2, 0, 2) };
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(20) });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(40) });
+
+        row.Children.Add(new TextBlock
+        {
+            Text = label,
+            Foreground = textSecondary,
+            FontSize = 12,
+            FontWeight = FontWeights.SemiBold,
+            VerticalAlignment = VerticalAlignment.Center
+        });
+
+        var slider = new Slider
+        {
+            Minimum = 0, Maximum = 255, Value = value,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(8, 0, 8, 0),
+            Foreground = accentBrush
+        };
+        Grid.SetColumn(slider, 1);
+        row.Children.Add(slider);
+
+        var valText = new TextBlock
+        {
+            Text = value.ToString(),
+            Foreground = textPrimary,
+            FontSize = 12,
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Right
+        };
+        Grid.SetColumn(valText, 2);
+        row.Children.Add(valText);
+
+        slider.ValueChanged += (s, e) => valText.Text = ((int)e.NewValue).ToString();
+
+        parent.Children.Add(row);
+        return slider;
     }
 
     // ── Preset Management Popup ──

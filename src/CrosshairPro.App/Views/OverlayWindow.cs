@@ -132,7 +132,8 @@ public sealed class OverlayWindow : Window
                 break;
 
             case CrosshairStyle.TShape:
-                AddLine(cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                // 倒T形：竖线朝下（FPS标准，不遮挡目标上方）
+                AddLine(cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, shapeOpacity);
                 AddLine(cx - halfGap - halfSize, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, shapeOpacity);
                 break;
 
@@ -146,10 +147,18 @@ public sealed class OverlayWindow : Window
                 break;
 
             case CrosshairStyle.CustomImage:
-                AddLine(cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, shapeOpacity);
-                AddLine(cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, shapeOpacity);
-                AddLine(cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, shapeOpacity);
-                AddLine(cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                if (!string.IsNullOrEmpty(_config.CustomImagePath) && File.Exists(_config.CustomImagePath))
+                {
+                    AddImage(cx, cy, _config.CustomImagePath, size, shapeOpacity);
+                }
+                else
+                {
+                    // 未设置图片时回退到十字
+                    AddLine(cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                    AddLine(cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                    AddLine(cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                    AddLine(cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, shapeOpacity);
+                }
                 break;
         }
     }
@@ -228,6 +237,43 @@ public sealed class OverlayWindow : Window
             Margin = new Thickness(cx - radius, cy - radius, 0, 0),
             Opacity = opacity
         });
+    }
+
+    private void AddImage(double cx, double cy, string path, double size, double opacity)
+    {
+        try
+        {
+            var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+            bitmap.BeginInit();
+            bitmap.UriSource = new Uri(path, UriKind.Absolute);
+            bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+            bitmap.EndInit();
+            bitmap.Freeze();
+
+            double scale = size / Math.Max(bitmap.PixelWidth, bitmap.PixelHeight);
+            double w = bitmap.PixelWidth * scale;
+            double h = bitmap.PixelHeight * scale;
+
+            var image = new System.Windows.Controls.Image
+            {
+                Source = bitmap,
+                Width = w,
+                Height = h,
+                Opacity = opacity
+            };
+
+            Canvas.SetLeft(image, cx - w / 2);
+            Canvas.SetTop(image, cy - h / 2);
+            _canvas.Children.Add(image);
+        }
+        catch
+        {
+            // 图片加载失败时回退到十字
+            var brush = new SolidColorBrush(Colors.Red);
+            brush.Freeze();
+            AddLine(cx - 10, cy, cx + 10, cy, brush, 2, false, Brushes.Black, opacity);
+            AddLine(cx, cy - 10, cx, cy + 10, brush, 2, false, Brushes.Black, opacity);
+        }
     }
 
     /// <summary>

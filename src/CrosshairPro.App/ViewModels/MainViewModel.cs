@@ -79,6 +79,17 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void SetColor(string color) => Config.Color = color;
 
+    /// <summary>
+    /// 选择自定义图片（通知 MainWindow 打开文件对话框）
+    /// </summary>
+    [RelayCommand]
+    private void SelectImage()
+    {
+        SelectImageRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    public event EventHandler? SelectImageRequested;
+
     [RelayCommand]
     private void ToggleCrosshair()
     {

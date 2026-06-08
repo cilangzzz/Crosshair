@@ -106,7 +106,23 @@
                         <ComboBox x:Name="StyleComboBox"
                                   SelectedIndex="{Binding SelectedStyleIndex, Mode=TwoWay}"
                                   Style="{StaticResource CustomComboBox}"
-                                  Margin="0,0,0,16"/>
+                                  Margin="0,0,0,8"/>
+
+                        <!-- 选择自定义图片按钮：SelectedStyleIndex==5 时可见 -->
+                        <Button Content="选择图片..."
+                                Command="{Binding SelectImageCommand}"
+                                Margin="0,0,0,16"
+                                Visibility="Collapsed">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedStyleIndex}" Value="5">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
 
                         <TextBlock Text="SIZE" Style="{StaticResource SectionHeader}"/>
                         <Grid Margin="0,0,0,12">
@@ -151,19 +167,41 @@
                         </Grid>
 
                         <TextBlock Text="COLOR" Style="{StaticResource SectionHeader}"/>
-                        <ItemsControl ItemsSource="{Binding PresetColors}" Margin="0,0,0,16">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <RadioButton Foreground="{Binding}"
-                                                 Style="{StaticResource ColorSwatchRadio}"
-                                                 Command="{Binding DataContext.SetColorCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                 CommandParameter="{Binding}"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <WrapPanel Margin="0,0,0,16">
+                            <!-- Preset colors (RadioButton group) -->
+                            <ItemsControl ItemsSource="{Binding PresetColors}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <RadioButton Foreground="{Binding}"
+                                                     GroupName="CrosshairColor"
+                                                     Style="{StaticResource ColorSwatchRadio}"
+                                                     Command="{Binding DataContext.SetColorCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                     CommandParameter="{Binding}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <!-- Custom color button -->
+                            <RadioButton GroupName="CrosshairColor"
+                                         x:Name="CustomColorRadio"
+                                         Style="{StaticResource ColorSwatchRadio}"
+                                         Click="CustomColor_Click"
+                                         ToolTip="Custom Color">
+                                <RadioButton.Foreground>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#FF0000" Offset="0"/>
+                                        <GradientStop Color="#FFFF00" Offset="0.17"/>
+                                        <GradientStop Color="#00FF00" Offset="0.33"/>
+                                        <GradientStop Color="#00FFFF" Offset="0.5"/>
+                                        <GradientStop Color="#0000FF" Offset="0.67"/>
+                                        <GradientStop Color="#FF00FF" Offset="0.83"/>
+                                        <GradientStop Color="#FF0000" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </RadioButton.Foreground>
+                            </RadioButton>
+                        </WrapPanel>
 
                         <TextBlock Text="ADVANCED" Style="{StaticResource SectionHeader}"/>
                         <Expander Header="Effects" Margin="0,0,0,12">
