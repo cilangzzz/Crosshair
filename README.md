@@ -88,6 +88,10 @@ dotnet run --project src/CrosshairPro.App
 |------|--------|
 | 显示/隐藏准心 | Ctrl+Shift+X |
 
+## 使用截图
+
+![CrosshairPro 使用界面](docs/images/usage.png)
+
 ## 性能指标
 
 | 指标 | 目标值 |
