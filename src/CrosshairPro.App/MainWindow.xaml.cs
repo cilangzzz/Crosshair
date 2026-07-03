@@ -13,7 +13,6 @@ using CrosshairPro.App.Views;
 using CrosshairPro.Core.Enums;
 using CrosshairPro.Core.Interfaces;
 using CrosshairPro.Core.Models;
-using CrosshairPro.Infrastructure.Hotkey;
 using Hardcodet.Wpf.TaskbarNotification;
 
 namespace CrosshairPro.App;
@@ -33,26 +32,30 @@ public partial class MainWindow : Window
 
     [StructLayout(LayoutKind.Sequential)]
     private struct POINT { public int X; public int Y; }
+
     private readonly MainViewModel _viewModel;
     private readonly OverlayWindow _overlayWindow;
     private readonly IHotkeyManager _hotkeyManager;
     private TaskbarIcon? _trayIcon;
     private bool _isReallyClosing;
 
-    public MainWindow()
+    public MainWindow(
+        MainViewModel viewModel,
+        OverlayWindow overlayWindow,
+        IHotkeyManager hotkeyManager)
     {
         InitializeComponent();
 
         // Apply rounded corners (Windows 11+)
         SourceInitialized += OnSourceInitialized;
 
-        _hotkeyManager = new HotkeyManager();
+        _hotkeyManager = hotkeyManager;
+        _viewModel = viewModel;
+        _overlayWindow = overlayWindow;
 
-        _viewModel = new MainViewModel();
         DataContext = _viewModel;
 
-        // 覆盖窗口
-        _overlayWindow = new OverlayWindow();
+        // 覆盖窗口事件
         _overlayWindow.CrosshairVisibilityChanged += OnCrosshairVisibilityChanged;
 
         // ViewModel 的 ConfigUpdated 事件 → 同步到覆盖窗口 + 更新预览
@@ -118,6 +121,12 @@ public partial class MainWindow : Window
                 await _viewModel.ExportPresetToFileAsync(dlg.FileName);
         };
 
+        // Toast 提示
+        _viewModel.ToastRequested += (s, message) =>
+        {
+            Dispatcher.Invoke(() => ShowToast(message));
+        };
+
         // 样式 ComboBox 初始化
         StyleComboBox.ItemsSource = _viewModel.CrosshairStyleNames;
 
@@ -157,7 +166,7 @@ public partial class MainWindow : Window
         try
         {
             var iconUri = new Uri("pack://application:,,,/Assets/app-icon.ico", UriKind.Absolute);
-            var iconStream = Application.GetResourceStream(iconUri)?.Stream;
+            var iconStream = System.Windows.Application.GetResourceStream(iconUri)?.Stream;
             if (iconStream != null)
                 _trayIcon.Icon = new System.Drawing.Icon(iconStream);
             else
@@ -235,16 +244,73 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
+    /// 显示悬浮提示（Toast）
+    /// </summary>
+    private void ShowToast(string message)
+    {
+        var bgBrush = (SolidColorBrush)FindResource("SurfaceBrush");
+        var borderBrush = (SolidColorBrush)FindResource("BorderBrush");
+        var textPrimary = (SolidColorBrush)FindResource("TextPrimaryBrush");
+        var accentBrush = (SolidColorBrush)FindResource("AccentBrush");
+
+        var toast = new Border
+        {
+            Background = bgBrush,
+            BorderBrush = borderBrush,
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(6),
+            Padding = new Thickness(12, 8, 12, 8),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Bottom,
+            Margin = new Thickness(0, 0, 0, 40),
+            Effect = new System.Windows.Media.Effects.DropShadowEffect
+            {
+                Color = Colors.Black,
+                BlurRadius = 12,
+                ShadowDepth = 2,
+                Opacity = 0.3
+            }
+        };
+
+        var text = new TextBlock
+        {
+            Text = message,
+            Foreground = textPrimary,
+            FontSize = 13,
+            FontFamily = new FontFamily("Cascadia Code, Consolas")
+        };
+        toast.Child = text;
+
+        // 添加到主容器（假设 RootGrid 是主 Grid）
+        if (RootGrid != null)
+        {
+            RootGrid.Children.Add(toast);
+
+            // 3秒后自动消失
+            var timer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(3)
+            };
+            timer.Tick += (s, e) =>
+            {
+                timer.Stop();
+                RootGrid.Children.Remove(toast);
+            };
+            timer.Start();
+        }
+    }
+
+    /// <summary>
     /// 真正退出程序
     /// </summary>
     private void ReallyExit()
     {
         _isReallyClosing = true;
         _trayIcon?.Dispose();
-        _hotkeyManager.Dispose();
+        // _hotkeyManager 由 DI 容器管理，不需要手动释放
         _overlayWindow.Close();
         Close();
-        Application.Current.Shutdown();
+        System.Windows.Application.Current.Shutdown();
     }
 
     /// <summary>

@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet build *)"
+      "Bash(dotnet build *)",
+      "Bash(taskkill /F /IM CrosshairPro.exe)",
+      "Bash(taskkill //F //IM CrosshairPro.exe)",
+      "Bash(dotnet run *)",
+      "Bash(tasklist)",
+      "Bash(git add *)"
     ]
   }
 }

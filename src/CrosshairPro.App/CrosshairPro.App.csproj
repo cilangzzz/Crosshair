@@ -14,6 +14,7 @@
   <!-- Project references -->
   <ItemGroup>
     <ProjectReference Include="..\CrosshairPro.Core\CrosshairPro.Core.csproj" />
+    <ProjectReference Include="..\CrosshairPro.Application\CrosshairPro.Application.csproj" />
     <ProjectReference Include="..\CrosshairPro.Services\CrosshairPro.Services.csproj" />
     <ProjectReference Include="..\CrosshairPro.Infrastructure\CrosshairPro.Infrastructure.csproj" />
   </ItemGroup>

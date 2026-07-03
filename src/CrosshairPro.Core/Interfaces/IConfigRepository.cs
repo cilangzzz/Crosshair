@@ -34,6 +34,22 @@ public interface IConfigRepository
 }
 
 /// <summary>
+/// 应用状态仓库接口
+/// </summary>
+public interface IAppStateRepository
+{
+    /// <summary>
+    /// 加载应用持久化状态
+    /// </summary>
+    Task<AppPersistedState> LoadStateAsync();
+
+    /// <summary>
+    /// 保存应用持久化状态
+    /// </summary>
+    Task SaveStateAsync(AppPersistedState state);
+}
+
+/// <summary>
 /// 预设仓库接口
 /// </summary>
 public interface IPresetRepository

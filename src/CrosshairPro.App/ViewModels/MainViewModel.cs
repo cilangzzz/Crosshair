@@ -1,10 +1,9 @@
-using System.Windows;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CrosshairPro.Application.Interfaces;
 using CrosshairPro.Core.Enums;
 using CrosshairPro.Core.Models;
-using CrosshairPro.Services.Configuration;
 
 namespace CrosshairPro.App.ViewModels;
 
@@ -25,19 +24,92 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private int _selectedStyleIndex;
 
-    private readonly JsonPresetRepository _presetRepo = new();
+    private readonly IPresetService _presetService;
+    private readonly IConfigurationService _configService;
+    private string? _currentPresetId;
+    private bool _isInitializing = true;
 
-    public MainViewModel()
+    public MainViewModel(
+        IPresetService presetService,
+        IConfigurationService configService)
     {
-        _config = new CrosshairConfig();
+        _presetService = presetService;
+        _configService = configService;
+
+        _config = _configService.GetCurrentConfig();
         SubscribeConfigEvents(_config);
-        LoadPresets();
+
+        InitializeAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// 异步初始化：加载预设并恢复上次使用的配置
+    /// </summary>
+    private async Task InitializeAsync()
+    {
+        try
+        {
+            // 1. 加载应用状态
+            _currentPresetId = await _presetService.GetCurrentPresetIdAsync();
+            var savedPresetId = _currentPresetId;
+
+            // 2. 加载所有预设
+            await LoadPresets();
+
+            // 3. 尝试恢复上次使用的预设
+            if (!string.IsNullOrEmpty(savedPresetId))
+            {
+                var targetPreset = Presets.FirstOrDefault(p => p.Id == savedPresetId);
+                if (targetPreset != null)
+                {
+                    SelectedPreset = targetPreset;
+                    _configService.CopyConfig(targetPreset.Config, Config);
+                    CurrentPresetName = targetPreset.Name;
+                    ShowToast($"已恢复预设 \"{targetPreset.Name}\"");
+                }
+                else
+                {
+                    _currentPresetId = "default";
+                    SelectedPreset = Presets.FirstOrDefault();
+                    ShowToast("上次使用的预设已不存在，已回退到默认配置");
+                }
+            }
+            else
+            {
+                _currentPresetId = "default";
+                SelectedPreset = Presets.FirstOrDefault();
+            }
+
+            _isInitializing = false;
+
+            ConfigUpdated?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Failed to initialize ViewModel");
+            _isInitializing = false;
+            SelectedPreset = Presets.FirstOrDefault();
+            ShowToast("配置加载失败，已使用默认配置");
+        }
     }
 
     // ==================== 事件 ====================
 
     public event EventHandler? ConfigUpdated;
     public event EventHandler? ToggleCrosshairRequested;
+    public event EventHandler? SelectImageRequested;
+    public event EventHandler? SavePresetRequested;
+    public event EventHandler? ImportPresetRequested;
+    public event EventHandler? ExportPresetRequested;
+    public event EventHandler<string>? ToastRequested;
+
+    /// <summary>
+    /// 显示悬浮提示
+    /// </summary>
+    private void ShowToast(string message)
+    {
+        ToastRequested?.Invoke(this, message);
+    }
 
     // ==================== 属性 ====================
 
@@ -69,9 +141,31 @@ public partial class MainViewModel : ObservableObject
     partial void OnSelectedPresetChanged(Preset? value)
     {
         if (value == null) return;
-        Config.CopyFrom(value.Config);
+        _configService.CopyConfig(value.Config, Config);
         CurrentPresetName = value.Name;
+        _currentPresetId = value.Id;
+
+        if (!_isInitializing)
+        {
+            _ = SaveCurrentStateAsync();
+        }
+
         ConfigUpdated?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// 保存当前状态（当前使用的预设ID）
+    /// </summary>
+    private async Task SaveCurrentStateAsync()
+    {
+        try
+        {
+            await _presetService.SetCurrentPresetAsync(_currentPresetId ?? "default");
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Failed to save app state");
+        }
     }
 
     // ==================== 命令 ====================
@@ -79,16 +173,8 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void SetColor(string color) => Config.Color = color;
 
-    /// <summary>
-    /// 选择自定义图片（通知 MainWindow 打开文件对话框）
-    /// </summary>
     [RelayCommand]
-    private void SelectImage()
-    {
-        SelectImageRequested?.Invoke(this, EventArgs.Empty);
-    }
-
-    public event EventHandler? SelectImageRequested;
+    private void SelectImage() => SelectImageRequested?.Invoke(this, EventArgs.Empty);
 
     [RelayCommand]
     private void ToggleCrosshair()
@@ -101,50 +187,34 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ResetConfig()
     {
-        Config = new CrosshairConfig();
+        var defaultConfig = _configService.CreateDefaultConfig();
+        _configService.CopyConfig(defaultConfig, Config);
         SelectedStyleIndex = 0;
         CurrentPresetName = "默认配置";
+        _currentPresetId = "default";
         SubscribeConfigEvents(Config);
+
+        _ = SaveCurrentStateAsync();
+
         ConfigUpdated?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>
-    /// 保存当前配置为预设（通知 MainWindow 弹出命名对话框）
-    /// </summary>
     [RelayCommand]
-    private void SavePreset()
-    {
-        SavePresetRequested?.Invoke(this, EventArgs.Empty);
-    }
+    private void SavePreset() => SavePresetRequested?.Invoke(this, EventArgs.Empty);
 
-    /// <summary>
-    /// 导入预设（通知 MainWindow 打开文件对话框）
-    /// </summary>
     [RelayCommand]
-    private void ImportPreset()
-    {
-        ImportPresetRequested?.Invoke(this, EventArgs.Empty);
-    }
+    private void ImportPreset() => ImportPresetRequested?.Invoke(this, EventArgs.Empty);
 
-    /// <summary>
-    /// 导出当前配置（通知 MainWindow 打开保存对话框）
-    /// </summary>
     [RelayCommand]
-    private void ExportPreset()
-    {
-        ExportPresetRequested?.Invoke(this, EventArgs.Empty);
-    }
+    private void ExportPreset() => ExportPresetRequested?.Invoke(this, EventArgs.Empty);
 
-    /// <summary>
-    /// 删除选中的预设
-    /// </summary>
     [RelayCommand]
     private async Task DeletePreset(Preset? preset)
     {
         if (preset == null || preset.IsDefault) return;
         try
         {
-            await _presetRepo.DeletePresetAsync(preset.Id);
+            await _presetService.DeletePresetAsync(preset.Id);
             await LoadPresets();
         }
         catch (Exception ex)
@@ -152,12 +222,6 @@ public partial class MainViewModel : ObservableObject
             Serilog.Log.Error(ex, "Failed to delete preset");
         }
     }
-
-    // ==================== 对话框请求事件 ====================
-
-    public event EventHandler? SavePresetRequested;
-    public event EventHandler? ImportPresetRequested;
-    public event EventHandler? ExportPresetRequested;
 
     // ==================== 业务方法 ====================
 
@@ -169,18 +233,21 @@ public partial class MainViewModel : ObservableObject
         var preset = new Preset
         {
             Name = name,
-            Config = Config.Clone(),
+            Config = _configService.CloneConfig(Config),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
 
-        await _presetRepo.SavePresetAsync(preset);
+        await _presetService.SavePresetAsync(preset);
         await LoadPresets();
 
-        // 选中新保存的预设
         SelectedPreset = Presets.FirstOrDefault(p => p.Id == preset.Id) ?? Presets.FirstOrDefault();
         CurrentPresetName = name;
-        StatusMessage = $"预设 \"{name}\" 已保存";
+        _currentPresetId = preset.Id;
+
+        await SaveCurrentStateAsync();
+
+        ShowToast($"预设 \"{name}\" 已保存");
     }
 
     /// <summary>
@@ -190,14 +257,16 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
-            var preset = await _presetRepo.ImportPresetAsync(filePath);
+            var preset = await _presetService.ImportPresetAsync(filePath);
             await LoadPresets();
             SelectedPreset = preset;
-            StatusMessage = $"预设 \"{preset.Name}\" 已导入";
+            _currentPresetId = preset.Id;
+            await SaveCurrentStateAsync();
+            ShowToast($"预设 \"{preset.Name}\" 已导入");
         }
         catch (Exception ex)
         {
-            StatusMessage = $"导入失败: {ex.Message}";
+            ShowToast($"导入失败: {ex.Message}");
         }
     }
 
@@ -211,23 +280,14 @@ public partial class MainViewModel : ObservableObject
             var preset = new Preset
             {
                 Name = CurrentPresetName,
-                Config = Config.Clone()
+                Config = _configService.CloneConfig(Config)
             };
-            await _presetRepo.ExportPresetAsync(preset.Id, filePath);
-
-            // 临时保存再导出，或者直接写文件
-            var json = System.Text.Json.JsonSerializer.Serialize(preset, new System.Text.Json.JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
-            });
-            await System.IO.File.WriteAllTextAsync(filePath, json);
-
-            StatusMessage = $"配置已导出到 {System.IO.Path.GetFileName(filePath)}";
+            await _presetService.ExportPresetAsync(preset, filePath);
+            ShowToast($"配置已导出到 {System.IO.Path.GetFileName(filePath)}");
         }
         catch (Exception ex)
         {
-            StatusMessage = $"导出失败: {ex.Message}";
+            ShowToast($"导出失败: {ex.Message}");
         }
     }
 
@@ -238,25 +298,12 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
-            var presets = await _presetRepo.LoadPresetsAsync();
-            var list = presets.ToList();
+            var presets = await _presetService.LoadAllPresetsAsync();
+            Presets = presets.ToList();
 
-            // 始终在最前面放一个默认预设
-            var defaultPreset = new Preset
+            if (!_isInitializing && (SelectedPreset == null || !Presets.Any(p => p.Id == SelectedPreset.Id)))
             {
-                Id = "default",
-                Name = "默认配置",
-                Config = new CrosshairConfig(),
-                IsDefault = true
-            };
-            list.Insert(0, defaultPreset);
-
-            Presets = list;
-
-            // 如果当前没有选中预设，或选中的预设已不在列表中，自动选中第一个
-            if (SelectedPreset == null || !list.Any(p => p.Id == SelectedPreset.Id))
-            {
-                SelectedPreset = list.FirstOrDefault();
+                SelectedPreset = Presets.FirstOrDefault();
             }
         }
         catch

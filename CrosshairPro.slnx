@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/CrosshairPro.App/CrosshairPro.App.csproj" />
+    <Project Path="src/CrosshairPro.Application/CrosshairPro.Application.csproj" />
     <Project Path="src/CrosshairPro.Core/CrosshairPro.Core.csproj" />
     <Project Path="src/CrosshairPro.Infrastructure/CrosshairPro.Infrastructure.csproj" />
     <Project Path="src/CrosshairPro.Services/CrosshairPro.Services.csproj" />

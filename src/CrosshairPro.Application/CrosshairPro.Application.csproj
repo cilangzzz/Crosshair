@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>CrosshairPro.Application</RootNamespace>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <!-- Project references -->
+  <ItemGroup>
+    <ProjectReference Include="..\CrosshairPro.Core\CrosshairPro.Core.csproj" />
+    <ProjectReference Include="..\CrosshairPro.Services\CrosshairPro.Services.csproj" />
+    <ProjectReference Include="..\CrosshairPro.Infrastructure\CrosshairPro.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <!-- NuGet packages -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+  </ItemGroup>
+
+</Project>

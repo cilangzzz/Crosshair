@@ -9,9 +9,10 @@ namespace CrosshairPro.Services.Configuration;
 /// <summary>
 /// JSON配置仓库实现
 /// </summary>
-public class JsonConfigRepository : IConfigRepository
+public class JsonConfigRepository : IConfigRepository, IAppStateRepository
 {
     private readonly string _configFilePath;
+    private readonly string _stateFilePath;
     private readonly SemaphoreSlim _fileLock = new(1, 1);
     private readonly JsonSerializerOptions _jsonOptions;
 
@@ -21,6 +22,7 @@ public class JsonConfigRepository : IConfigRepository
         var appPath = Path.Combine(appDataPath, "CrosshairPro");
         Directory.CreateDirectory(appPath);
         _configFilePath = Path.Combine(appPath, "config.json");
+        _stateFilePath = Path.Combine(appPath, "appstate.json");
 
         _jsonOptions = new JsonSerializerOptions
         {
@@ -117,5 +119,52 @@ public class JsonConfigRepository : IConfigRepository
             Opacity = 100,
             CenterSize = 4
         };
+    }
+
+    // ==================== 应用状态管理 ====================
+
+    /// <summary>
+    /// 加载应用持久化状态
+    /// </summary>
+    public async Task<AppPersistedState> LoadStateAsync()
+    {
+        await _fileLock.WaitAsync();
+        try
+        {
+            if (!File.Exists(_stateFilePath))
+            {
+                return new AppPersistedState();
+            }
+
+            var json = await File.ReadAllTextAsync(_stateFilePath);
+            var state = JsonSerializer.Deserialize<AppPersistedState>(json, _jsonOptions);
+            return state ?? new AppPersistedState();
+        }
+        catch
+        {
+            // 如果加载失败，返回默认状态
+            return new AppPersistedState();
+        }
+        finally
+        {
+            _fileLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// 保存应用持久化状态
+    /// </summary>
+    public async Task SaveStateAsync(AppPersistedState state)
+    {
+        await _fileLock.WaitAsync();
+        try
+        {
+            var json = JsonSerializer.Serialize(state, _jsonOptions);
+            await File.WriteAllTextAsync(_stateFilePath, json);
+        }
+        finally
+        {
+            _fileLock.Release();
+        }
     }
 }
