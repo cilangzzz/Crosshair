@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using CrosshairPro.App.Controls;
 using CrosshairPro.App.ViewModels;
 using CrosshairPro.App.Views;
 using CrosshairPro.Core.Enums;
@@ -29,6 +30,10 @@ public partial class MainWindow : Window
     // Win32 cursor position
     [DllImport("user32.dll")]
     private static extern bool GetCursorPos(out POINT lpPoint);
+
+    // Win32 SetForegroundWindow for context menu focus
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct POINT { public int X; public int Y; }
@@ -225,12 +230,17 @@ public partial class MainWindow : Window
                 menu.VerticalOffset = pos.Y;
             }
             menu.Placement = System.Windows.Controls.Primitives.PlacementMode.AbsolutePoint;
-            menu.StaysOpen = true;
+            menu.StaysOpen = false;
             menu.IsOpen = true;
-        };
 
-        // 关键：在 Opened 事件中重新设置 StaysOpen=false，WPF 才会绑定外部点击关闭逻辑
-        menu.Opened += (s, e) => menu.StaysOpen = false;
+            // 关键：激活菜单窗口，使其能正确接收外部点击关闭事件
+            // 参考 TaskbarIcon 源码的 ShowContextMenu 方法
+            var hwndSource = PresentationSource.FromVisual(menu) as HwndSource;
+            if (hwndSource != null)
+            {
+                SetForegroundWindow(hwndSource.Handle);
+            }
+        };
     }
 
     /// <summary>
@@ -244,60 +254,11 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// 显示悬浮提示（Toast）
+    /// 显示悬浮提示（Toast）- 使用独立悬浮窗口
     /// </summary>
     private void ShowToast(string message)
     {
-        var bgBrush = (SolidColorBrush)FindResource("SurfaceBrush");
-        var borderBrush = (SolidColorBrush)FindResource("BorderBrush");
-        var textPrimary = (SolidColorBrush)FindResource("TextPrimaryBrush");
-        var accentBrush = (SolidColorBrush)FindResource("AccentBrush");
-
-        var toast = new Border
-        {
-            Background = bgBrush,
-            BorderBrush = borderBrush,
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(6),
-            Padding = new Thickness(12, 8, 12, 8),
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Bottom,
-            Margin = new Thickness(0, 0, 0, 40),
-            Effect = new System.Windows.Media.Effects.DropShadowEffect
-            {
-                Color = Colors.Black,
-                BlurRadius = 12,
-                ShadowDepth = 2,
-                Opacity = 0.3
-            }
-        };
-
-        var text = new TextBlock
-        {
-            Text = message,
-            Foreground = textPrimary,
-            FontSize = 13,
-            FontFamily = new FontFamily("Cascadia Code, Consolas")
-        };
-        toast.Child = text;
-
-        // 添加到主容器（假设 RootGrid 是主 Grid）
-        if (RootGrid != null)
-        {
-            RootGrid.Children.Add(toast);
-
-            // 3秒后自动消失
-            var timer = new System.Windows.Threading.DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(3)
-            };
-            timer.Tick += (s, e) =>
-            {
-                timer.Stop();
-                RootGrid.Children.Remove(toast);
-            };
-            timer.Start();
-        }
+        ToastManager.Show(message, 3, this);
     }
 
     /// <summary>
