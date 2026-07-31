@@ -1,12 +1,14 @@
 # CrosshairPro.Services
 
-业务服务层模块，提供配置持久化和准心渲染功能。
+数据层模块，提供配置持久化和准心渲染的具体实现。
 
 ## 概述
 
-Services 模块实现核心业务逻辑：
-- JSON 配置文件持久化
-- 准心图形渲染
+Services 模块实现数据持久化和渲染逻辑：
+- JSON 配置文件持久化（实现 `IConfigRepository` 和 `IAppStateRepository`）
+- 准心图形渲染（实现 `ICrosshairRenderer`）
+
+**注意**：业务逻辑已迁移到 `CrosshairPro.Application` 层，此模块只负责具体实现。
 
 ## 目录结构
 
@@ -25,6 +27,8 @@ CrosshairPro.Services/
 
 配置仓库实现，使用 JSON 文件存储：
 
+**实现接口**: `IConfigRepository` + `IAppStateRepository`
+
 | 方法 | 说明 |
 |------|------|
 | `LoadConfigAsync()` | 加载主配置，不存在则返回默认 |
@@ -32,8 +36,12 @@ CrosshairPro.Services/
 | `ResetToDefaultAsync()` | 返回默认配置 |
 | `ExportConfigAsync(path, config)` | 导出配置到指定路径 |
 | `ImportConfigAsync(path)` | 从文件导入配置 |
+| `LoadStateAsync()` | 加载应用状态（新增） |
+| `SaveStateAsync(state)` | 保存应用状态（新增） |
 
-**存储位置**: `%APPDATA%/CrosshairPro/config.json`
+**存储位置**:
+- 主配置: `%APPDATA%/CrosshairPro/config.json`
+- 应用状态: `%APPDATA%/CrosshairPro/appstate.json`
 
 **JSON 格式**:
 ```json

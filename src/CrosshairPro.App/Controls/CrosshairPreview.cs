@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using CrosshairPro.App.Helpers;
 using CrosshairPro.Core.Enums;
 using CrosshairPro.Core.Models;
 
@@ -73,7 +74,8 @@ public class CrosshairPreview : Control
 
     private void DrawGrid(DrawingContext dc)
     {
-        var gridPen = new Pen(new SolidColorBrush(Color.FromRgb(60, 60, 80)), 0.5);
+        // 使用主题颜色
+        var gridPen = new Pen(ThemeHelper.GridLineBrush, 0.5);
         gridPen.Freeze();
 
         // 垂直线
@@ -88,8 +90,8 @@ public class CrosshairPreview : Control
             dc.DrawLine(gridPen, new Point(0, y), new Point(ActualWidth, y));
         }
 
-        // 中心十字线
-        var centerPen = new Pen(new SolidColorBrush(Color.FromRgb(80, 80, 100)), 1);
+        // 中心十字线（使用主题颜色）
+        var centerPen = new Pen(ThemeHelper.GridCenterLineBrush, 1);
         centerPen.Freeze();
 
         dc.DrawLine(centerPen, new Point(ActualWidth / 2, 0), new Point(ActualWidth / 2, ActualHeight));

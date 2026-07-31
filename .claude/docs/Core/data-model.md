@@ -1,5 +1,21 @@
 # CrosshairPro.Core - 数据模型
 
+## AppPersistedState（新增）
+
+应用持久化状态，记录应用运行时需要保存的状态：
+
+```csharp
+public class AppPersistedState
+{
+    public string? CurrentPresetId { get; set; }  // 当前使用的预设ID
+    public bool IsConfigModified { get; set; }    // 当前配置是否已修改
+}
+```
+
+**用途**：
+- 应用启动时恢复上次使用的预设
+- 记录配置修改状态（未实现：用于提示用户保存）
+
 ## CrosshairConfig
 
 准心配置主模型，使用 CommunityToolkit.Mvvm 的 `ObservableObject` 实现 MVVM 绑定。

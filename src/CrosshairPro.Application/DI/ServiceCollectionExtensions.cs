@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
         // Application Services
         services.AddSingleton<IPresetService, PresetService>();
         services.AddSingleton<IConfigurationService, ConfigurationService>();
+        services.AddSingleton<IGameConfigService, GameConfigService>();
 
         // Infrastructure Services
         services.AddSingleton<IHotkeyManager, HotkeyManager>();

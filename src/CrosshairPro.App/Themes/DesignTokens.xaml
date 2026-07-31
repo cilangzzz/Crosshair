@@ -108,4 +108,37 @@
                       Color="#000000" BlurRadius="8" ShadowDepth="2" Opacity="0.3"
                       Direction="270"/>
 
+    <!-- ═══════════════════════════════════════════════════════════
+         ADDITIONAL THEME COLORS - For code-behind access
+         ═══════════════════════════════════════════════════════════ -->
+
+    <!-- Shadow Colors (用于对话框、卡片阴影) -->
+    <Color x:Key="ShadowColor">#000000</Color>
+
+    <!-- Grid Colors (用于预览网格线) -->
+    <Color x:Key="GridLineColor">#3C3C50</Color>
+    <Color x:Key="GridCenterLineColor">#505064</Color>
+
+    <!-- Dialog Colors -->
+    <Color x:Key="DialogShadowColor">#000000</Color>
+
+    <!-- Toast Colors -->
+    <Color x:Key="ToastShadowColor">#000000</Color>
+
+    <!-- Grid Brushes -->
+    <SolidColorBrush x:Key="GridLineBrush" Color="{StaticResource GridLineColor}"/>
+    <SolidColorBrush x:Key="GridCenterLineBrush" Color="{StaticResource GridCenterLineColor}"/>
+
+    <!-- Dialog shadow effect -->
+    <DropShadowEffect x:Key="DialogShadowEffect"
+                      Color="{StaticResource DialogShadowColor}"
+                      BlurRadius="16" ShadowDepth="2" Opacity="0.4"
+                      Direction="270"/>
+
+    <!-- Toast shadow effect -->
+    <DropShadowEffect x:Key="ToastShadowEffect"
+                      Color="{StaticResource ToastShadowColor}"
+                      BlurRadius="12" ShadowDepth="2" Opacity="0.3"
+                      Direction="270"/>
+
 </ResourceDictionary>

@@ -5,6 +5,30 @@
 
 ---
 
+## [2026-07-03] refactor: restructure project architecture
+
+**类型**: refactor
+**提交**: 6fad297
+**风险**: HIGH
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| IConfigRepository.cs | +16 | 新增 IAppStateRepository 接口定义 |
+| AppPersistedState.cs | +13 | 新增应用持久化状态模型 |
+
+### 影响范围
+- **接口**: 新增 `IAppStateRepository` 用于管理应用状态
+- **数据模型**: 新增 `AppPersistedState` 记录当前预设ID
+- **跨模块**: Services 层 JsonConfigRepository 需实现新接口
+
+### 回滚指南
+- 回滚: `git revert 6fad297`
+- 检查文件: IConfigRepository.cs, AppPersistedState.cs
+- 副作用: Application 层服务依赖新接口，回滚需同步修改
+
+---
+
 ## [2026-06-08] feat: major UI and ViewModel refactoring
 
 **类型**: feat

@@ -1,6 +1,17 @@
 # CrosshairPro.Core - 坑点
 
-## 1. CrosshairConfig 深拷贝必须递归克隆
+## 1. IAppStateRepository 是新增接口
+
+`IAppStateRepository` 用于管理应用持久化状态，与 `IConfigRepository` 分离：
+
+```csharp
+// JsonConfigRepository 同时实现两个接口
+public class JsonConfigRepository : IConfigRepository, IAppStateRepository
+```
+
+两个接口共享同一个文件锁（`SemaphoreSlim`），避免并发冲突。
+
+## 2. CrosshairConfig 深拷贝必须递归克隆
 
 `Clone()` 方法必须递归克隆所有嵌套对象：
 

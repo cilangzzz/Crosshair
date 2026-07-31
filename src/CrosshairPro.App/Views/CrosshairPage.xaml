@@ -1,0 +1,155 @@
+<UserControl x:Class="CrosshairPro.App.Views.CrosshairPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:vm="clr-namespace:CrosshairPro.App.ViewModels"
+      mc:Ignorable="d"
+      d:DesignHeight="500" d:DesignWidth="800">
+
+    <!-- DataContext will be set to CrosshairViewModel -->
+
+    <Grid Margin="20,12,20,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="360"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Preview -->
+        <Border Grid.Column="0" Style="{StaticResource PreviewCard}" Margin="0,0,12,0">
+            <Grid x:Name="PreviewContainer">
+                <TextBlock Text="PREVIEW" Style="{StaticResource SectionHeader}"
+                           HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,12,0,0"/>
+                <Canvas x:Name="GridCanvas" Margin="20,36,20,20" ClipToBounds="True"/>
+                <Canvas x:Name="CrosshairCanvas" Margin="20,36,20,20" ClipToBounds="True"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10">
+                    <TextBlock Text="{Binding StatusMessage}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               FontSize="{DynamicResource FontSizeCaption}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Control Panel -->
+        <Border Grid.Column="1" Style="{StaticResource CardBorder}">
+            <ScrollViewer Style="{StaticResource CustomScrollViewer}" Padding="4">
+                <StackPanel>
+                    <TextBlock Text="STYLE" Style="{StaticResource SectionHeader}"/>
+                    <ComboBox x:Name="StyleComboBox"
+                              ItemsSource="{Binding CrosshairStyleNames}"
+                              SelectedIndex="{Binding SelectedStyleIndex, Mode=TwoWay}"
+                              Style="{StaticResource CustomComboBox}"
+                              Margin="0,0,0,8"/>
+
+                    <!-- 选择自定义图片按钮：SelectedStyleIndex==5 时可见 -->
+                    <Button Content="选择图片..."
+                            Command="{Binding SelectImageCommand}"
+                            Margin="0,0,0,16">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedStyleIndex}" Value="5">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <TextBlock Text="SIZE" Style="{StaticResource SectionHeader}"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                        <Slider Grid.Column="0" Value="{Binding Config.Size, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="1" Maximum="100" Style="{StaticResource CustomSlider}"/>
+                        <TextBox Grid.Column="1" Text="{Binding Config.Size, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
+                    </Grid>
+
+                    <TextBlock Text="GAP" Style="{StaticResource SectionHeader}"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                        <Slider Grid.Column="0" Value="{Binding Config.Gap, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="50" Style="{StaticResource CustomSlider}"/>
+                        <TextBox Grid.Column="1" Text="{Binding Config.Gap, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
+                    </Grid>
+
+                    <TextBlock Text="THICKNESS" Style="{StaticResource SectionHeader}"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                        <Slider Grid.Column="0" Value="{Binding Config.Thickness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="1" Maximum="10" Style="{StaticResource CustomSlider}"/>
+                        <TextBox Grid.Column="1" Text="{Binding Config.Thickness, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
+                    </Grid>
+
+                    <TextBlock Text="OPACITY" Style="{StaticResource SectionHeader}"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                        <Slider Grid.Column="0" Value="{Binding Config.Opacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="100" Style="{StaticResource CustomSlider}"/>
+                        <TextBox Grid.Column="1" Text="{Binding Config.Opacity, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
+                    </Grid>
+
+                    <TextBlock Text="BRIGHTNESS" Style="{StaticResource SectionHeader}"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                        <Slider Grid.Column="0" Value="{Binding Config.Brightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="200" Style="{StaticResource CustomSlider}"/>
+                        <TextBox Grid.Column="1" Text="{Binding Config.Brightness, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
+                    </Grid>
+
+                    <TextBlock Text="CENTER SIZE" Style="{StaticResource SectionHeader}"/>
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                        <Slider Grid.Column="0" Value="{Binding Config.CenterSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="30" Style="{StaticResource CustomSlider}"/>
+                        <TextBox Grid.Column="1" Text="{Binding Config.CenterSize, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
+                    </Grid>
+
+                    <TextBlock Text="COLOR" Style="{StaticResource SectionHeader}"/>
+                    <WrapPanel Margin="0,0,0,16">
+                        <!-- Preset colors (RadioButton group) -->
+                        <ItemsControl ItemsSource="{Binding PresetColors}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <RadioButton Foreground="{Binding}"
+                                                 GroupName="CrosshairColor"
+                                                 Style="{StaticResource ColorSwatchRadio}"
+                                                 Command="{Binding DataContext.SetColorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                 CommandParameter="{Binding}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <!-- Custom color button -->
+                        <RadioButton GroupName="CrosshairColor"
+                                     x:Name="CustomColorRadio"
+                                     Style="{StaticResource ColorSwatchRadio}"
+                                     Click="CustomColor_Click"
+                                     ToolTip="Custom Color">
+                            <RadioButton.Foreground>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#FF0000" Offset="0"/>
+                                    <GradientStop Color="#FFFF00" Offset="0.17"/>
+                                    <GradientStop Color="#00FF00" Offset="0.33"/>
+                                    <GradientStop Color="#00FFFF" Offset="0.5"/>
+                                    <GradientStop Color="#0000FF" Offset="0.67"/>
+                                    <GradientStop Color="#FF00FF" Offset="0.83"/>
+                                    <GradientStop Color="#FF0000" Offset="1"/>
+                                </LinearGradientBrush>
+                            </RadioButton.Foreground>
+                        </RadioButton>
+                    </WrapPanel>
+
+                    <TextBlock Text="ADVANCED" Style="{StaticResource SectionHeader}"/>
+                    <Expander Header="Effects" Margin="0,0,0,12">
+                        <StackPanel Margin="0,8,0,0">
+                            <CheckBox Content="Enable Outline" IsChecked="{Binding Config.Effects.Outline.Enabled, Mode=TwoWay}" Margin="0,4"/>
+                            <Grid Margin="24,4,0,12">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Outline Thickness" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                                <TextBox Grid.Column="1" Text="{Binding Config.Effects.Outline.Thickness, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
+                            </Grid>
+                            <CheckBox Content="Enable Shadow" IsChecked="{Binding Config.Effects.Shadow.Enabled, Mode=TwoWay}" Margin="0,4"/>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

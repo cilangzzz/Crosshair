@@ -5,8 +5,8 @@
 ## 概述
 
 Core 模块是整个应用的基石，提供：
-- 数据模型（CrosshairConfig、Preset、EffectsConfig 等）
-- 业务接口（IConfigRepository、ICrosshairRenderer、IHotkeyManager）
+- 数据模型（CrosshairConfig、Preset、EffectsConfig、AppPersistedState 等）
+- 业务接口（IConfigRepository、IAppStateRepository、ICrosshairRenderer、IHotkeyManager）
 - 枚举定义（CrosshairStyle、AppState）
 
 ## 目录结构
@@ -17,11 +17,12 @@ CrosshairPro.Core/
 │   ├── AppState.cs           # 应用状态枚举
 │   └── CrosshairStyle.cs     # 准心样式枚举
 ├── Interfaces/
-│   ├── IConfigRepository.cs  # 配置仓库接口
+│   ├── IConfigRepository.cs  # 配置仓库接口 + IAppStateRepository + IPresetRepository
 │   ├── ICrosshairRenderer.cs # 准心渲染器接口
 │   ├── IGameDetector.cs      # 游戏检测器接口
 │   └── IHotkeyManager.cs     # 热键管理器接口
 └── Models/
+    ├── AppPersistedState.cs  # 应用持久化状态（新增）
     ├── CrosshairConfig.cs    # 准心配置（主模型）
     ├── EffectsConfig.cs      # 效果配置（描边、阴影、发光）
     ├── GameInfo.cs           # 游戏信息
@@ -53,68 +54,46 @@ CrosshairPro.Core/
 | Effects | EffectsConfig | new() | 效果配置 |
 | Display | DisplayConfig | new() | 显示配置 |
 
+### AppPersistedState（新增）
+
+应用持久化状态，记录应用运行时状态：
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| CurrentPresetId | string? | 当前使用的预设ID |
+| IsConfigModified | bool | 当前配置是否已修改 |
+
 ### EffectsConfig
 
-效果配置，包含三种效果：
+效果配置，包含三种效果：Outline（描边）、Shadow（阴影）、Glow（发光）
 
-| 效果 | 类型 | 说明 |
-|------|------|------|
-| Outline | OutlineConfig | 描边效果 |
-| Shadow | ShadowConfig | 阴影效果 |
-| Glow | GlowConfig | 发光效果 |
+### Preset
 
-### DisplayConfig
-
-显示配置：
-
-| 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| Monitor | string | "primary" | 目标显示器 |
-| ClickThrough | bool | true | 鼠标穿透 |
-| AlwaysOnTop | bool | true | 始终置顶 |
-| PositionX | int | 0 | X轴偏移 |
-| PositionY | int | 0 | Y轴偏移 |
+预设模型，包含 CrosshairConfig 和元数据
 
 ## 接口定义
 
 ### IConfigRepository
 
 配置持久化接口：
-- `LoadConfigAsync()` - 加载主配置
-- `SaveConfigAsync(config)` - 保存配置
-- `ResetToDefaultAsync()` - 重置为默认
-- `ExportConfigAsync(path, config)` - 导出配置
-- `ImportConfigAsync(path)` - 导入配置
+- `LoadConfigAsync()` / `SaveConfigAsync(config)` - 主配置管理
+- `ExportConfigAsync(path, config)` / `ImportConfigAsync(path)` - 导入导出
+
+### IAppStateRepository（新增）
+
+应用状态持久化接口：
+- `LoadStateAsync()` - 加载应用状态
+- `SaveStateAsync(state)` - 保存应用状态
 
 ### IPresetRepository
 
 预设管理接口：
-- `LoadPresetsAsync()` - 加载所有预设
-- `SavePresetAsync(preset)` - 保存预设
-- `DeletePresetAsync(id)` - 删除预设
-- `GetPresetAsync(id)` - 获取单个预设
-- `ExportPresetAsync(id, path)` - 导出预设
-- `ImportPresetAsync(path)` - 导入预设
-
-### ICrosshairRenderer
-
-准心渲染接口：
-- `Render(drawingContext, config, width, height)` - 渲染准心
-- `RenderCompleted` 事件 - 渲染完成通知
-
-### IHotkeyManager
-
-热键管理接口：
-- `RegisterHotkey(binding)` - 注册热键
-- `UnregisterHotkey(id)` - 注销热键
-- `UnregisterAll()` - 注销所有热键
-- `HotkeyTriggered` 事件 - 热键触发通知
+- `LoadPresetsAsync()` / `SavePresetAsync(preset)` / `DeletePresetAsync(id)`
+- `ExportPresetAsync(id, path)` / `ImportPresetAsync(path)`
 
 ## 枚举定义
 
 ### CrosshairStyle
-
-准心样式枚举：
 
 | 值 | 名称 | 说明 |
 |----|------|------|
@@ -124,16 +103,6 @@ CrosshairPro.Core/
 | 3 | TShape | T形准心（倒T） |
 | 4 | XShape | X形准心 |
 | 5 | CustomImage | 自定义图片 |
-
-### AppState
-
-应用状态枚举：
-
-| 值 | 名称 | 说明 |
-|----|------|------|
-| 0 | Idle | 空闲状态 |
-| 1 | Running | 运行中 |
-| 2 | GameDetected | 检测到游戏 |
 
 ## 详细文档
 

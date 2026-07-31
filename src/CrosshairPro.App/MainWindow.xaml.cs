@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,13 +6,12 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using CrosshairPro.App.Controls;
 using CrosshairPro.App.ViewModels;
 using CrosshairPro.App.Views;
-using CrosshairPro.Core.Enums;
 using CrosshairPro.Core.Interfaces;
 using CrosshairPro.Core.Models;
+using CrosshairPro.Infrastructure.Hotkey;
 using Hardcodet.Wpf.TaskbarNotification;
 
 namespace CrosshairPro.App;
@@ -63,18 +61,17 @@ public partial class MainWindow : Window
         // 覆盖窗口事件
         _overlayWindow.CrosshairVisibilityChanged += OnCrosshairVisibilityChanged;
 
-        // ViewModel 的 ConfigUpdated 事件 → 同步到覆盖窗口 + 更新预览
+        // ViewModel 的 ConfigUpdated 事件 → 同步到覆盖窗口
         _viewModel.ConfigUpdated += (s, e) =>
         {
-            _overlayWindow.UpdateConfig(_viewModel.Config);
-            DrawPreview();
+            _overlayWindow.UpdateConfig(_viewModel.CrosshairViewModel.Config);
         };
 
         // ViewModel 的 ToggleCrosshairRequested 事件 → 操作覆盖窗口
         _viewModel.ToggleCrosshairRequested += (s, e) =>
         {
             _overlayWindow.ToggleVisibility();
-            _viewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
+            _viewModel.CrosshairViewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
         };
 
         // 选择自定义图片 → 打开文件对话框
@@ -87,16 +84,15 @@ public partial class MainWindow : Window
             };
             if (dlg.ShowDialog() == true)
             {
-                _viewModel.Config.CustomImagePath = dlg.FileName;
-                _overlayWindow.UpdateConfig(_viewModel.Config);
-                DrawPreview();
+                _viewModel.CrosshairViewModel.Config.CustomImagePath = dlg.FileName;
+                _overlayWindow.UpdateConfig(_viewModel.CrosshairViewModel.Config);
             }
         };
 
         // 保存预设 → 弹出命名对话框
         _viewModel.SavePresetRequested += async (s, e) =>
         {
-            var name = ShowInputDialog("保存预设", "请输入预设名称:", _viewModel.CurrentPresetName);
+            var name = ShowInputDialog("保存预设", "请输入预设名称:", _viewModel.CrosshairViewModel.CurrentPresetName);
             if (!string.IsNullOrWhiteSpace(name))
                 await _viewModel.SavePresetWithNameAsync(name);
         };
@@ -120,7 +116,7 @@ public partial class MainWindow : Window
             {
                 Filter = "JSON 文件 (*.json)|*.json",
                 Title = "导出预设",
-                FileName = _viewModel.CurrentPresetName
+                FileName = _viewModel.CrosshairViewModel.CurrentPresetName
             };
             if (dlg.ShowDialog() == true)
                 await _viewModel.ExportPresetToFileAsync(dlg.FileName);
@@ -132,22 +128,16 @@ public partial class MainWindow : Window
             Dispatcher.Invoke(() => ShowToast(message));
         };
 
-        // 样式 ComboBox 初始化
-        StyleComboBox.ItemsSource = _viewModel.CrosshairStyleNames;
-
         RegisterHotkeys();
         SetupTrayIcon();
 
-        // 等覆盖窗口 Loaded 后再同步配置并渲染
+        // 等覆盖窗口 Loaded 后再同步配置
         _overlayWindow.Loaded += (s, e) =>
         {
-            _overlayWindow.UpdateConfig(_viewModel.Config);
+            _overlayWindow.UpdateConfig(_viewModel.CrosshairViewModel.Config);
         };
 
         _overlayWindow.Show();
-
-        // 初始绘制预览
-        Loaded += (s, e) => DrawPreview();
     }
 
     /// <summary>
@@ -202,7 +192,7 @@ public partial class MainWindow : Window
         toggleItem.Click += (s, e) =>
         {
             _overlayWindow.ToggleVisibility();
-            _viewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
+            _viewModel.CrosshairViewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
         };
         menu.Items.Add(toggleItem);
 
@@ -234,7 +224,6 @@ public partial class MainWindow : Window
             menu.IsOpen = true;
 
             // 关键：激活菜单窗口，使其能正确接收外部点击关闭事件
-            // 参考 TaskbarIcon 源码的 ShowContextMenu 方法
             var hwndSource = PresentationSource.FromVisual(menu) as HwndSource;
             if (hwndSource != null)
             {
@@ -268,7 +257,6 @@ public partial class MainWindow : Window
     {
         _isReallyClosing = true;
         _trayIcon?.Dispose();
-        // _hotkeyManager 由 DI 容器管理，不需要手动释放
         _overlayWindow.Close();
         Close();
         System.Windows.Application.Current.Shutdown();
@@ -287,183 +275,6 @@ public partial class MainWindow : Window
         }
 
         base.OnClosing(e);
-    }
-
-    /// <summary>
-    /// 在预览 Canvas 上绘制准心
-    /// </summary>
-    private void DrawPreview()
-    {
-        CrosshairCanvas.Children.Clear();
-        GridCanvas.Children.Clear();
-
-        var canvas = CrosshairCanvas;
-        var grid = GridCanvas;
-        if (canvas.ActualWidth == 0 || canvas.ActualHeight == 0) return;
-
-        double cx = canvas.ActualWidth / 2;
-        double cy = canvas.ActualHeight / 2;
-
-        var cfg = _viewModel.Config;
-
-        // 亮度：调整颜色明暗
-        var baseColor = (Color)ColorConverter.ConvertFromString(cfg.Color);
-        var color = ApplyBrightness(baseColor, cfg.Brightness);
-        var brush = new SolidColorBrush(color);
-        var outlineBrush = Brushes.Black;
-
-        // 透明度：在每个 Shape 上单独设置
-        double shapeOpacity = cfg.Opacity / 100.0;
-        bool hasOutline = cfg.Effects.Outline.Enabled;
-
-        // 画网格
-        var gridBrush = new SolidColorBrush(Color.FromArgb(30, 255, 255, 255));
-        for (double x = 0; x < canvas.ActualWidth; x += 30)
-            grid.Children.Add(new Line { X1 = x, Y1 = 0, X2 = x, Y2 = canvas.ActualHeight, Stroke = gridBrush, StrokeThickness = 0.5 });
-        for (double y = 0; y < canvas.ActualHeight; y += 30)
-            grid.Children.Add(new Line { X1 = 0, Y1 = y, X2 = canvas.ActualWidth, Y2 = y, Stroke = gridBrush, StrokeThickness = 0.5 });
-        grid.Children.Add(new Line { X1 = cx, Y1 = 0, X2 = cx, Y2 = canvas.ActualHeight, Stroke = gridBrush, StrokeThickness = 1 });
-        grid.Children.Add(new Line { X1 = 0, Y1 = cy, X2 = canvas.ActualWidth, Y2 = cy, Stroke = gridBrush, StrokeThickness = 1 });
-
-        double size = cfg.Size;
-        double gap = cfg.Gap;
-        double thick = cfg.Thickness;
-        double halfSize = size / 2;
-        double halfGap = gap / 2;
-
-        if (cfg.CenterSize > 0 && cfg.Style != CrosshairStyle.Dot)
-            DrawDot(canvas, cx, cy, cfg.CenterSize / 2.0, brush, hasOutline, outlineBrush, cfg, shapeOpacity);
-
-        switch (cfg.Style)
-        {
-            case CrosshairStyle.Cross:
-                DrawLine(canvas, cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                DrawLine(canvas, cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                DrawLine(canvas, cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                DrawLine(canvas, cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                break;
-            case CrosshairStyle.Dot:
-                DrawDot(canvas, cx, cy, cfg.CenterSize / 2.0, brush, hasOutline, outlineBrush, cfg, shapeOpacity);
-                break;
-            case CrosshairStyle.Circle:
-                DrawCircle(canvas, cx, cy, halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                if (cfg.CenterSize > 0)
-                    DrawDot(canvas, cx, cy, cfg.CenterSize / 2.0, brush, false, outlineBrush, cfg, shapeOpacity);
-                break;
-            case CrosshairStyle.TShape:
-                // 倒T形：竖线朝下（FPS标准）
-                DrawLine(canvas, cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                DrawLine(canvas, cx - halfGap - halfSize, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                break;
-            case CrosshairStyle.XShape:
-                double off = halfGap * 0.707;
-                double len = halfSize * 0.707;
-                DrawLine(canvas, cx - off, cy - off, cx - off - len, cy - off - len, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                DrawLine(canvas, cx + off, cy - off, cx + off + len, cy - off - len, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                DrawLine(canvas, cx - off, cy + off, cx - off - len, cy + off + len, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                DrawLine(canvas, cx + off, cy + off, cx + off + len, cy + off + len, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                break;
-            case CrosshairStyle.CustomImage:
-                if (!string.IsNullOrEmpty(cfg.CustomImagePath) && File.Exists(cfg.CustomImagePath))
-                {
-                    DrawImage(canvas, cx, cy, cfg.CustomImagePath, size, shapeOpacity);
-                }
-                else
-                {
-                    DrawLine(canvas, cx, cy - halfGap, cx, cy - halfGap - halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                    DrawLine(canvas, cx, cy + halfGap, cx, cy + halfGap + halfSize, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                    DrawLine(canvas, cx - halfGap, cy, cx - halfGap - halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                    DrawLine(canvas, cx + halfGap, cy, cx + halfGap + halfSize, cy, brush, thick, hasOutline, outlineBrush, cfg, shapeOpacity);
-                }
-                break;
-        }
-    }
-
-    private void DrawLine(Canvas c, double x1, double y1, double x2, double y2, Brush brush, double thick, bool hasOutline, Brush outlineBrush, CrosshairConfig cfg, double opacity)
-    {
-        if (hasOutline)
-            c.Children.Add(new Line { X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Stroke = outlineBrush, StrokeThickness = thick + cfg.Effects.Outline.Thickness * 2, Opacity = opacity });
-        c.Children.Add(new Line { X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Stroke = brush, StrokeThickness = thick, Opacity = opacity });
-    }
-
-    private void DrawDot(Canvas c, double cx, double cy, double radius, Brush brush, bool hasOutline, Brush outlineBrush, CrosshairConfig cfg, double opacity)
-    {
-        if (hasOutline)
-            c.Children.Add(new Ellipse
-            {
-                Width = radius * 2 + cfg.Effects.Outline.Thickness * 2,
-                Height = radius * 2 + cfg.Effects.Outline.Thickness * 2,
-                Stroke = outlineBrush,
-                StrokeThickness = cfg.Effects.Outline.Thickness,
-                Margin = new Thickness(cx - radius - cfg.Effects.Outline.Thickness, cy - radius - cfg.Effects.Outline.Thickness, 0, 0),
-                Opacity = opacity
-            });
-        c.Children.Add(new Ellipse
-        {
-            Width = radius * 2,
-            Height = radius * 2,
-            Fill = brush,
-            Margin = new Thickness(cx - radius, cy - radius, 0, 0),
-            Opacity = opacity
-        });
-    }
-
-    private void DrawCircle(Canvas c, double cx, double cy, double radius, Brush brush, double thick, bool hasOutline, Brush outlineBrush, CrosshairConfig cfg, double opacity)
-    {
-        if (hasOutline)
-            c.Children.Add(new Ellipse
-            {
-                Width = radius * 2 + cfg.Effects.Outline.Thickness * 2,
-                Height = radius * 2 + cfg.Effects.Outline.Thickness * 2,
-                Stroke = outlineBrush,
-                StrokeThickness = thick + cfg.Effects.Outline.Thickness * 2,
-                Margin = new Thickness(cx - radius - cfg.Effects.Outline.Thickness, cy - radius - cfg.Effects.Outline.Thickness, 0, 0),
-                Opacity = opacity
-            });
-        c.Children.Add(new Ellipse
-        {
-            Width = radius * 2,
-            Height = radius * 2,
-            Stroke = brush,
-            StrokeThickness = thick,
-            Margin = new Thickness(cx - radius, cy - radius, 0, 0),
-            Opacity = opacity
-        });
-    }
-
-    private void DrawImage(Canvas c, double cx, double cy, string path, double size, double opacity)
-    {
-        try
-        {
-            var bitmap = new System.Windows.Media.Imaging.BitmapImage();
-            bitmap.BeginInit();
-            bitmap.UriSource = new Uri(path, UriKind.Absolute);
-            bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
-            bitmap.EndInit();
-            bitmap.Freeze();
-
-            double scale = size / Math.Max(bitmap.PixelWidth, bitmap.PixelHeight);
-            double w = bitmap.PixelWidth * scale;
-            double h = bitmap.PixelHeight * scale;
-
-            var image = new System.Windows.Controls.Image
-            {
-                Source = bitmap,
-                Width = w,
-                Height = h,
-                Opacity = opacity
-            };
-
-            Canvas.SetLeft(image, cx - w / 2);
-            Canvas.SetTop(image, cy - h / 2);
-            c.Children.Add(image);
-        }
-        catch
-        {
-            // 图片加载失败时回退到十字
-            DrawLine(c, cx - 10, cy, cx + 10, cy, Brushes.Red, 2, false, Brushes.Black, new CrosshairConfig(), opacity);
-            DrawLine(c, cx, cy - 10, cx, cy + 10, Brushes.Red, 2, false, Brushes.Black, new CrosshairConfig(), opacity);
-        }
     }
 
     private void RegisterHotkeys()
@@ -488,13 +299,13 @@ public partial class MainWindow : Window
             {
                 case HotkeyAction.ToggleCrosshair:
                     _overlayWindow.ToggleVisibility();
-                    _viewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
+                    _viewModel.CrosshairViewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
                     break;
                 case HotkeyAction.IncreaseSize:
-                    _viewModel.Config.Size = Math.Min(100, _viewModel.Config.Size + 5);
+                    _viewModel.CrosshairViewModel.Config.Size = Math.Min(100, _viewModel.CrosshairViewModel.Config.Size + 5);
                     break;
                 case HotkeyAction.DecreaseSize:
-                    _viewModel.Config.Size = Math.Max(1, _viewModel.Config.Size - 5);
+                    _viewModel.CrosshairViewModel.Config.Size = Math.Max(1, _viewModel.CrosshairViewModel.Config.Size - 5);
                     break;
             }
         });
@@ -504,18 +315,9 @@ public partial class MainWindow : Window
     {
         Dispatcher.Invoke(() =>
         {
-            _viewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
-            _viewModel.StatusMessage = _overlayWindow.IsCrosshairVisible ? "准心已启用" : "准心已禁用";
+            _viewModel.CrosshairViewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
+            _viewModel.CrosshairViewModel.StatusMessage = _overlayWindow.IsCrosshairVisible ? "准心已启用" : "准心已禁用";
         });
-    }
-
-    private static Color ApplyBrightness(Color color, int brightness)
-    {
-        double factor = brightness / 100.0;
-        return Color.FromRgb(
-            (byte)Math.Min(255, color.R * factor),
-            (byte)Math.Min(255, color.G * factor),
-            (byte)Math.Min(255, color.B * factor));
     }
 
     /// <summary>
@@ -523,14 +325,12 @@ public partial class MainWindow : Window
     /// </summary>
     private string? ShowInputDialog(string title, string prompt, string defaultValue = "")
     {
-        // Use design token colors
         var bgBrush = (SolidColorBrush)FindResource("BackgroundBrush");
-        var surfaceBrush = (SolidColorBrush)FindResource("SurfaceBrush");
-        var controlBrush = (SolidColorBrush)FindResource("ControlBrush");
         var borderBrush = (SolidColorBrush)FindResource("BorderBrush");
         var textPrimary = (SolidColorBrush)FindResource("TextPrimaryBrush");
         var textSecondary = (SolidColorBrush)FindResource("TextSecondaryBrush");
         var accentBrush = (SolidColorBrush)FindResource("AccentBrush");
+        var controlBrush = (SolidColorBrush)FindResource("ControlBrush");
 
         var dialog = new Window
         {
@@ -663,7 +463,7 @@ public partial class MainWindow : Window
         var color = ShowColorPickerDialog();
         if (color != null)
         {
-            _viewModel.SetColorCommand.Execute(color);
+            _viewModel.CrosshairViewModel.SetColorCommand.Execute(color);
             // Update the custom radio button's foreground to show selected color
             if (sender is RadioButton rb)
                 rb.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
@@ -673,7 +473,6 @@ public partial class MainWindow : Window
     private string? ShowColorPickerDialog()
     {
         var bgBrush = (SolidColorBrush)FindResource("BackgroundBrush");
-        var surfaceBrush = (SolidColorBrush)FindResource("SurfaceBrush");
         var controlBrush = (SolidColorBrush)FindResource("ControlBrush");
         var borderBrush = (SolidColorBrush)FindResource("BorderBrush");
         var textPrimary = (SolidColorBrush)FindResource("TextPrimaryBrush");
@@ -684,7 +483,7 @@ public partial class MainWindow : Window
         byte r = 0, g = 255, b = 0;
         try
         {
-            var c = (Color)ColorConverter.ConvertFromString(_viewModel.Config.Color);
+            var c = (Color)ColorConverter.ConvertFromString(_viewModel.CrosshairViewModel.Config.Color);
             r = c.R; g = c.G; b = c.B;
         }
         catch { }
@@ -881,7 +680,6 @@ public partial class MainWindow : Window
         var bgBrush = (SolidColorBrush)FindResource("BackgroundBrush");
         var surfaceBrush = (SolidColorBrush)FindResource("SurfaceBrush");
         var controlBrush = (SolidColorBrush)FindResource("ControlBrush");
-        var controlHoverBrush = (SolidColorBrush)FindResource("ControlHoverBrush");
         var borderBrush = (SolidColorBrush)FindResource("BorderBrush");
         var textPrimary = (SolidColorBrush)FindResource("TextPrimaryBrush");
         var textSecondary = (SolidColorBrush)FindResource("TextSecondaryBrush");
@@ -952,13 +750,13 @@ public partial class MainWindow : Window
             Content = "＋ Import", Padding = new Thickness(10, 4, 10, 4),
             Style = (Style)FindResource("SecondaryButton"), Margin = new Thickness(0, 0, 6, 0)
         };
-        importBtn.Click += (s, ev) => { popup.Close(); _viewModel.ImportPresetCommand.Execute(null); };
+        importBtn.Click += (s, ev) => { popup.Close(); _viewModel.CrosshairViewModel.ImportPresetCommand.Execute(null); };
         var exportBtn = new Button
         {
             Content = "↗ Export", Padding = new Thickness(10, 4, 10, 4),
             Style = (Style)FindResource("SecondaryButton")
         };
-        exportBtn.Click += (s, ev) => { popup.Close(); _viewModel.ExportPresetCommand.Execute(null); };
+        exportBtn.Click += (s, ev) => { popup.Close(); _viewModel.CrosshairViewModel.ExportPresetCommand.Execute(null); };
         topBar.Children.Add(importBtn);
         topBar.Children.Add(exportBtn);
         DockPanel.SetDock(topBar, Dock.Top);
@@ -972,8 +770,8 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(0),
             Margin = new Thickness(16, 0, 16, 16),
             Padding = new Thickness(0),
-            ItemsSource = _viewModel.Presets,
-            SelectedItem = _viewModel.SelectedPreset
+            ItemsSource = _viewModel.CrosshairViewModel.Presets,
+            SelectedItem = _viewModel.CrosshairViewModel.SelectedPreset
         };
 
         // DataTemplate: [Name] ............ [×]
@@ -994,7 +792,7 @@ public partial class MainWindow : Window
         delFactory.SetValue(Button.CursorProperty, System.Windows.Input.Cursors.Hand);
         delFactory.SetValue(Button.VerticalAlignmentProperty, VerticalAlignment.Center);
         delFactory.SetValue(DockPanel.DockProperty, Dock.Right);
-        delFactory.SetValue(Button.CommandProperty, _viewModel.DeletePresetCommand);
+        delFactory.SetValue(Button.CommandProperty, _viewModel.CrosshairViewModel.DeletePresetCommand);
         delFactory.SetValue(Button.CommandParameterProperty, new Binding());
         delFactory.AddHandler(Button.ClickEvent, new RoutedEventHandler((s, ev) =>
         {
@@ -1014,6 +812,7 @@ public partial class MainWindow : Window
         listBox.ItemTemplate = itemTemplate;
 
         // Item container style
+        var controlHoverBrush = (SolidColorBrush)FindResource("ControlHoverBrush");
         listBox.ItemContainerStyle = new Style(typeof(ListBoxItem))
         {
             Setters =

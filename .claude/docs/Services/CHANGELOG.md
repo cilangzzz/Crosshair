@@ -5,6 +5,24 @@
 
 ---
 
+## [2026-07-03] refactor: restructure project architecture
+
+**类型**: refactor
+**提交**: 6fad297
+**风险**: MEDIUM
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| JsonConfigRepository.cs | +51 | 实现 IAppStateRepository 接口，新增 LoadStateAsync/SaveStateAsync |
+
+### 影响范围
+- **接口实现**: JsonConfigRepository 现同时实现 IConfigRepository 和 IAppStateRepository
+- **文件存储**: 新增 appstate.json 存储应用状态
+- **共享锁**: 两个接口共享同一个 SemaphoreSlim 文件锁
+
+---
+
 ## [2026-06-07] Initial commit
 
 **类型**: feat

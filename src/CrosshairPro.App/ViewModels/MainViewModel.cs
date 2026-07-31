@@ -1,96 +1,56 @@
-using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CrosshairPro.Application.Interfaces;
-using CrosshairPro.Core.Enums;
-using CrosshairPro.Core.Models;
 
 namespace CrosshairPro.App.ViewModels;
 
+/// <summary>
+/// 主窗口 ViewModel
+/// 管理页面导航和全局状态
+/// </summary>
 public partial class MainViewModel : ObservableObject
 {
-    [ObservableProperty]
-    private CrosshairConfig _config;
-
-    [ObservableProperty]
-    private bool _isCrosshairVisible = true;
-
-    [ObservableProperty]
-    private string _statusMessage = "准心已启用";
-
-    [ObservableProperty]
-    private string _currentPresetName = "默认配置";
-
-    [ObservableProperty]
-    private int _selectedStyleIndex;
-
     private readonly IPresetService _presetService;
     private readonly IConfigurationService _configService;
-    private string? _currentPresetId;
-    private bool _isInitializing = true;
+
+    /// <summary>准心配置页面 ViewModel</summary>
+    public CrosshairViewModel CrosshairViewModel { get; }
+
+    /// <summary>游戏配置页面 ViewModel</summary>
+    public GamesViewModel GamesViewModel { get; }
+
+    /// <summary>当前页面</summary>
+    [ObservableProperty]
+    private PageType _currentPage = PageType.Crosshair;
+
+    /// <summary>是否显示准心页面</summary>
+    public bool IsCrosshairPage => CurrentPage == PageType.Crosshair;
+
+    /// <summary>是否显示游戏页面</summary>
+    public bool IsGamesPage => CurrentPage == PageType.Games;
 
     public MainViewModel(
         IPresetService presetService,
-        IConfigurationService configService)
+        IConfigurationService configService,
+        CrosshairViewModel crosshairViewModel,
+        GamesViewModel gamesViewModel)
     {
         _presetService = presetService;
         _configService = configService;
+        CrosshairViewModel = crosshairViewModel;
+        GamesViewModel = gamesViewModel;
 
-        _config = _configService.GetCurrentConfig();
-        SubscribeConfigEvents(_config);
+        // 订阅准心 ViewModel 的事件
+        CrosshairViewModel.ToastRequested += (s, msg) => ToastRequested?.Invoke(s, msg);
+        CrosshairViewModel.ConfigUpdated += (s, e) => ConfigUpdated?.Invoke(s, e);
+        CrosshairViewModel.ToggleCrosshairRequested += (s, e) => ToggleCrosshairRequested?.Invoke(s, e);
+        CrosshairViewModel.SelectImageRequested += (s, e) => SelectImageRequested?.Invoke(s, e);
+        CrosshairViewModel.SavePresetRequested += (s, e) => SavePresetRequested?.Invoke(s, e);
+        CrosshairViewModel.ImportPresetRequested += (s, e) => ImportPresetRequested?.Invoke(s, e);
+        CrosshairViewModel.ExportPresetRequested += (s, e) => ExportPresetRequested?.Invoke(s, e);
 
-        InitializeAsync().ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// 异步初始化：加载预设并恢复上次使用的配置
-    /// </summary>
-    private async Task InitializeAsync()
-    {
-        try
-        {
-            // 1. 加载应用状态
-            _currentPresetId = await _presetService.GetCurrentPresetIdAsync();
-            var savedPresetId = _currentPresetId;
-
-            // 2. 加载所有预设
-            await LoadPresets();
-
-            // 3. 尝试恢复上次使用的预设
-            if (!string.IsNullOrEmpty(savedPresetId))
-            {
-                var targetPreset = Presets.FirstOrDefault(p => p.Id == savedPresetId);
-                if (targetPreset != null)
-                {
-                    SelectedPreset = targetPreset;
-                    _configService.CopyConfig(targetPreset.Config, Config);
-                    CurrentPresetName = targetPreset.Name;
-                    ShowToast($"已恢复预设 \"{targetPreset.Name}\"");
-                }
-                else
-                {
-                    _currentPresetId = "default";
-                    SelectedPreset = Presets.FirstOrDefault();
-                    ShowToast("上次使用的预设已不存在，已回退到默认配置");
-                }
-            }
-            else
-            {
-                _currentPresetId = "default";
-                SelectedPreset = Presets.FirstOrDefault();
-            }
-
-            _isInitializing = false;
-
-            ConfigUpdated?.Invoke(this, EventArgs.Empty);
-        }
-        catch (Exception ex)
-        {
-            Serilog.Log.Error(ex, "Failed to initialize ViewModel");
-            _isInitializing = false;
-            SelectedPreset = Presets.FirstOrDefault();
-            ShowToast("配置加载失败，已使用默认配置");
-        }
+        // 订阅游戏 ViewModel 的事件
+        GamesViewModel.ToastRequested += (s, msg) => ToastRequested?.Invoke(s, msg);
     }
 
     // ==================== 事件 ====================
@@ -103,231 +63,61 @@ public partial class MainViewModel : ObservableObject
     public event EventHandler? ExportPresetRequested;
     public event EventHandler<string>? ToastRequested;
 
-    /// <summary>
-    /// 显示悬浮提示
-    /// </summary>
-    private void ShowToast(string message)
-    {
-        ToastRequested?.Invoke(this, message);
-    }
-
-    // ==================== 属性 ====================
-
-    public string[] CrosshairStyleNames { get; } = new[]
-    {
-        "十字准心", "点状准心", "圆形准心", "T形准心", "X形准心", "自定义图片"
-    };
-
-    public string[] PresetColors { get; } = new[]
-    {
-        "#00FF00", "#00FFFF", "#FFFF00", "#FF0000",
-        "#FF00FF", "#FFA500", "#FFFFFF", "#000000"
-    };
-
-    /// <summary>预设列表</summary>
-    [ObservableProperty]
-    private List<Preset> _presets = new();
-
-    /// <summary>当前选中的预设</summary>
-    [ObservableProperty]
-    private Preset? _selectedPreset;
-
-    partial void OnSelectedStyleIndexChanged(int value)
-    {
-        if (value >= 0 && value < Enum.GetValues(typeof(CrosshairStyle)).Length)
-            Config.Style = (CrosshairStyle)value;
-    }
-
-    partial void OnSelectedPresetChanged(Preset? value)
-    {
-        if (value == null) return;
-        _configService.CopyConfig(value.Config, Config);
-        CurrentPresetName = value.Name;
-        _currentPresetId = value.Id;
-
-        if (!_isInitializing)
-        {
-            _ = SaveCurrentStateAsync();
-        }
-
-        ConfigUpdated?.Invoke(this, EventArgs.Empty);
-    }
-
-    /// <summary>
-    /// 保存当前状态（当前使用的预设ID）
-    /// </summary>
-    private async Task SaveCurrentStateAsync()
-    {
-        try
-        {
-            await _presetService.SetCurrentPresetAsync(_currentPresetId ?? "default");
-        }
-        catch (Exception ex)
-        {
-            Serilog.Log.Error(ex, "Failed to save app state");
-        }
-    }
-
     // ==================== 命令 ====================
 
+    /// <summary>导航到准心配置页面</summary>
     [RelayCommand]
-    private void SetColor(string color) => Config.Color = color;
-
-    [RelayCommand]
-    private void SelectImage() => SelectImageRequested?.Invoke(this, EventArgs.Empty);
-
-    [RelayCommand]
-    private void ToggleCrosshair()
+    private void NavigateToCrosshair()
     {
-        IsCrosshairVisible = !IsCrosshairVisible;
-        StatusMessage = IsCrosshairVisible ? "准心已启用" : "准心已禁用";
-        ToggleCrosshairRequested?.Invoke(this, EventArgs.Empty);
+        CurrentPage = PageType.Crosshair;
+        OnPropertyChanged(nameof(IsCrosshairPage));
+        OnPropertyChanged(nameof(IsGamesPage));
     }
 
+    /// <summary>导航到游戏配置页面</summary>
     [RelayCommand]
-    private void ResetConfig()
+    private void NavigateToGames()
     {
-        var defaultConfig = _configService.CreateDefaultConfig();
-        _configService.CopyConfig(defaultConfig, Config);
-        SelectedStyleIndex = 0;
-        CurrentPresetName = "默认配置";
-        _currentPresetId = "default";
-        SubscribeConfigEvents(Config);
-
-        _ = SaveCurrentStateAsync();
-
-        ConfigUpdated?.Invoke(this, EventArgs.Empty);
-    }
-
-    [RelayCommand]
-    private void SavePreset() => SavePresetRequested?.Invoke(this, EventArgs.Empty);
-
-    [RelayCommand]
-    private void ImportPreset() => ImportPresetRequested?.Invoke(this, EventArgs.Empty);
-
-    [RelayCommand]
-    private void ExportPreset() => ExportPresetRequested?.Invoke(this, EventArgs.Empty);
-
-    [RelayCommand]
-    private async Task DeletePreset(Preset? preset)
-    {
-        if (preset == null || preset.IsDefault) return;
-        try
-        {
-            await _presetService.DeletePresetAsync(preset.Id);
-            await LoadPresets();
-        }
-        catch (Exception ex)
-        {
-            Serilog.Log.Error(ex, "Failed to delete preset");
-        }
+        CurrentPage = PageType.Games;
+        OnPropertyChanged(nameof(IsCrosshairPage));
+        OnPropertyChanged(nameof(IsGamesPage));
     }
 
     // ==================== 业务方法 ====================
 
     /// <summary>
-    /// 保存预设（由 MainWindow 调用，传入用户输入的名称）
+    /// 保存预设（转发到 CrosshairViewModel）
     /// </summary>
     public async Task SavePresetWithNameAsync(string name)
     {
-        var preset = new Preset
-        {
-            Name = name,
-            Config = _configService.CloneConfig(Config),
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
-        await _presetService.SavePresetAsync(preset);
-        await LoadPresets();
-
-        SelectedPreset = Presets.FirstOrDefault(p => p.Id == preset.Id) ?? Presets.FirstOrDefault();
-        CurrentPresetName = name;
-        _currentPresetId = preset.Id;
-
-        await SaveCurrentStateAsync();
-
-        ShowToast($"预设 \"{name}\" 已保存");
+        await CrosshairViewModel.SavePresetWithNameAsync(name);
     }
 
     /// <summary>
-    /// 从文件导入预设
+    /// 导入预设（转发到 CrosshairViewModel）
     /// </summary>
     public async Task ImportPresetFromFileAsync(string filePath)
     {
-        try
-        {
-            var preset = await _presetService.ImportPresetAsync(filePath);
-            await LoadPresets();
-            SelectedPreset = preset;
-            _currentPresetId = preset.Id;
-            await SaveCurrentStateAsync();
-            ShowToast($"预设 \"{preset.Name}\" 已导入");
-        }
-        catch (Exception ex)
-        {
-            ShowToast($"导入失败: {ex.Message}");
-        }
+        await CrosshairViewModel.ImportPresetFromFileAsync(filePath);
     }
 
     /// <summary>
-    /// 导出当前配置到文件
+    /// 导出预设（转发到 CrosshairViewModel）
     /// </summary>
     public async Task ExportPresetToFileAsync(string filePath)
     {
-        try
-        {
-            var preset = new Preset
-            {
-                Name = CurrentPresetName,
-                Config = _configService.CloneConfig(Config)
-            };
-            await _presetService.ExportPresetAsync(preset, filePath);
-            ShowToast($"配置已导出到 {System.IO.Path.GetFileName(filePath)}");
-        }
-        catch (Exception ex)
-        {
-            ShowToast($"导出失败: {ex.Message}");
-        }
+        await CrosshairViewModel.ExportPresetToFileAsync(filePath);
     }
+}
 
-    /// <summary>
-    /// 加载所有预设
-    /// </summary>
-    private async Task LoadPresets()
-    {
-        try
-        {
-            var presets = await _presetService.LoadAllPresetsAsync();
-            Presets = presets.ToList();
+/// <summary>
+/// 页面类型枚举
+/// </summary>
+public enum PageType
+{
+    /// <summary>准心配置页面</summary>
+    Crosshair,
 
-            if (!_isInitializing && (SelectedPreset == null || !Presets.Any(p => p.Id == SelectedPreset.Id)))
-            {
-                SelectedPreset = Presets.FirstOrDefault();
-            }
-        }
-        catch
-        {
-            Presets = new List<Preset>
-            {
-                new()
-                {
-                    Id = "default",
-                    Name = "默认配置",
-                    Config = new CrosshairConfig(),
-                    IsDefault = true
-                }
-            };
-        }
-    }
-
-    // ==================== 内部方法 ====================
-
-    private void SubscribeConfigEvents(CrosshairConfig config)
-    {
-        config.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(Config)); ConfigUpdated?.Invoke(this, EventArgs.Empty); };
-        config.Effects.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(Config)); ConfigUpdated?.Invoke(this, EventArgs.Empty); };
-        config.Effects.Outline.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(Config)); ConfigUpdated?.Invoke(this, EventArgs.Empty); };
-        config.Effects.Shadow.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(Config)); ConfigUpdated?.Invoke(this, EventArgs.Empty); };
-    }
+    /// <summary>游戏配置页面</summary>
+    Games
 }

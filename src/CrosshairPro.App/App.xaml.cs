@@ -20,6 +20,8 @@ public partial class App : System.Windows.Application
         // 配置依赖注入容器
         _services = new ServiceCollection()
             .AddCrosshairProServices()
+            .AddSingleton<CrosshairViewModel>()
+            .AddSingleton<GamesViewModel>()
             .AddSingleton<MainViewModel>()
             .AddSingleton<OverlayWindow>()
             .AddTransient<MainWindow>()
