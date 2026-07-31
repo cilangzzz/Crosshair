@@ -18,6 +18,9 @@
             <!-- Config Type to Visibility Converter -->
             <local:ConfigTypeToVisibilityConverter x:Key="ConfigTypeToVisibilityConverter"/>
 
+            <!-- Int to Bool Converter (0 = false, non-0 = true) -->
+            <local:IntToBoolConverter x:Key="IntToBoolConverter"/>
+
             <!-- Global implicit styles (reference design tokens) -->
             <Style TargetType="Window">
                 <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>

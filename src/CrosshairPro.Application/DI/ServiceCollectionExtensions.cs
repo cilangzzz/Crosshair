@@ -30,6 +30,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IConfigurationService, ConfigurationService>();
         services.AddSingleton<IGameConfigService, GameConfigService>();
 
+        // Apex Legends 配置服务
+        services.AddSingleton<IApexConfigService, ApexConfigService>();
+
         // Infrastructure Services
         services.AddSingleton<IHotkeyManager, HotkeyManager>();
         services.AddSingleton<ICrosshairRenderer, CrosshairRenderer>();

@@ -56,14 +56,31 @@ Steam 库 → Apex Legends → 右键 → 属性 → 启动选项
 | `-cfg` | 路径 | 无 | 指定配置文件路径 |
 | `+host_writeconfig` | 命令 | 无 | 保存配置到文件 |
 
-### 三、网络参数
+### 三、游戏控制参数
+
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `+fps_max` | 数值 | 0 | 最大帧率限制 |
+| `+cl_showfps` | 开关 | 0 | 显示FPS计数器 |
+| `+cl_showpos` | 开关 | 0 | 显示位置/速度信息 |
+| `+cl_fovScale` | 数值 | 1.0 | 视野缩放 (1.0-1.35) |
+| `+mat_letterbox_aspect_min` | 数值 | 0.0 | 信箱模式最小宽高比 |
+| `+mat_letterbox_aspect_max` | 数值 | 0.0 | 信箱模式最大宽高比 |
+| `+m_rawinput` | 开关 | 0 | 原始鼠标输入 |
+| `+m_acceleration` | 开关 | 0 | 鼠标加速 |
+
+### 四、网络参数
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `-tcp` | 开关 | UDP | 强制TCP连接 |
 | `-noantiscreenscreenshot` | 开关 | 关 | 禁用屏幕截图保护 |
+| `+cl_interp` | 数值 | 0.015 | 网络插值 |
+| `+cl_interp_ratio` | 数值 | 1 | 插值比率 |
+| `+cl_cmdrate` | 数值 | 60 | 命令速率 |
+| `+cl_updaterate` | 数值 | 60 | 更新速率 |
 
-### 四、调试参数
+### 五、调试参数
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
@@ -73,7 +90,7 @@ Steam 库 → Apex Legends → 右键 → 属性 → 启动选项
 | `-condebug` | 开关 | 关 | 控制台日志 |
 | `-conclearlog` | 开关 | 关 | 清除日志 |
 
-### 五、图形参数
+### 六、图形参数
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
@@ -84,14 +101,14 @@ Steam 库 → Apex Legends → 右键 → 属性 → 启动选项
 | `-dxlevel` | 数值 | 95 | DirectX级别 (80/81/90/95) |
 | `-mat_dxlevel` | 数值 | 95 | 同上 |
 
-### 六、内存参数
+### 七、内存参数
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `-heapsize` | 数值 | 自动 | 堆内存大小 (KB) |
 | `-noheap` | 开关 | 关 | 禁用堆优化 |
 
-### 七、系统参数
+### 八、系统参数
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
@@ -231,6 +248,127 @@ host_writeconfig
 - 每次启动都会执行
 - 可设置只读防止覆盖
 
+### 游戏控制参数
+
+#### `+fps_max` 帧率限制
+
+```
++fps_max 180
++fps_max 279
++fps_max 0
+```
+
+**作用**：设置最大帧率限制。
+
+**推荐值**：
+
+| 场景 | 推荐值 | 说明 |
+|------|--------|------|
+| 竞技 | `+fps_max 180` | 稳定帧率 |
+| 高刷新率 | `+fps_max 279` | 配合240Hz显示器 |
+| 无限制 | `+fps_max 0` | 最大性能（可能不稳定） |
+
+**注意**：
+- 设置为显示器刷新率的 1.2-1.5 倍可获得最佳体验
+- 过高的帧率可能导致帧时间不稳定
+
+#### `+cl_showfps` 显示FPS
+
+```
++cl_showfps 1
+```
+
+**作用**：在屏幕右上角显示FPS计数器。
+
+**显示模式**：
+
+| 值 | 显示内容 |
+|----|----------|
+| 0 | 不显示 |
+| 1 | 简单FPS |
+| 2 | 详细FPS + 帧时间 |
+
+#### `+cl_showpos` 显示位置信息
+
+```
++cl_showpos 1
+```
+
+**作用**：在屏幕上显示玩家位置和速度信息。
+
+**显示内容**：
+- 当前位置坐标 (x, y, z)
+- 移动速度
+- 朝向角度
+
+**适用场景**：
+- 滑铲跳练习
+- 身法训练
+- 录制分析
+
+#### `+cl_fovScale` 视野缩放
+
+```
++cl_fovScale "2"
++cl_fovScale "1.27"
++cl_fovScale "1.0"
+```
+
+**作用**：设置游戏内的视野范围。
+
+**FOV 对照表**：
+
+| 参数值 | 实际FOV | 说明 |
+|--------|---------|------|
+| 1.0 | 90° | 默认视野 |
+| 1.1 | 97° | 略宽 |
+| 1.27 | 110° | 常用竞技设置 |
+| 1.35 | 120° | 最大视野 |
+| 2.0 | 超宽 | 需要特定参数支持 |
+
+**注意**：
+- 游戏内最大只能设置到 110° (1.27)
+- 使用 `+mat_letterbox_aspect_min 1.0` 可启用更宽视野
+- 过大的FOV可能导致画面变形
+
+#### `+mat_letterbox_aspect_min` 信箱模式
+
+```
++mat_letterbox_aspect_min 1.0
+```
+
+**作用**：控制画面信箱模式（黑边）的最小宽高比。
+
+**常用值**：
+
+| 值 | 效果 |
+|----|------|
+| 0.0 | 禁用信箱模式 |
+| 1.0 | 启用超宽视野支持 |
+| 1.333 | 4:3 比例 |
+| 1.777 | 16:9 比例 |
+
+**配合使用**：
+```
++mat_letterbox_aspect_min 1.0 +cl_fovScale "2"
+```
+可启用超宽视野（120°+）
+
+#### `+m_rawinput` 原始鼠标输入
+
+```
++m_rawinput 1
+```
+
+**作用**：绕过Windows鼠标设置，直接读取鼠标数据。
+
+**效果**：
+- 减少输入延迟
+- 消除鼠标加速影响
+- 更精准的控制
+
+**推荐**：竞技玩家建议开启
+
 ### 图形参数
 
 #### `-w` `-h` 窗口大小
@@ -256,6 +394,30 @@ host_writeconfig
 ---
 
 ## 推荐配置
+
+### 当前使用配置（参考）
+
+**180帧配置**：
+```
+-dev +fps_max 180 +cl_showpos 1 +mat_letterbox_aspect_min 1.0 +cl_fovScale "2" -novid
+```
+
+**279帧配置**：
+```
+-dev +fps_max 279 +cl_showpos 1 +mat_letterbox_aspect_min 1.0 +cl_fovScale "2" -w 2560 -h 1600 -novid
+```
+
+**参数说明**：
+
+| 参数 | 值 | 说明 |
+|------|-----|------|
+| `-dev` | - | 开发者模式 |
+| `+fps_max` | 180/279 | 帧率限制 |
+| `+cl_showpos` | 1 | 显示位置/速度 |
+| `+mat_letterbox_aspect_min` | 1.0 | 启用超宽FOV |
+| `+cl_fovScale` | "2" | 超宽视野 |
+| `-w` `-h` | 2560x1600 | 窗口分辨率 |
+| `-novid` | - | 跳过开场视频 |
 
 ### 竞技优化配置
 
@@ -325,6 +487,22 @@ interface LaunchOptions {
   exec?: string;
   cfg?: string;
   
+  // 游戏控制参数
+  fps_max?: number;
+  cl_showfps?: 0 | 1 | 2;
+  cl_showpos?: 0 | 1;
+  cl_fovScale?: number;
+  mat_letterbox_aspect_min?: number;
+  mat_letterbox_aspect_max?: number;
+  m_rawinput?: 0 | 1;
+  m_acceleration?: 0 | 1;
+  
+  // 网络参数
+  cl_interp?: number;
+  cl_interp_ratio?: number;
+  cl_cmdrate?: number;
+  cl_updaterate?: number;
+  
   // 图形参数
   dxlevel?: 80 | 81 | 90 | 95;
   
@@ -335,20 +513,49 @@ interface LaunchOptions {
 }
 ```
 
+### CurrentConfig（当前配置）
+
+```typescript
+// 当前使用的配置
+const currentConfig180: LaunchOptions = {
+  dev: true,
+  fps_max: 180,
+  cl_showpos: 1,
+  mat_letterbox_aspect_min: 1.0,
+  cl_fovScale: 2,
+  novid: true
+};
+
+const currentConfig279: LaunchOptions = {
+  dev: true,
+  fps_max: 279,
+  cl_showpos: 1,
+  mat_letterbox_aspect_min: 1.0,
+  cl_fovScale: 2,
+  width: 2560,
+  height: 1600,
+  novid: true
+};
+```
+
 ### 参数类型
 
 ```typescript
-type SwitchParam = `-high` | `-novid` | `-nojoy` | `-console`;
+type SwitchParam = `-high` | `-novid` | `-nojoy` | `-console` | `-dev`;
 
 type NumberParam = 
   | `-threads ${number}`
   | `-freq ${number}`
   | `-w ${number}`
-  | `-h ${number}`;
+  | `-h ${number}`
+  | `+fps_max ${number}`
+  | `+cl_fovScale ${number}`;
 
 type CommandParam = 
   | `+exec ${string}`
-  | `+host_writeconfig`;
+  | `+host_writeconfig`
+  | `+cl_showfps ${0|1|2}`
+  | `+cl_showpos ${0|1}`;
 ```
 
 ---

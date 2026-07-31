@@ -4,7 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       mc:Ignorable="d"
-      d:DesignHeight="500" d:DesignWidth="800">
+      d:DesignHeight="800" d:DesignWidth="800">
 
     <Grid Margin="20,12,20,0">
         <Grid.RowDefinitions>
@@ -22,19 +22,135 @@
         <!-- 配置内容 -->
         <ScrollViewer Grid.Row="1" Style="{StaticResource CustomScrollViewer}">
             <StackPanel>
-                <!-- 启动项 -->
+                <!-- 配置文件管理 -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="CONFIG FILES" Style="{StaticResource SectionHeader}"/>
+
+                        <!-- videoconfig.txt -->
+                        <Grid Margin="0,8,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="videoconfig.txt"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       FontFamily="{StaticResource FontFamilyMono}"/>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding VideoConfigPath}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       FontSize="11"
+                                       VerticalAlignment="Center"
+                                       Margin="16,0,0,0"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button Content="Replace"
+                                        Command="{Binding ReplaceVideoConfigCommand}"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Margin="0,0,4,0"
+                                        Padding="12,4"
+                                        FontSize="12"/>
+                                <Button Content="Backup"
+                                        Command="{Binding BackupVideoConfigCommand}"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Margin="0,0,4,0"
+                                        Padding="12,4"
+                                        FontSize="12"/>
+                                <Button Content="Export"
+                                        Command="{Binding ExportVideoConfigCommand}"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Padding="12,4"
+                                        FontSize="12"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- settings.cfg -->
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="settings.cfg"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       FontFamily="{StaticResource FontFamilyMono}"/>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding SettingsConfigPath}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       FontSize="11"
+                                       VerticalAlignment="Center"
+                                       Margin="16,0,0,0"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button Content="Replace"
+                                        Command="{Binding ReplaceSettingsConfigCommand}"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Margin="0,0,4,0"
+                                        Padding="12,4"
+                                        FontSize="12"/>
+                                <Button Content="Backup"
+                                        Command="{Binding BackupSettingsConfigCommand}"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Margin="0,0,4,0"
+                                        Padding="12,4"
+                                        FontSize="12"/>
+                                <Button Content="Export"
+                                        Command="{Binding ExportSettingsConfigCommand}"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Padding="12,4"
+                                        FontSize="12"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- 状态信息 -->
+                        <TextBlock Text="{Binding StatusMessage}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="11"
+                                   Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 启动选项 -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="LAUNCH OPTIONS" Style="{StaticResource SectionHeader}"/>
-                        <TextBlock Text="Steam 启动参数，如 +fps_max unlimited -freq 144"
+                        <TextBlock Text="Steam 启动参数，复制后在 Steam 游戏属性中粘贴"
                                    Foreground="{DynamicResource TextSecondaryBrush}"
-                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   FontSize="11"
                                    Margin="0,0,0,8"/>
+
+                        <!-- 预设选择 -->
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="预设："
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"/>
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding LaunchOptionPresets}"
+                                      SelectedIndex="{Binding SelectedLaunchPresetIndex, Mode=TwoWay}"
+                                      Style="{StaticResource CustomComboBox}"/>
+                        </Grid>
+
+                        <!-- 启动选项文本框 -->
                         <TextBox Text="{Binding LaunchOptions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource CustomTextBox}"
                                  AcceptsReturn="True"
                                  Height="60" TextWrapping="Wrap"
-                                 VerticalScrollBarVisibility="Auto"/>
+                                 VerticalScrollBarVisibility="Auto"
+                                 Margin="0,0,0,8"/>
+
+                        <Button Content="Copy to Clipboard"
+                                Command="{Binding CopyLaunchOptionsCommand}"
+                                Style="{StaticResource SecondaryButton}"
+                                HorizontalAlignment="Right"
+                                Padding="12,4"
+                                FontSize="12"/>
                     </StackPanel>
                 </Border>
 
@@ -42,29 +158,26 @@
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="VIDEO SETTINGS" Style="{StaticResource SectionHeader}"/>
-                        
-                        <!-- 全屏模式 -->
-                        <CheckBox Content="Fullscreen Mode"
-                                  IsChecked="{Binding Fullscreen, Mode=TwoWay}"
-                                  Margin="0,8,0,12"/>
 
-                        <!-- 最大 FPS -->
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="80"/>
-                                <ColumnDefinition Width="50"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Max FPS (0 = Unlimited)" VerticalAlignment="Center"/>
-                            <Slider Grid.Column="1"
-                                    Value="{Binding FpsMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Minimum="0" Maximum="300"
-                                    Style="{StaticResource CustomSlider}"
-                                    Margin="8,0"/>
-                            <TextBox Grid.Column="2"
-                                     Text="{Binding FpsMax, Mode=TwoWay}"
-                                     Style="{StaticResource NumericTextBox}"/>
-                        </Grid>
+                        <!-- 分辨率 -->
+                        <TextBlock Text="Resolution" Margin="0,8,0,4"/>
+                        <ComboBox ItemsSource="{Binding ResolutionOptions}"
+                                  Style="{StaticResource CustomComboBox}"
+                                  Margin="0,0,0,12">
+                            <ComboBox.SelectedValue>
+                                <MultiBinding StringFormat="{}{0}x{1}">
+                                    <Binding Path="VideoConfig.DefaultRes"/>
+                                    <Binding Path="VideoConfig.DefaultResHeight"/>
+                                </MultiBinding>
+                            </ComboBox.SelectedValue>
+                        </ComboBox>
+
+                        <!-- 窗口模式 -->
+                        <TextBlock Text="Window Mode" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding WindowModeOptions.Values}"
+                                  SelectedIndex="{Binding VideoConfig.WindowMode, Mode=TwoWay}"
+                                  Style="{StaticResource CustomComboBox}"
+                                  Margin="0,0,0,12"/>
 
                         <!-- 刷新率 -->
                         <Grid Margin="0,0,0,12">
@@ -75,14 +188,130 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="Refresh Rate (Hz)" VerticalAlignment="Center"/>
                             <Slider Grid.Column="1"
-                                    Value="{Binding RefreshRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Value="{Binding VideoConfig.RefreshRate, Mode=TwoWay}"
                                     Minimum="60" Maximum="360"
                                     Style="{StaticResource CustomSlider}"
                                     Margin="8,0"/>
                             <TextBox Grid.Column="2"
-                                     Text="{Binding RefreshRate, Mode=TwoWay}"
+                                     Text="{Binding VideoConfig.RefreshRate, Mode=TwoWay}"
                                      Style="{StaticResource NumericTextBox}"/>
                         </Grid>
+
+                        <!-- 伽马/亮度 -->
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Gamma (Brightness)" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1"
+                                    Value="{Binding VideoConfig.Gamma, Mode=TwoWay}"
+                                    Minimum="0.5" Maximum="2.5"
+                                    SmallChange="0.1" LargeChange="0.1"
+                                    Style="{StaticResource CustomSlider}"
+                                    Margin="8,0"/>
+                            <TextBox Grid.Column="2"
+                                     Text="{Binding VideoConfig.Gamma, StringFormat={}{0:F1}, Mode=TwoWay}"
+                                     Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 画质设置 -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="QUALITY SETTINGS" Style="{StaticResource SectionHeader}"/>
+
+                        <!-- 纹理质量 -->
+                        <TextBlock Text="Texture Quality" Margin="0,8,0,4"/>
+                        <ComboBox SelectedIndex="{Binding VideoConfig.MatPicmip, Mode=TwoWay}"
+                                  Style="{StaticResource CustomComboBox}"
+                                  Margin="0,0,0,12">
+                            <ComboBoxItem Content="Highest"/>
+                            <ComboBoxItem Content="High"/>
+                            <ComboBoxItem Content="Medium"/>
+                            <ComboBoxItem Content="Low"/>
+                        </ComboBox>
+
+                        <!-- 各向异性过滤 -->
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Anisotropic Filtering" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1"
+                                    Value="{Binding VideoConfig.MatForceaniso, Mode=TwoWay}"
+                                    Minimum="1" Maximum="16"
+                                    Style="{StaticResource CustomSlider}"
+                                    Margin="8,0"/>
+                            <TextBox Grid.Column="2"
+                                     Text="{Binding VideoConfig.MatForceaniso, Mode=TwoWay}"
+                                     Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+
+                        <!-- 阴影 -->
+                        <CheckBox Content="Enable Shadows"
+                                  IsChecked="{Binding VideoConfig.ShadowEnable, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
+                                  Margin="0,8"/>
+                        <CheckBox Content="Cascade Shadow Maps (CSM)"
+                                  IsChecked="{Binding VideoConfig.CsmEnabled, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
+                                  Margin="24,4,0,12"/>
+
+                        <!-- 粒子效果 -->
+                        <TextBlock Text="Particle Effects" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding ParticleLevelOptions.Values}"
+                                  SelectedIndex="{Binding VideoConfig.ParticleCpuLevel, Mode=TwoWay}"
+                                  Style="{StaticResource CustomComboBox}"
+                                  Margin="0,0,0,12"/>
+
+                        <!-- SSAO -->
+                        <TextBlock Text="Ambient Occlusion (SSAO)" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding SsaoQualityOptions.Values}"
+                                  SelectedIndex="{Binding VideoConfig.SsaoQuality, Mode=TwoWay}"
+                                  Style="{StaticResource CustomComboBox}"
+                                  Margin="0,0,0,12"/>
+
+                        <!-- 体积效果 -->
+                        <CheckBox Content="Volumetric Lighting"
+                                  IsChecked="{Binding VideoConfig.VolumetricLighting, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
+                                  Margin="0,8"/>
+                        <CheckBox Content="Volumetric Fog"
+                                  IsChecked="{Binding VideoConfig.VolumetricFog, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
+                                  Margin="0,8,0,12"/>
+
+                        <!-- 物理效果 -->
+                        <CheckBox Content="Ragdoll Physics"
+                                  IsChecked="{Binding VideoConfig.ClGibAllow, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
+                                  Margin="0,8"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 性能设置 -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="PERFORMANCE" Style="{StaticResource SectionHeader}"/>
+
+                        <!-- 垂直同步 -->
+                        <TextBlock Text="V-Sync" Margin="0,8,0,4"/>
+                        <ComboBox ItemsSource="{Binding VsyncOptions.Values}"
+                                  SelectedIndex="{Binding VideoConfig.MatVsyncMode, Mode=TwoWay}"
+                                  Style="{StaticResource CustomComboBox}"
+                                  Margin="0,0,0,12"/>
+
+                        <!-- 抗锯齿 -->
+                        <TextBlock Text="Anti-Aliasing" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding AntialiasOptions.Values}"
+                                  SelectedIndex="{Binding VideoConfig.MatAntialiasMode, Mode=TwoWay}"
+                                  Style="{StaticResource CustomComboBox}"
+                                  Margin="0,0,0,12"/>
+
+                        <!-- 动态分辨率 -->
+                        <CheckBox Content="Dynamic Resolution Scaling (DVS)"
+                                  IsChecked="{Binding VideoConfig.DvsEnable, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
+                                  Margin="0,8"/>
                     </StackPanel>
                 </Border>
 
@@ -90,14 +319,222 @@
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="GAME SETTINGS" Style="{StaticResource SectionHeader}"/>
-                        
-                        <CheckBox Content="Show Position Info (cl_showpos)"
-                                  IsChecked="{Binding ShowPos, Mode=TwoWay}"
-                                  Margin="0,8"/>
 
+                        <!-- 鼠标灵敏度 -->
+                        <Grid Margin="0,8,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Mouse Sensitivity" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1"
+                                    Value="{Binding SettingsConfig.MouseSensitivity, Mode=TwoWay}"
+                                    Minimum="0.1" Maximum="10.0"
+                                    SmallChange="0.1" LargeChange="0.5"
+                                    Style="{StaticResource CustomSlider}"
+                                    Margin="8,0"/>
+                            <TextBox Grid.Column="2"
+                                     Text="{Binding SettingsConfig.MouseSensitivity, StringFormat={}{0:F2}, Mode=TwoWay}"
+                                     Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+
+                        <!-- 鼠标加速 -->
+                        <CheckBox Content="Mouse Acceleration"
+                                  IsChecked="{Binding SettingsConfig.MAcceleration, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
+                                  Margin="0,8,0,12"/>
+
+                        <!-- FOV -->
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Field of View (FOV)" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1"
+                                    Value="{Binding SettingsConfig.ClFovScale, Mode=TwoWay}"
+                                    Minimum="1.0" Maximum="1.35"
+                                    SmallChange="0.01" LargeChange="0.05"
+                                    Style="{StaticResource CustomSlider}"
+                                    Margin="8,0"/>
+                            <TextBox Grid.Column="2"
+                                     Text="{Binding SettingsConfig.ClFovScale, StringFormat={}{0:F2}, Mode=TwoWay}"
+                                     Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+
+                        <!-- FPS -->
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Max FPS (0 = Unlimited)" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1"
+                                    Value="{Binding SettingsConfig.FpsMax, Mode=TwoWay}"
+                                    Minimum="0" Maximum="300"
+                                    Style="{StaticResource CustomSlider}"
+                                    Margin="8,0"/>
+                            <TextBox Grid.Column="2"
+                                     Text="{Binding SettingsConfig.FpsMax, Mode=TwoWay}"
+                                     Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+
+                        <!-- 显示选项 -->
                         <CheckBox Content="Show FPS (cl_showfps)"
-                                  IsChecked="{Binding ShowFps, Mode=TwoWay}"
+                                  IsChecked="{Binding SettingsConfig.ClShowfps, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                   Margin="0,8"/>
+                        <CheckBox Content="Show Position Info (cl_showpos)"
+                                  IsChecked="{Binding SettingsConfig.ClShowpos, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
+                                  Margin="0,8"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 瞄准镜灵敏度 -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <CheckBox Content="Use Per-Scope Sensitivity"
+                                  IsChecked="{Binding SettingsConfig.MouseUsePerScopeSensitivityScalars, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
+                                  Style="{StaticResource CustomCheckBox}"
+                                  Margin="0,0,0,12"/>
+
+                        <!-- 1倍镜 -->
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="1x (Red Dot/Holo)" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1"
+                                    Value="{Binding SettingsConfig.MouseZoomedSensitivityScalar0, Mode=TwoWay}"
+                                    Minimum="0.1" Maximum="2.0"
+                                    SmallChange="0.1" LargeChange="0.1"
+                                    Style="{StaticResource CustomSlider}"
+                                    Margin="8,0"/>
+                            <TextBox Grid.Column="2"
+                                     Text="{Binding SettingsConfig.MouseZoomedSensitivityScalar0, StringFormat={}{0:F1}, Mode=TwoWay}"
+                                     Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+
+                        <!-- 2倍镜 -->
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="2x Scope" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1"
+                                    Value="{Binding SettingsConfig.MouseZoomedSensitivityScalar1, Mode=TwoWay}"
+                                    Minimum="0.1" Maximum="2.0"
+                                    SmallChange="0.1" LargeChange="0.1"
+                                    Style="{StaticResource CustomSlider}"
+                                    Margin="8,0"/>
+                            <TextBox Grid.Column="2"
+                                     Text="{Binding SettingsConfig.MouseZoomedSensitivityScalar1, StringFormat={}{0:F1}, Mode=TwoWay}"
+                                     Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+
+                        <!-- 3倍镜 -->
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="3x Scope" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1"
+                                    Value="{Binding SettingsConfig.MouseZoomedSensitivityScalar2, Mode=TwoWay}"
+                                    Minimum="0.1" Maximum="2.0"
+                                    SmallChange="0.1" LargeChange="0.1"
+                                    Style="{StaticResource CustomSlider}"
+                                    Margin="8,0"/>
+                            <TextBox Grid.Column="2"
+                                     Text="{Binding SettingsConfig.MouseZoomedSensitivityScalar2, StringFormat={}{0:F1}, Mode=TwoWay}"
+                                     Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+
+                        <!-- 4倍镜 -->
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="4x Scope" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1"
+                                    Value="{Binding SettingsConfig.MouseZoomedSensitivityScalar3, Mode=TwoWay}"
+                                    Minimum="0.1" Maximum="2.0"
+                                    SmallChange="0.1" LargeChange="0.1"
+                                    Style="{StaticResource CustomSlider}"
+                                    Margin="8,0"/>
+                            <TextBox Grid.Column="2"
+                                     Text="{Binding SettingsConfig.MouseZoomedSensitivityScalar3, StringFormat={}{0:F1}, Mode=TwoWay}"
+                                     Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+
+                        <!-- 6倍镜 -->
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="6x Scope" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1"
+                                    Value="{Binding SettingsConfig.MouseZoomedSensitivityScalar4, Mode=TwoWay}"
+                                    Minimum="0.1" Maximum="2.0"
+                                    SmallChange="0.1" LargeChange="0.1"
+                                    Style="{StaticResource CustomSlider}"
+                                    Margin="8,0"/>
+                            <TextBox Grid.Column="2"
+                                     Text="{Binding SettingsConfig.MouseZoomedSensitivityScalar4, StringFormat={}{0:F1}, Mode=TwoWay}"
+                                     Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+
+                        <!-- 8-10倍镜 -->
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="8x/10x Scope" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1"
+                                    Value="{Binding SettingsConfig.MouseZoomedSensitivityScalar5, Mode=TwoWay}"
+                                    Minimum="0.1" Maximum="2.0"
+                                    SmallChange="0.1" LargeChange="0.1"
+                                    Style="{StaticResource CustomSlider}"
+                                    Margin="8,0"/>
+                            <TextBox Grid.Column="2"
+                                     Text="{Binding SettingsConfig.MouseZoomedSensitivityScalar5, StringFormat={}{0:F1}, Mode=TwoWay}"
+                                     Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 预设按钮 -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="PRESETS" Style="{StaticResource SectionHeader}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Button Content="Competitive"
+                                    Command="{Binding ApplyPresetCommand}"
+                                    CommandParameter="竞技优化"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Margin="0,0,8,0"/>
+                            <Button Content="High Quality"
+                                    Command="{Binding ApplyPresetCommand}"
+                                    CommandParameter="高画质"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Margin="0,0,8,0"/>
+                            <Button Content="Default"
+                                    Command="{Binding ApplyPresetCommand}"
+                                    CommandParameter="默认"
+                                    Style="{StaticResource SecondaryButton}"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
             </StackPanel>
@@ -105,12 +542,12 @@
 
         <!-- 底部按钮 -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button Content="Reset"
+            <Button Content="Reset to Default"
                     Command="{Binding ResetCommand}"
                     Style="{StaticResource SecondaryButton}"
                     Margin="0,0,8,0"/>
-            <Button Content="Apply"
-                    Command="{Binding ApplyCommand}"
+            <Button Content="Save Configuration"
+                    Command="{Binding SaveCommand}"
                     Style="{StaticResource PrimaryButton}"/>
         </StackPanel>
     </Grid>

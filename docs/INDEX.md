@@ -65,6 +65,8 @@ WPF 应用入口、UI 层、窗口和控件实现。
 ### GameConfig - 游戏配置层
 游戏配置文件协议、字段定义、解析规则。
 
+#### Apex Legends
+
 | 文档 | 描述 |
 |------|------|
 | [README](GameConfig/Apex/README.md) | Apex Legends 配置协议概述 |
@@ -74,18 +76,33 @@ WPF 应用入口、UI 层、窗口和控件实现。
 | [数据模型](GameConfig/Apex/data-model.md) | 配置数据结构定义 |
 | [变更日志](GameConfig/Apex/CHANGELOG.md) | 配置协议变更历史 |
 
+#### Counter-Strike 2
+
+| 文档 | 描述 |
+|------|------|
+| [README](GameConfig/CS2/README.md) | CS2 配置协议概述 |
+| [video](GameConfig/CS2/video.md) | 视频配置详细选项 |
+| [config](GameConfig/CS2/config.md) | 游戏配置详细选项 |
+| [launch-options](GameConfig/CS2/launch-options.md) | 启动参数详解 |
+| [数据模型](GameConfig/CS2/data-model.md) | 配置数据结构定义 |
+| [变更日志](GameConfig/CS2/CHANGELOG.md) | 配置协议变更历史 |
+
 ## 文档统计
 
-- **模块数**: 6
-- **文档文件**: 27+
-- **总行数**: 约 5500+ 行
+- **模块数**: 7
+- **文档文件**: 33+
+- **总行数**: 约 6500+ 行
 - **最后更新**: 2026-07-31
 
 ## 最新变更
 
 ### 2026-07-31 更新
+- 新增 CS2 (Counter-Strike 2) 配置协议文档
+- 新增 CS2 视频配置详解 (video.md)
+- 新增 CS2 游戏配置详解 (config.md)
+- 新增 CS2 启动参数详解 (launch-options.md)
+- 新增 CS2 数据模型定义 (data-model.md)
 - 新增 Apex Legends 配置协议文档
-- 新增 GameConfig/Apex 文档模块
 - 包含 videoconfig.txt 和 settings.cfg 完整字段定义
 - 提供数据模型、配置模板、优化建议
 - 新增游戏配置管理功能（GameConfig, GameConfigStrategy）
@@ -127,10 +144,17 @@ docs/
 │   ├── pitfalls.md
 │   └── CHANGELOG.md
 └── GameConfig/               # 游戏配置层
-    └── Apex/                 # Apex Legends 配置
+    ├── Apex/                 # Apex Legends 配置
+    │   ├── README.md
+    │   ├── videoconfig.md
+    │   ├── settings.md
+    │   ├── launch-options.md
+    │   ├── data-model.md
+    │   └── CHANGELOG.md
+    └── CS2/                  # Counter-Strike 2 配置
         ├── README.md
-        ├── videoconfig.md
-        ├── settings.md
+        ├── video.md
+        ├── config.md
         ├── launch-options.md
         ├── data-model.md
         └── CHANGELOG.md
@@ -167,10 +191,13 @@ docs/
 
 **游戏配置**:
 - [Apex 配置协议](GameConfig/Apex/README.md)
-- [视频配置选项](GameConfig/Apex/videoconfig.md)
-- [游戏设置选项](GameConfig/Apex/settings.md)
-- [启动参数详解](GameConfig/Apex/launch-options.md)
-- [配置数据模型](GameConfig/Apex/data-model.md)
+- [Apex 视频配置](GameConfig/Apex/videoconfig.md)
+- [Apex 游戏设置](GameConfig/Apex/settings.md)
+- [Apex 启动参数](GameConfig/Apex/launch-options.md)
+- [CS2 配置协议](GameConfig/CS2/README.md)
+- [CS2 视频配置](GameConfig/CS2/video.md)
+- [CS2 游戏配置](GameConfig/CS2/config.md)
+- [CS2 启动参数](GameConfig/CS2/launch-options.md)
 
 ### 按问题查找
 
