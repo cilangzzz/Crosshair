@@ -65,9 +65,20 @@ WPF 应用入口、UI 层、窗口和控件实现。
 ## 文档统计
 
 - **模块数**: 5
-- **文档文件**: 21
-- **总行数**: 约 3000+ 行
+- **文档文件**: 21+
+- **总行数**: 约 4000+ 行
 - **最后更新**: 2026-07-31
+
+## 最新变更
+
+### 2026-07-31 更新
+- 新增游戏配置管理功能（GameConfig, GameConfigStrategy）
+- 新增 IGameConfigService 接口和 GameConfigService 实现
+- 支持 8 款主流 FPS 游戏配置
+- 新增页面导航系统（CrosshairPage, GamesPage）
+- 新增视图模型（CrosshairViewModel, GamesViewModel）
+- 新增自定义控件（TabNavItem, IconButton, PageTemplateSelector）
+- 新增主题辅助类和图标资源
 
 ## 文档导航
 

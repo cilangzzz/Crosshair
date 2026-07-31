@@ -5,6 +5,49 @@
 
 ---
 
+## [2026-07-31] feat: add page navigation system and new controls
+
+**类型**: feat
+**风险**: HIGH
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Views/CrosshairPage.xaml.cs | +340 | 新增准心配置页面 |
+| Views/GamesPage.xaml.cs | +24 | 新增游戏配置页面 |
+| ViewModels/CrosshairViewModel.cs | +337 | 新增准心配置视图模型 |
+| ViewModels/GamesViewModel.cs | +129 | 新增游戏配置视图模型 |
+| ViewModels/MainViewModel.cs | 重构 | 改为页面导航架构 |
+| Controls/TabNavItem.cs | +142 | 新增标签页导航项控件 |
+| Controls/PageTemplateSelector.cs | +33 | 新增页面模板选择器 |
+| Controls/IconButton.cs | +205 | 新增图标按钮控件 |
+| Helpers/ThemeHelper.cs | +146 | 新增主题资源访问助手 |
+| StringToVisibilityConverter.cs | +27 | 新增字符串到可见性转换器 |
+| Themes/IconGeometries.xaml | +147 | 新增图标几何资源 |
+
+### 影响范围
+- **架构**: 从单 ViewModel 改为页面导航架构
+- **页面**: 新增 CrosshairPage、GamesPage 两个页面
+- **控件**: 新增 TabNavItem、PageTemplateSelector、IconButton 等控件
+- **资源**: 新增 IconGeometries.xaml 图标资源文件
+
+### 新增功能
+- `CrosshairPage`: 准心配置页面，左侧预览 + 右侧控制面板
+- `GamesPage`: 游戏配置页面，管理游戏特定配置
+- `CrosshairViewModel`: 准心配置逻辑，从 MainViewModel 拆分
+- `GamesViewModel`: 游戏配置逻辑，支持多游戏配置
+- `TabNavItem`: 左侧导航图标项，支持选中态
+- `PageTemplateSelector`: 根据 PageType 选择页面模板
+- `StringToVisibilityConverter`: 字符串到可见性转换
+- `IconGeometries.xaml`: Material Design 风格图标集合
+
+### 架构变更
+- `MainViewModel` 改为持有子 ViewModel，不再直接管理配置
+- 新增 `PageType` 枚举（Crosshair、Games）
+- 页面渲染逻辑从 MainWindow 移到 CrosshairPage
+
+---
+
 ## [2026-07-31] feat: add custom controls and theme system
 
 **类型**: feat

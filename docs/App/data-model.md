@@ -2,10 +2,66 @@
 
 ## MainViewModel
 
-主视图模型，管理应用的核心业务逻辑和 UI 状态。
+主视图模型，管理页面导航和全局状态。
 
 ```csharp
 public partial class MainViewModel : ObservableObject
+{
+    public CrosshairViewModel CrosshairViewModel { get; }
+    public GamesViewModel GamesViewModel { get; }
+    
+    [ObservableProperty] private PageType _currentPage = PageType.Crosshair;
+    
+    public bool IsCrosshairPage => CurrentPage == PageType.Crosshair;
+    public bool IsGamesPage => CurrentPage == PageType.Games;
+}
+```
+
+### PageType 枚举
+
+```csharp
+public enum PageType
+{
+    Crosshair,  // 准心配置页面
+    Games       // 游戏配置页面
+}
+```
+
+### 属性说明
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| CrosshairViewModel | CrosshairViewModel | 准心配置页面 ViewModel |
+| GamesViewModel | GamesViewModel | 游戏配置页面 ViewModel |
+| CurrentPage | PageType | 当前页面 |
+| IsCrosshairPage | bool | 是否显示准心页面 |
+| IsGamesPage | bool | 是否显示游戏页面 |
+
+### 事件
+
+| 事件 | 说明 |
+|------|------|
+| ConfigUpdated | 配置更新事件（转发自 CrosshairViewModel） |
+| ToggleCrosshairRequested | 切换准心显示请求 |
+| SelectImageRequested | 选择自定义图片请求 |
+| SavePresetRequested | 保存预设请求 |
+| ImportPresetRequested | 导入预设请求 |
+| ExportPresetRequested | 导出预设请求 |
+| ToastRequested | Toast 通知请求 |
+
+### 命令
+
+| 命令 | 说明 |
+|------|------|
+| NavigateToCrosshairCommand | 导航到准心配置页面 |
+| NavigateToGamesCommand | 导航到游戏配置页面 |
+
+## CrosshairViewModel
+
+准心配置页面 ViewModel，管理准心配置、预设、预览渲染。
+
+```csharp
+public partial class CrosshairViewModel : ObservableObject
 {
     [ObservableProperty] private CrosshairConfig _config;
     [ObservableProperty] private bool _isCrosshairVisible = true;
@@ -28,6 +84,8 @@ public partial class MainViewModel : ObservableObject
 | SelectedStyleIndex | int | 选中的样式索引 |
 | Presets | List<Preset> | 预设列表 |
 | SelectedPreset | Preset? | 当前选中的预设 |
+| CrosshairStyleNames | string[] | 准心样式名称数组 |
+| PresetColors | string[] | 预设颜色数组 |
 
 ### 事件
 
@@ -53,6 +111,61 @@ public partial class MainViewModel : ObservableObject
 | ImportPresetCommand | 从文件导入预设 |
 | ExportPresetCommand | 导出当前配置到文件 |
 | DeletePresetCommand | 删除指定预设 |
+
+### 业务方法
+
+| 方法 | 说明 |
+|------|------|
+| SavePresetWithNameAsync(name) | 保存预设（由 MainWindow 调用） |
+| ImportPresetFromFileAsync(filePath) | 从文件导入预设 |
+| ExportPresetToFileAsync(filePath) | 导出当前配置到文件 |
+
+## GamesViewModel
+
+游戏配置页面 ViewModel，管理游戏特定配置。
+
+```csharp
+public partial class GamesViewModel : ObservableObject
+{
+    public ObservableCollection<GameProfile> Games { get; }
+    
+    [ObservableProperty] private GameProfile? _selectedGame;
+    [ObservableProperty] private GameConfigStrategy? _currentStrategy;
+    [ObservableProperty] private GameConfig? _currentConfig;
+    [ObservableProperty] private bool _hasUnsavedChanges;
+}
+```
+
+### 属性说明
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| Games | ObservableCollection<GameProfile> | 游戏列表 |
+| SelectedGame | GameProfile? | 当前选中的游戏 |
+| CurrentStrategy | GameConfigStrategy? | 当前游戏的配置策略 |
+| CurrentConfig | GameConfig? | 当前游戏的配置 |
+| HasUnsavedChanges | bool | 是否有未保存的更改 |
+
+### 事件
+
+| 事件 | 说明 |
+|------|------|
+| ToastRequested | Toast 通知请求 |
+
+### 命令
+
+| 命令 | 说明 |
+|------|------|
+| SaveConfigCommand | 保存配置 |
+| ResetConfigCommand | 重置为默认配置 |
+| ApplyConfigCommand | 应用配置到游戏 |
+
+### 方法
+
+| 方法 | 说明 |
+|------|------|
+| GetSettingValue(key) | 获取配置项的值 |
+| SetSettingValue(key, value) | 设置配置项的值 |
 
 ## OverlayWindow
 
@@ -99,6 +212,21 @@ public class CrosshairPreview : Control
     public CrosshairConfig? Config { get; set; }
     
     protected override void OnRender(DrawingContext dc);
+}
+```
+
+### TabNavItem
+
+左侧导航栏图标项控件，支持选中态、悬停态、左侧指示条。
+
+```csharp
+public class TabNavItem : Button
+{
+    public static readonly DependencyProperty IconGeometryProperty;
+    public static readonly DependencyProperty IsSelectedProperty;
+    
+    public string IconGeometry { get; set; }  // 图标几何资源键名
+    public bool IsSelected { get; set; }      // 是否选中
 }
 ```
 
@@ -169,7 +297,23 @@ public class IconButton : Button
 }
 ```
 
-## ThemeHelper
+### PageTemplateSelector
+
+页面模板选择器，根据 PageType 选择对应的 DataTemplate。
+
+```csharp
+public class PageTemplateSelector : DataTemplateSelector
+{
+    public DataTemplate? CrosshairTemplate { get; set; }
+    public DataTemplate? GamesTemplate { get; set; }
+    
+    public override DataTemplate? SelectTemplate(object item, DependencyObject container);
+}
+```
+
+## 辅助类
+
+### ThemeHelper
 
 主题资源访问助手，从 Application.Resources 获取主题颜色和样式。
 
@@ -200,6 +344,18 @@ public static class ThemeHelper
     public static CornerRadius RadiusLg { get; }
     public static CornerRadius RadiusMd { get; }
     public static CornerRadius RadiusSm { get; }
+}
+```
+
+### StringToVisibilityConverter
+
+字符串到可见性转换器，非空字符串显示，空字符串或 null 隐藏。
+
+```csharp
+public class StringToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture);
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture);
 }
 ```
 

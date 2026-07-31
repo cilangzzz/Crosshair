@@ -48,9 +48,6 @@ public partial class MainViewModel : ObservableObject
         CrosshairViewModel.SavePresetRequested += (s, e) => SavePresetRequested?.Invoke(s, e);
         CrosshairViewModel.ImportPresetRequested += (s, e) => ImportPresetRequested?.Invoke(s, e);
         CrosshairViewModel.ExportPresetRequested += (s, e) => ExportPresetRequested?.Invoke(s, e);
-
-        // 订阅游戏 ViewModel 的事件
-        GamesViewModel.ToastRequested += (s, msg) => ToastRequested?.Invoke(s, msg);
     }
 
     // ==================== 事件 ====================

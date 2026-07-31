@@ -5,6 +5,35 @@
 
 ---
 
+## [2026-07-31] feat: add game config models
+
+**类型**: feat
+**提交**: N/A (pending)
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| GameConfig.cs | +20 | 新增游戏配置数据模型 |
+| GameConfigStrategy.cs | +91 | 新增游戏配置策略定义 |
+| ConfigItemType.cs | (embedded) | 配置项类型枚举（Bool/Int/Enum/String） |
+
+### 新增模型
+
+**GameConfig**：
+- 存储单个游戏的配置数据
+- 包含 GameId、LaunchOptions、Settings 字典
+
+**GameConfigStrategy**：
+- 定义每个游戏支持的配置项和操作方式
+- 包含 ConfigItemType 枚举、ConfigItemDefinition、ConfigSectionDefinition
+
+### 影响范围
+- **数据模型**: 新增游戏配置相关模型，用于游戏特定配置管理
+- **跨模块**: Application 层可使用 GameConfigStrategy 构建 UI，使用 GameConfig 存储配置
+
+---
+
 ## [2026-07-03] refactor: restructure project architecture
 
 **类型**: refactor

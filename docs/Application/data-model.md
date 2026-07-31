@@ -100,6 +100,51 @@ public interface IPresetService
 - `SetCurrentPresetAsync()`: 切换预设后持久化状态
 - `ImportPresetAsync()` / `ExportPresetAsync()`: 预设分享和备份
 
+### IGameConfigService
+
+游戏配置服务接口，管理各游戏的配置数据。
+
+```csharp
+public interface IGameConfigService
+{
+    /// <summary>
+    /// 获取所有游戏配置策略
+    /// </summary>
+    IReadOnlyList<GameConfigStrategy> GetStrategies();
+
+    /// <summary>
+    /// 获取指定游戏的配置策略
+    /// </summary>
+    GameConfigStrategy? GetStrategy(string gameId);
+
+    /// <summary>
+    /// 获取指定游戏的配置
+    /// </summary>
+    Task<GameConfig?> GetConfigAsync(string gameId);
+
+    /// <summary>
+    /// 保存游戏配置
+    /// </summary>
+    Task SaveConfigAsync(GameConfig config);
+
+    /// <summary>
+    /// 重置游戏配置到默认值
+    /// </summary>
+    Task ResetToDefaultAsync(string gameId);
+
+    /// <summary>
+    /// 应用配置到游戏（写入配置文件）
+    /// </summary>
+    Task ApplyConfigAsync(string gameId);
+}
+```
+
+**使用场景**:
+- `GetStrategies()`: 填充游戏列表，展示每款游戏支持的配置项
+- `GetConfigAsync()`: 加载用户保存的游戏配置
+- `SaveConfigAsync()`: 保存用户修改的游戏配置
+- `ApplyConfigAsync()`: 将配置写入游戏配置文件（待实现）
+
 ## 服务实现
 
 ### ConfigurationService
@@ -226,6 +271,110 @@ public async Task ExportPresetAsync(Preset preset, string filePath)
 }
 ```
 
+### GameConfigService
+
+游戏配置服务实现，内部状态：
+
+```csharp
+public class GameConfigService : IGameConfigService
+{
+    private readonly Dictionary<string, GameConfigStrategy> _strategies;  // 游戏策略字典
+    private readonly string _configDir;                                   // 配置目录
+    private readonly Dictionary<string, GameConfig> _configCache = new(); // 配置缓存
+}
+```
+
+**核心逻辑**:
+- 构造时初始化 8 款内置游戏的配置策略
+- 配置文件存储在 `%APPDATA%/CrosshairPro/gameconfigs/{gameId}.json`
+- 使用内存缓存避免重复文件读取
+- `ApplyConfigAsync()` 待实现，需要根据每款游戏的配置文件格式写入
+
+**游戏策略初始化**:
+
+```csharp
+private Dictionary<string, GameConfigStrategy> InitializeStrategies()
+{
+    return new Dictionary<string, GameConfigStrategy>
+    {
+        ["builtin-cs2"] = CreateCS2Strategy(),
+        ["builtin-valorant"] = CreateValorantStrategy(),
+        ["builtin-apex"] = CreateApexStrategy(),
+        ["builtin-overwatch2"] = CreateOverwatch2Strategy(),
+        ["builtin-pubg"] = CreatePUBGStrategy(),
+        ["builtin-fortnite"] = CreateFortniteStrategy(),
+        ["builtin-r6"] = CreateR6Strategy(),
+        ["builtin-csgo"] = CreateCSGOStrategy()
+    };
+}
+```
+
+**配置策略示例** (CS2):
+
+```csharp
+private GameConfigStrategy CreateCS2Strategy()
+{
+    return new GameConfigStrategy
+    {
+        GameId = "builtin-cs2",
+        SupportsLaunchOptions = true,
+        LaunchOptionsDescription = "CS2 启动项参数，如 -high -threads 12 -novid",
+        Sections = new List<ConfigSectionDefinition>
+        {
+            new()
+            {
+                Name = "video",
+                DisplayName = "视频设置",
+                Items = new List<ConfigItemDefinition>
+                {
+                    new()
+                    {
+                        Key = "fullscreen",
+                        DisplayName = "全屏模式",
+                        Type = ConfigItemType.Bool,
+                        DefaultValue = true
+                    },
+                    new()
+                    {
+                        Key = "resolution",
+                        DisplayName = "分辨率",
+                        Type = ConfigItemType.Enum,
+                        DefaultValue = "1920x1080",
+                        Options = new List<string> { "1920x1080", "1680x1050", "1600x900", ... }
+                    }
+                }
+            }
+        }
+    };
+}
+```
+
+**配置缓存机制**:
+
+```csharp
+public async Task<GameConfig?> GetConfigAsync(string gameId)
+{
+    // 优先返回缓存
+    if (_configCache.TryGetValue(gameId, out var cached))
+        return cached;
+
+    var filePath = GetConfigFilePath(gameId);
+    if (!File.Exists(filePath))
+    {
+        // 文件不存在时返回默认配置
+        var defaultConfig = CreateDefaultConfig(gameId);
+        _configCache[gameId] = defaultConfig;
+        return defaultConfig;
+    }
+
+    // 从文件加载并缓存
+    var json = await File.ReadAllTextAsync(filePath);
+    var config = JsonSerializer.Deserialize<GameConfig>(json);
+    _configCache[gameId] = config!;
+    return config;
+}
+```
+
 ## 依赖注入配置
 
 ### ServiceCollectionExtensions
@@ -263,6 +412,7 @@ public static IServiceCollection AddCrosshairProServices(this IServiceCollection
 | 预设仓库 | `IPresetRepository` | `JsonPresetRepository` | Singleton | - |
 | 配置服务 | `IConfigurationService` | `ConfigurationService` | Singleton | 持有当前配置 |
 | 预设服务 | `IPresetService` | `PresetService` | Singleton | 持有 JSON 配置 |
+| 游戏配置服务 | `IGameConfigService` | `GameConfigService` | Singleton | 持有策略和缓存 |
 | 热键管理 | `IHotkeyManager` | `HotkeyManager` | Singleton | - |
 | 准心渲染 | `ICrosshairRenderer` | `CrosshairRenderer` | Singleton | 缓存几何图形 |
 
@@ -304,6 +454,29 @@ App.OnStartup()
             └── 用户点击保存
                 └── _configService.SaveConfigAsync()
                     └── _configRepository.SaveConfigAsync(_currentConfig)
+```
+
+### 游戏配置加载流程
+
+```
+用户选择游戏
+    └── _gameConfigService.GetStrategy(gameId)
+        └── 返回游戏配置策略（配置项定义）
+    └── _gameConfigService.GetConfigAsync(gameId)
+        └── 检查缓存
+            └── 缓存命中 → 返回缓存
+            └── 缓存未命中 → 从文件加载
+                └── 文件不存在 → 返回默认配置
+```
+
+### 游戏配置保存流程
+
+```
+用户修改游戏配置
+    └── _gameConfigService.SaveConfigAsync(config)
+        └── 更新内存缓存
+        └── 写入 JSON 文件
+            └── %APPDATA%/CrosshairPro/gameconfigs/{gameId}.json
 ```
 
 ## JsonSerializerOptions

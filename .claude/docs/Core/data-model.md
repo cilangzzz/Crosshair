@@ -171,6 +171,107 @@ public class GameProfile
 }
 ```
 
+## GameConfig（新增）
+
+游戏配置数据模型，存储单个游戏的配置数据：
+
+```csharp
+public partial class GameConfig : ObservableObject
+{
+    public string GameId { get; set; } = string.Empty;
+    
+    [ObservableProperty]
+    private string _launchOptions = string.Empty;
+    
+    public Dictionary<string, object> Settings { get; set; } = new();
+}
+```
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| GameId | string | 游戏ID（对应 GameProfile.Id） |
+| LaunchOptions | string | 启动项参数 |
+| Settings | Dictionary<string, object> | 配置项字典（键为配置项ID，值为配置值） |
+
+**用途**：
+- 存储每个游戏的特定配置数据
+- 支持启动项参数管理
+- 通过 Settings 字典存储任意类型的配置值
+
+## GameConfigStrategy（新增）
+
+游戏配置策略定义，描述每个游戏支持的配置项和操作方式：
+
+```csharp
+public class GameConfigStrategy
+{
+    public string GameId { get; set; } = string.Empty;
+    public bool SupportsLaunchOptions { get; set; } = true;
+    public string? LaunchOptionsDescription { get; set; }
+    public List<ConfigSectionDefinition> Sections { get; set; } = new();
+    public string? ConfigFilePath { get; set; }
+}
+```
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| GameId | string | 游戏ID |
+| SupportsLaunchOptions | bool | 是否支持启动项 |
+| LaunchOptionsDescription | string? | 启动项说明 |
+| Sections | List<ConfigSectionDefinition> | 配置分区列表 |
+| ConfigFilePath | string? | 配置文件路径模板（支持环境变量） |
+
+### ConfigItemType 枚举
+
+配置项类型枚举：
+
+```csharp
+public enum ConfigItemType
+{
+    Bool,    // 布尔开关
+    Int,     // 整数数值
+    Enum,    // 枚举选择
+    String   // 字符串
+}
+```
+
+### ConfigItemDefinition 类
+
+配置项定义，描述单个配置项的元数据：
+
+```csharp
+public class ConfigItemDefinition
+{
+    public string Key { get; set; }              // 配置项ID（唯一键）
+    public string DisplayName { get; set; }      // 显示名称
+    public ConfigItemType Type { get; set; }     // 配置项类型
+    public object? DefaultValue { get; set; }    // 默认值
+    public int? MinValue { get; set; }           // 最小值（Int类型）
+    public int? MaxValue { get; set; }           // 最大值（Int类型）
+    public List<string>? Options { get; set; }   // 枚举选项（Enum类型）
+    public string? Description { get; set; }     // 描述说明
+    public bool RequiresRestart { get; set; }    // 是否需要重启游戏生效
+}
+```
+
+### ConfigSectionDefinition 类
+
+配置分区定义，将配置项按功能分组：
+
+```csharp
+public class ConfigSectionDefinition
+{
+    public string Name { get; set; }                               // 分区名称
+    public string DisplayName { get; set; }                        // 分区显示名称
+    public List<ConfigItemDefinition> Items { get; set; } = new(); // 配置项列表
+}
+```
+
+**用途**：
+- 定义每个游戏支持的配置项结构
+- 为 UI 提供配置项元数据（显示名称、类型、范围等）
+- 支持配置验证和默认值处理
+
 ## 模型关系图
 
 ```
@@ -187,6 +288,19 @@ Preset
 GameProfile
     └── CrosshairConfig
 
+GameConfig (独立，关联 GameProfile.Id)
+    └── Settings: Dictionary<string, object>
+
+GameConfigStrategy (独立，关联 GameProfile.Id)
+    └── Sections: List<ConfigSectionDefinition>
+            └── Items: List<ConfigItemDefinition>
+
 HotkeyBinding (独立)
 GameInfo (独立)
 ```
+
+**模型关联说明**：
+- `GameConfig.GameId` 关联 `GameProfile.Id`，存储对应游戏的配置数据
+- `GameConfigStrategy.GameId` 关联 `GameProfile.Id`，定义对应游戏的配置策略
+- `GameConfig.Settings` 中的键对应 `ConfigItemDefinition.Key`
+- `GameConfigStrategy` 为 `GameConfig` 提供元数据和验证规则

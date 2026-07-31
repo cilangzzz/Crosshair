@@ -19,13 +19,15 @@ CrosshairPro.Application/
 │   └── ServiceCollectionExtensions.cs  # 依赖注入注册扩展
 ├── Interfaces/
 │   ├── IConfigurationService.cs        # 配置服务接口
-│   └── IPresetService.cs               # 预设服务接口
+│   ├── IPresetService.cs               # 预设服务接口
+│   └── IGameConfigService.cs           # 游戏配置服务接口
 └── Services/
     ├── ConfigurationService.cs         # 配置服务实现
-    └── PresetService.cs                # 预设服务实现
+    ├── PresetService.cs                # 预设服务实现
+    └── GameConfigService.cs            # 游戏配置服务实现
 ```
 
-**文件统计**: 5 个源文件，约 400 行代码
+**文件统计**: 7 个源文件，约 700 行代码
 
 ## 核心组件
 
@@ -57,6 +59,19 @@ CrosshairPro.Application/
 | `SetCurrentPresetAsync(presetId)` | 设置当前使用的预设 | `Task` |
 | `GetCurrentPresetIdAsync()` | 获取当前使用的预设ID | `Task<string?>` |
 
+### IGameConfigService
+
+游戏配置服务接口，管理各游戏的配置数据。
+
+| 方法 | 说明 | 返回类型 |
+|------|------|----------|
+| `GetStrategies()` | 获取所有游戏配置策略 | `IReadOnlyList<GameConfigStrategy>` |
+| `GetStrategy(gameId)` | 获取指定游戏的配置策略 | `GameConfigStrategy?` |
+| `GetConfigAsync(gameId)` | 获取游戏配置 | `Task<GameConfig?>` |
+| `SaveConfigAsync(config)` | 保存游戏配置 | `Task` |
+| `ResetToDefaultAsync(gameId)` | 重置为默认配置 | `Task` |
+| `ApplyConfigAsync(gameId)` | 应用配置到游戏 | `Task` |
+
 ### ConfigurationService
 
 配置管理服务实现，核心特性：
@@ -72,6 +87,28 @@ CrosshairPro.Application/
 - 通过 `IPresetRepository` 管理预设文件
 - 通过 `IAppStateRepository` 持久化当前预设ID
 - 自动在预设列表开头插入默认预设（`IsDefault = true`）
+
+### GameConfigService
+
+游戏配置服务实现，核心特性：
+
+- 内置 8 款游戏的配置策略（CS2、Valorant、Apex、Overwatch2、PUBG、Fortnite、R6、CSGO）
+- 配置缓存机制，避免重复文件读取
+- JSON 文件持久化到 `%APPDATA%/CrosshairPro/gameconfigs/`
+- 每款游戏有独立的配置策略定义（视频设置、游戏设置等）
+
+**支持的游戏列表**:
+
+| 游戏 | GameId | 支持启动项 |
+|------|--------|------------|
+| CS2 | `builtin-cs2` | 是 |
+| Valorant | `builtin-valorant` | 否 |
+| Apex Legends | `builtin-apex` | 是 |
+| Overwatch 2 | `builtin-overwatch2` | 否 |
+| PUBG | `builtin-pubg` | 是 |
+| Fortnite | `builtin-fortnite` | 否 |
+| Rainbow Six | `builtin-r6` | 是 |
+| CS:GO | `builtin-csgo` | 是 |
 
 ### ServiceCollectionExtensions
 
@@ -103,6 +140,9 @@ ConfigurationService
 PresetService
     ├── IPresetRepository (Services层提供)
     └── IAppStateRepository (Services层提供)
+
+GameConfigService
+    └── (无外部依赖，直接操作文件系统)
 ```
 
 ## 服务生命周期
@@ -114,6 +154,7 @@ PresetService
 | 预设仓库 | `IPresetRepository` | `JsonPresetRepository` | Singleton |
 | 配置服务 | `IConfigurationService` | `ConfigurationService` | Singleton |
 | 预设服务 | `IPresetService` | `PresetService` | Singleton |
+| 游戏配置服务 | `IGameConfigService` | `GameConfigService` | Singleton |
 | 热键管理 | `IHotkeyManager` | `HotkeyManager` | Singleton |
 | 准心渲染 | `ICrosshairRenderer` | `CrosshairRenderer` | Singleton |
 

@@ -5,6 +5,55 @@
 
 ---
 
+## [2026-07-31] feat: add IGameConfigService for game configuration management
+
+**类型**: feat
+**风险**: MEDIUM
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| IGameConfigService.cs | +40 | 新增游戏配置服务接口 |
+| GameConfigService.cs | +497 | 游戏配置服务实现 |
+
+### 新增功能
+1. **IGameConfigService 接口**
+   - `GetStrategies()`: 获取所有游戏配置策略
+   - `GetStrategy(gameId)`: 获取指定游戏的配置策略
+   - `GetConfigAsync(gameId)`: 获取游戏配置
+   - `SaveConfigAsync(config)`: 保存游戏配置
+   - `ResetToDefaultAsync(gameId)`: 重置为默认配置
+   - `ApplyConfigAsync(gameId)`: 应用配置到游戏
+
+2. **GameConfigService 实现**
+   - 内置 8 款游戏配置策略（CS2、Valorant、Apex、Overwatch2、PUBG、Fortnite、R6、CSGO）
+   - 配置缓存机制，避免重复文件读取
+   - JSON 文件持久化到 `%APPDATA%/CrosshairPro/gameconfigs/`
+   - 每款游戏有独立的配置项定义（视频设置、游戏设置等）
+
+### 支持的游戏
+| 游戏 | GameId | 支持启动项 |
+|------|--------|------------|
+| CS2 | `builtin-cs2` | 是 |
+| Valorant | `builtin-valorant` | 否 |
+| Apex Legends | `builtin-apex` | 是 |
+| Overwatch 2 | `builtin-overwatch2` | 否 |
+| PUBG | `builtin-pubg` | 是 |
+| Fortnite | `builtin-fortnite` | 否 |
+| Rainbow Six | `builtin-r6` | 是 |
+| CS:GO | `builtin-csgo` | 是 |
+
+### 影响范围
+- 新增服务，不影响现有功能
+- `ApplyConfigAsync()` 待实现，需要根据每款游戏的配置文件格式写入
+
+### 待办事项
+- [ ] 实现 `ApplyConfigAsync()` 写入游戏配置文件
+- [ ] 添加配置验证逻辑
+- [ ] 支持自定义游戏配置策略
+
+---
+
 ## [2026-07-31] docs: update Application module documentation
 
 **类型**: docs

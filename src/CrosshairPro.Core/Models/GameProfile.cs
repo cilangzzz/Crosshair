@@ -31,6 +31,9 @@ public partial class GameProfile : ObservableObject
     [ObservableProperty]
     private DateTime? _lastMatchedAt;
 
+    [ObservableProperty]
+    private bool _isSelected;
+
     /// <summary>
     /// 检查是否匹配进程名
     /// </summary>

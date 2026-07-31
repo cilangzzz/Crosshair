@@ -19,8 +19,8 @@ CrosshairPro 是一款 Windows 桌面准心覆盖工具，为 FPS 游戏玩家�
 src/
 ├── CrosshairPro.Core/          # 核心层：模型、接口、枚举
 │   ├── Enums/                  # AppState, CrosshairStyle
-│   ├── Interfaces/             # IConfigRepository, IAppStateRepository, ICrosshairRenderer, IHotkeyManager
-│   └── Models/                 # CrosshairConfig, EffectsConfig, Preset, AppPersistedState
+│   ├── Interfaces/             # IConfigRepository, IAppStateRepository, ICrosshairRenderer, IHotkeyManager, IGameConfigService
+│   └── Models/                 # CrosshairConfig, EffectsConfig, Preset, AppPersistedState, GameConfig, GameConfigStrategy
 ├── CrosshairPro.Infrastructure/ # 基础层：Win32 API、热键
 │   ├── Hotkey/                 # HotkeyManager, WinHotkeyProvider
 │   └── Win32/                  # Win32Constants, Win32Methods (P/Invoke)
@@ -29,24 +29,24 @@ src/
 │   └── Crosshair/              # CrosshairRenderer
 ├── CrosshairPro.Application/   # 应用服务层：业务逻辑抽象
 │   ├── DI/                     # ServiceCollectionExtensions (依赖注入注册)
-│   ├── Interfaces/             # IConfigurationService, IPresetService
-│   └── Services/               # ConfigurationService, PresetService
+│   ├── Interfaces/             # IConfigurationService, IPresetService, IGameConfigService
+│   └── Services/               # ConfigurationService, PresetService, GameConfigService
 └── CrosshairPro.App/           # 表现层：WPF UI
-    ├── Controls/               # CrosshairPreview, DialogBase, ToastNotification
-    ├── Themes/                 # ControlStyles.xaml, DesignTokens.xaml
-    ├── ViewModels/             # MainViewModel
-    └── Views/                  # OverlayWindow
+    ├── Controls/               # CrosshairPreview, DialogBase, ToastNotification, TabNavItem, IconButton
+    ├── Themes/                 # ControlStyles.xaml, DesignTokens.xaml, IconGeometries.xaml
+    ├── ViewModels/             # MainViewModel, CrosshairViewModel, GamesViewModel
+    └── Views/                  # OverlayWindow, CrosshairPage, GamesPage
 ```
 
 ## 模块索引
 
 | 层级 | 模块 | 描述 | 文件数 | 文档 |
 |------|------|------|--------|------|
-| 基础层 | Core | 核心模型、接口、枚举定义 | 13 | [README](Core/README.md) |
+| 基础层 | Core | 核心模型、接口、枚举定义 | 17 | [README](Core/README.md) |
 | 基础层 | Infrastructure | Win32 API封装、热键管理 | 6 | [README](Infrastructure/README.md) |
 | 数据层 | Services | 配置持久化、准心渲染实现 | 9 | [README](Services/README.md) |
-| 应用层 | Application | 业务服务抽象、依赖注入 | 8 | [README](Application/README.md) |
-| 表现层 | App | WPF应用入口、UI层 | 11 | [README](App/README.md) |
+| 应用层 | Application | 业务服务抽象、依赖注入 | 11 | [README](Application/README.md) |
+| 表现层 | App | WPF应用入口、UI层 | 20+ | [README](App/README.md) |
 
 ## 核心架构
 
@@ -125,6 +125,19 @@ Core → (无依赖)
 - 自动检测游戏进程
 - 游戏运行时自动切换预设
 - 支持自定义游戏配置文件
+
+### 6. 游戏配置管理（新增）
+- 支持 8 款主流 FPS 游戏配置（CS2、Valorant、Apex、Overwatch2、PUBG、Fortnite、R6、CSGO）
+- 游戏启动项参数管理
+- 视频设置、游戏设置配置
+- 配置项类型支持：布尔开关、整数数值、枚举选择、字符串
+- 配置策略系统，每个游戏有独立的配置模板
+
+### 7. UI 增强（新增）
+- 标签页导航系统（CrosshairPage、GamesPage）
+- 自定义控件：TabNavItem、IconButton、ToastNotification
+- 主题系统和设计令牌（Design Tokens）
+- 图标几何资源（IconGeometries）
 
 ## 重要坑点
 

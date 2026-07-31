@@ -15,6 +15,9 @@
             <!-- String to Visibility Converter (shows when not null/empty) -->
             <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
 
+            <!-- Config Type to Visibility Converter -->
+            <local:ConfigTypeToVisibilityConverter x:Key="ConfigTypeToVisibilityConverter"/>
+
             <!-- Global implicit styles (reference design tokens) -->
             <Style TargetType="Window">
                 <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>

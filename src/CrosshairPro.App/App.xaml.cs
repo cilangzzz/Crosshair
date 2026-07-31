@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using CrosshairPro.Application.DI;
 using CrosshairPro.App.ViewModels;
 using CrosshairPro.App.Views;
@@ -13,6 +13,11 @@ public partial class App : System.Windows.Application
 {
     private IServiceProvider? _services;
 
+    /// <summary>
+    /// 服务提供者，用于获取服务实例
+    /// </summary>
+    public IServiceProvider? Services => _services;
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -22,6 +27,7 @@ public partial class App : System.Windows.Application
             .AddCrosshairProServices()
             .AddSingleton<CrosshairViewModel>()
             .AddSingleton<GamesViewModel>()
+            .AddSingleton<ApexConfigViewModel>()
             .AddSingleton<MainViewModel>()
             .AddSingleton<OverlayWindow>()
             .AddTransient<MainWindow>()
@@ -32,4 +38,3 @@ public partial class App : System.Windows.Application
         mainWindow.Show();
     }
 }
-

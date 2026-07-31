@@ -15,6 +15,7 @@ Core 模块是整个应用的基石，提供：
 CrosshairPro.Core/
 ├── Enums/
 │   ├── AppState.cs           # 应用状态枚举
+│   ├── ConfigItemType.cs     # 配置项类型枚举（新增）
 │   └── CrosshairStyle.cs     # 准心样式枚举
 ├── Interfaces/
 │   ├── IConfigRepository.cs  # 配置仓库接口 + IAppStateRepository + IPresetRepository
@@ -22,9 +23,11 @@ CrosshairPro.Core/
 │   ├── IGameDetector.cs      # 游戏检测器接口
 │   └── IHotkeyManager.cs     # 热键管理器接口
 └── Models/
-    ├── AppPersistedState.cs  # 应用持久化状态（新增）
+    ├── AppPersistedState.cs  # 应用持久化状态
     ├── CrosshairConfig.cs    # 准心配置（主模型）
     ├── EffectsConfig.cs      # 效果配置（描边、阴影、发光）
+    ├── GameConfig.cs         # 游戏配置数据（新增）
+    ├── GameConfigStrategy.cs # 游戏配置策略定义（新增）
     ├── GameInfo.cs           # 游戏信息
     ├── GameProfile.cs        # 游戏配置文件
     ├── HotkeyBinding.cs      # 热键绑定
@@ -71,6 +74,33 @@ CrosshairPro.Core/
 
 预设模型，包含 CrosshairConfig 和元数据
 
+### GameConfig（新增）
+
+游戏配置数据模型，存储单个游戏的配置数据：
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| GameId | string | 游戏ID（对应 GameProfile.Id） |
+| LaunchOptions | string | 启动项参数 |
+| Settings | Dictionary<string, object> | 配置项字典 |
+
+### GameConfigStrategy（新增）
+
+游戏配置策略定义，描述每个游戏支持的配置项和操作方式：
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| GameId | string | 游戏ID |
+| SupportsLaunchOptions | bool | 是否支持启动项 |
+| LaunchOptionsDescription | string? | 启动项说明 |
+| Sections | List<ConfigSectionDefinition> | 配置分区列表 |
+| ConfigFilePath | string? | 配置文件路径模板 |
+
+包含配套类型：
+- **ConfigItemType 枚举**：Bool, Int, Enum, String
+- **ConfigItemDefinition 类**：配置项元数据（Key, DisplayName, Type, DefaultValue, MinValue, MaxValue, Options, Description, RequiresRestart）
+- **ConfigSectionDefinition 类**：配置分区定义（Name, DisplayName, Items）
+
 ## 接口定义
 
 ### IConfigRepository
@@ -103,6 +133,15 @@ CrosshairPro.Core/
 | 3 | TShape | T形准心（倒T） |
 | 4 | XShape | X形准心 |
 | 5 | CustomImage | 自定义图片 |
+
+### ConfigItemType（新增）
+
+| 值 | 名称 | 说明 |
+|----|------|------|
+| 0 | Bool | 布尔开关 |
+| 1 | Int | 整数数值 |
+| 2 | Enum | 枚举选择 |
+| 3 | String | 字符串 |
 
 ## 详细文档
 
