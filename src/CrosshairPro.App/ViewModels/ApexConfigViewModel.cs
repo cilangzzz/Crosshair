@@ -107,12 +107,52 @@ public partial class ApexConfigViewModel : ObservableObject
     [ObservableProperty]
     private string _settingsConfigPath = string.Empty;
 
+    // ═══════════════════════════════════════════════════════════
+    // 历史版本管理
+    // ═══════════════════════════════════════════════════════════
+
+    [ObservableProperty]
+    private ObservableCollection<BackupFileInfo> _videoConfigBackups = new();
+
+    [ObservableProperty]
+    private ObservableCollection<BackupFileInfo> _settingsConfigBackups = new();
+
+    [ObservableProperty]
+    private bool _showVideoConfigHistory = false;
+
+    [ObservableProperty]
+    private bool _showSettingsConfigHistory = false;
+
+    // ═══════════════════════════════════════════════════════════
+    // 自定义启动选项
+    // ═══════════════════════════════════════════════════════════
+
+    [ObservableProperty]
+    private ApexLaunchOptions _customLaunchOptions = new();
+
+    [ObservableProperty]
+    private bool _useCustomLaunchOptions = false;
+
+    /// <summary>汇总的启动选项显示</summary>
+    public string LaunchOptionsSummary => UseCustomLaunchOptions
+        ? CustomLaunchOptions.GenerateOptionsString()
+        : LaunchOptions;
+
     // 事件
     public event EventHandler<string>? ToastRequested;
 
     public ApexConfigViewModel(IApexConfigService apexService)
     {
         _apexService = apexService;
+
+        // 订阅自定义启动选项的属性变更
+        _customLaunchOptions.PropertyChanged += (s, e) =>
+        {
+            if (UseCustomLaunchOptions)
+            {
+                OnPropertyChanged(nameof(LaunchOptionsSummary));
+            }
+        };
 
         // 异步初始化
         InitializeAsync().ConfigureAwait(false);
@@ -268,10 +308,23 @@ public partial class ApexConfigViewModel : ObservableObject
     [RelayCommand]
     private void CopyLaunchOptions()
     {
-        if (!string.IsNullOrWhiteSpace(LaunchOptions))
+        try
         {
-            Clipboard.SetText(LaunchOptions);
-            ShowToast("启动选项已复制到剪贴板");
+            var textToCopy = UseCustomLaunchOptions ? LaunchOptionsSummary : LaunchOptions;
+
+            if (!string.IsNullOrWhiteSpace(textToCopy))
+            {
+                // 在 UI 线程上执行剪贴板操作
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    System.Windows.Clipboard.SetText(textToCopy);
+                });
+                ShowToast("启动选项已复制到剪贴板");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"复制失败: {ex.Message}");
         }
     }
 
@@ -344,12 +397,159 @@ public partial class ApexConfigViewModel : ObservableObject
     {
         if (_isInitializing) return;
 
-        LaunchOptions = value switch
+        UseCustomLaunchOptions = value == 3; // "自定义" 选项
+
+        if (!UseCustomLaunchOptions)
         {
-            0 => "-dev +fps_max 0 +cl_showpos 1 +mat_letterbox_aspect_min 1.0 +cl_fovScale \"2\" -novid",
-            1 => "-dev +fps_max 279 +cl_showpos 1 +mat_letterbox_aspect_min 1.0 +cl_fovScale \"2\" -w 2560 -h 1600 -novid",
-            2 => "-console -dev -condebug +fps_max 0",
-            _ => LaunchOptions
-        };
+            LaunchOptions = value switch
+            {
+                0 => "-dev +fps_max 0 +cl_showpos 1 +mat_letterbox_aspect_min 1.0 +cl_fovScale \"2\" -novid",
+                1 => "-dev +fps_max 279 +cl_showpos 1 +mat_letterbox_aspect_min 1.0 +cl_fovScale \"2\" -w 2560 -h 1600 -novid",
+                2 => "-console -dev -condebug +fps_max 0",
+                _ => LaunchOptions
+            };
+        }
+    }
+
+    partial void OnUseCustomLaunchOptionsChanged(bool value)
+    {
+        OnPropertyChanged(nameof(LaunchOptionsSummary));
+    }
+
+    partial void OnCustomLaunchOptionsChanged(ApexLaunchOptions value)
+    {
+        OnPropertyChanged(nameof(LaunchOptionsSummary));
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // 历史版本管理命令
+    // ═══════════════════════════════════════════════════════════
+
+    [RelayCommand]
+    private void ToggleVideoConfigHistory()
+    {
+        ShowVideoConfigHistory = !ShowVideoConfigHistory;
+        if (ShowVideoConfigHistory)
+        {
+            LoadVideoConfigBackups();
+        }
+    }
+
+    [RelayCommand]
+    private void ToggleSettingsConfigHistory()
+    {
+        ShowSettingsConfigHistory = !ShowSettingsConfigHistory;
+        if (ShowSettingsConfigHistory)
+        {
+            LoadSettingsConfigBackups();
+        }
+    }
+
+    private void LoadVideoConfigBackups()
+    {
+        try
+        {
+            var backups = _apexService.GetVideoConfigBackups();
+            VideoConfigBackups.Clear();
+            foreach (var backup in backups)
+            {
+                VideoConfigBackups.Add(backup);
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"加载历史记录失败: {ex.Message}");
+        }
+    }
+
+    private void LoadSettingsConfigBackups()
+    {
+        try
+        {
+            var backups = _apexService.GetSettingsConfigBackups();
+            SettingsConfigBackups.Clear();
+            foreach (var backup in backups)
+            {
+                SettingsConfigBackups.Add(backup);
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"加载历史记录失败: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task RestoreVideoConfigBackup(BackupFileInfo? backup)
+    {
+        if (backup == null) return;
+
+        try
+        {
+            var success = await _apexService.RestoreVideoConfigFromBackupAsync(backup.FilePath);
+            if (success)
+            {
+                ShowToast($"已恢复到: {backup.DisplayTime}");
+                VideoConfig = await _apexService.LoadVideoConfigAsync();
+                LoadVideoConfigBackups(); // 刷新历史列表
+            }
+            else
+            {
+                ShowToast("恢复失败");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"恢复失败: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task RestoreSettingsConfigBackup(BackupFileInfo? backup)
+    {
+        if (backup == null) return;
+
+        try
+        {
+            var success = await _apexService.RestoreSettingsConfigFromBackupAsync(backup.FilePath);
+            if (success)
+            {
+                ShowToast($"已恢复到: {backup.DisplayTime}");
+                SettingsConfig = await _apexService.LoadSettingsConfigAsync();
+                LoadSettingsConfigBackups();
+            }
+            else
+            {
+                ShowToast("恢复失败");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"恢复失败: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private void DeleteBackup(BackupFileInfo? backup)
+    {
+        if (backup == null) return;
+
+        try
+        {
+            var success = _apexService.DeleteBackup(backup.FilePath);
+            if (success)
+            {
+                ShowToast("已删除备份");
+                // 刷新列表
+                if (ShowVideoConfigHistory)
+                    LoadVideoConfigBackups();
+                if (ShowSettingsConfigHistory)
+                    LoadSettingsConfigBackups();
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"删除失败: {ex.Message}");
+        }
     }
 }

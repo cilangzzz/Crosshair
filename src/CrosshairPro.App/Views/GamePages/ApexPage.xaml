@@ -4,7 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       mc:Ignorable="d"
-      d:DesignHeight="800" d:DesignWidth="800">
+      d:DesignHeight="900" d:DesignWidth="800">
 
     <Grid Margin="20,12,20,0">
         <Grid.RowDefinitions>
@@ -22,13 +22,15 @@
         <!-- 配置内容 -->
         <ScrollViewer Grid.Row="1" Style="{StaticResource CustomScrollViewer}">
             <StackPanel>
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <!-- 配置文件管理 -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="CONFIG FILES" Style="{StaticResource SectionHeader}"/>
 
                         <!-- videoconfig.txt -->
-                        <Grid Margin="0,8,0,12">
+                        <Grid Margin="0,8,0,4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
@@ -50,24 +52,90 @@
                                         Command="{Binding ReplaceVideoConfigCommand}"
                                         Style="{StaticResource SecondaryButton}"
                                         Margin="0,0,4,0"
-                                        Padding="12,4"
+                                        Padding="10,4"
                                         FontSize="12"/>
                                 <Button Content="Backup"
                                         Command="{Binding BackupVideoConfigCommand}"
                                         Style="{StaticResource SecondaryButton}"
                                         Margin="0,0,4,0"
-                                        Padding="12,4"
+                                        Padding="10,4"
                                         FontSize="12"/>
                                 <Button Content="Export"
                                         Command="{Binding ExportVideoConfigCommand}"
                                         Style="{StaticResource SecondaryButton}"
-                                        Padding="12,4"
+                                        Margin="0,0,4,0"
+                                        Padding="10,4"
+                                        FontSize="12"/>
+                                <Button Content="History"
+                                        Command="{Binding ToggleVideoConfigHistoryCommand}"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Padding="10,4"
                                         FontSize="12"/>
                             </StackPanel>
                         </Grid>
 
+                        <!-- videoconfig.txt 历史记录 -->
+                        <Border Background="{DynamicResource ControlBrush}"
+                                CornerRadius="{StaticResource RadiusSm}"
+                                Padding="8"
+                                Margin="0,0,0,12"
+                                Visibility="{Binding ShowVideoConfigHistory, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel>
+                                <TextBlock Text="Backup History"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="11"
+                                           Margin="0,0,0,8"/>
+                                <ItemsControl ItemsSource="{Binding VideoConfigBackups}"
+                                              MaxHeight="150">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,0,0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding DisplayTime}"
+                                                               FontSize="12"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Text=" • "
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding DisplaySize}"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <Button Grid.Column="1"
+                                                        Content="Restore"
+                                                        Command="{Binding DataContext.RestoreVideoConfigBackupCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource SecondaryButton}"
+                                                        Padding="8,2"
+                                                        FontSize="11"
+                                                        Margin="0,0,4,0"/>
+                                                <Button Grid.Column="2"
+                                                        Content="×"
+                                                        Command="{Binding DataContext.DeleteBackupCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource SecondaryButton}"
+                                                        Padding="8,2"
+                                                        FontSize="11"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="No backups available"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="12"
+                                           Visibility="{Binding VideoConfigBackups.Count, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            </StackPanel>
+                        </Border>
+
                         <!-- settings.cfg -->
-                        <Grid Margin="0,0,0,8">
+                        <Grid Margin="0,0,0,4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
@@ -89,31 +157,92 @@
                                         Command="{Binding ReplaceSettingsConfigCommand}"
                                         Style="{StaticResource SecondaryButton}"
                                         Margin="0,0,4,0"
-                                        Padding="12,4"
+                                        Padding="10,4"
                                         FontSize="12"/>
                                 <Button Content="Backup"
                                         Command="{Binding BackupSettingsConfigCommand}"
                                         Style="{StaticResource SecondaryButton}"
                                         Margin="0,0,4,0"
-                                        Padding="12,4"
+                                        Padding="10,4"
                                         FontSize="12"/>
                                 <Button Content="Export"
                                         Command="{Binding ExportSettingsConfigCommand}"
                                         Style="{StaticResource SecondaryButton}"
-                                        Padding="12,4"
+                                        Margin="0,0,4,0"
+                                        Padding="10,4"
+                                        FontSize="12"/>
+                                <Button Content="History"
+                                        Command="{Binding ToggleSettingsConfigHistoryCommand}"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Padding="10,4"
                                         FontSize="12"/>
                             </StackPanel>
                         </Grid>
 
-                        <!-- 状态信息 -->
-                        <TextBlock Text="{Binding StatusMessage}"
-                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                   FontSize="11"
-                                   Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+                        <!-- settings.cfg 历史记录 -->
+                        <Border Background="{DynamicResource ControlBrush}"
+                                CornerRadius="{StaticResource RadiusSm}"
+                                Padding="8"
+                                Visibility="{Binding ShowSettingsConfigHistory, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel>
+                                <TextBlock Text="Backup History"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="11"
+                                           Margin="0,0,0,8"/>
+                                <ItemsControl ItemsSource="{Binding SettingsConfigBackups}"
+                                              MaxHeight="150">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,0,0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding DisplayTime}"
+                                                               FontSize="12"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Text=" • "
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding DisplaySize}"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <Button Grid.Column="1"
+                                                        Content="Restore"
+                                                        Command="{Binding DataContext.RestoreSettingsConfigBackupCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource SecondaryButton}"
+                                                        Padding="8,2"
+                                                        FontSize="11"
+                                                        Margin="0,0,4,0"/>
+                                                <Button Grid.Column="2"
+                                                        Content="×"
+                                                        Command="{Binding DataContext.DeleteBackupCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource SecondaryButton}"
+                                                        Padding="8,2"
+                                                        FontSize="11"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="No backups available"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="12"
+                                           Visibility="{Binding SettingsConfigBackups.Count, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </Border>
 
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <!-- 启动选项 -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="LAUNCH OPTIONS" Style="{StaticResource SectionHeader}"/>
@@ -123,12 +252,12 @@
                                    Margin="0,0,0,8"/>
 
                         <!-- 预设选择 -->
-                        <Grid Margin="0,0,0,8">
+                        <Grid Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="预设："
+                            <TextBlock Grid.Column="0" Text="Preset："
                                        VerticalAlignment="Center"
                                        Margin="0,0,8,0"/>
                             <ComboBox Grid.Column="1"
@@ -137,13 +266,248 @@
                                       Style="{StaticResource CustomComboBox}"/>
                         </Grid>
 
-                        <!-- 启动选项文本框 -->
+                        <!-- 简单文本框（非自定义模式） -->
                         <TextBox Text="{Binding LaunchOptions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource CustomTextBox}"
                                  AcceptsReturn="True"
                                  Height="60" TextWrapping="Wrap"
                                  VerticalScrollBarVisibility="Auto"
-                                 Margin="0,0,0,8"/>
+                                 Margin="0,0,0,8"
+                                 Visibility="{Binding UseCustomLaunchOptions, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+
+                        <!-- 自定义启动选项展开面板 -->
+                        <Border Background="{DynamicResource ControlBrush}"
+                                CornerRadius="{StaticResource RadiusSm}"
+                                Padding="12"
+                                Visibility="{Binding UseCustomLaunchOptions, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="Custom Launch Options"
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           FontWeight="SemiBold"
+                                           Margin="0,0,0,12"/>
+
+                                <!-- 性能参数 -->
+                                <TextBlock Text="Performance"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="11"
+                                           Margin="0,0,0,8"/>
+                                <CheckBox Content="High Priority (-high)"
+                                          IsChecked="{Binding CustomLaunchOptions.High, Mode=TwoWay}"
+                                          Margin="0,4"/>
+                                <Grid Margin="0,4,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Threads (0=Auto)" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1"
+                                            Value="{Binding CustomLaunchOptions.Threads, Mode=TwoWay}"
+                                            Minimum="0" Maximum="16"
+                                            Style="{StaticResource CustomSlider}"
+                                            Margin="8,0"/>
+                                    <TextBox Grid.Column="2"
+                                             Text="{Binding CustomLaunchOptions.Threads, Mode=TwoWay}"
+                                             Style="{StaticResource NumericTextBox}"/>
+                                </Grid>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Refresh Rate (Hz)" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1"
+                                            Value="{Binding CustomLaunchOptions.Freq, Mode=TwoWay}"
+                                            Minimum="0" Maximum="360"
+                                            Style="{StaticResource CustomSlider}"
+                                            Margin="8,0"/>
+                                    <TextBox Grid.Column="2"
+                                             Text="{Binding CustomLaunchOptions.Freq, Mode=TwoWay}"
+                                             Style="{StaticResource NumericTextBox}"/>
+                                </Grid>
+                                <CheckBox Content="Skip Intro Video (-novid)"
+                                          IsChecked="{Binding CustomLaunchOptions.Novid, Mode=TwoWay}"
+                                          Margin="0,4"/>
+                                <CheckBox Content="Disable Joystick (-nojoy)"
+                                          IsChecked="{Binding CustomLaunchOptions.Nojoy, Mode=TwoWay}"
+                                          Margin="0,4,0,12"/>
+
+                                <!-- 窗口参数 -->
+                                <TextBlock Text="Window"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="11"
+                                           Margin="0,0,0,8"/>
+                                <CheckBox Content="Windowed Mode"
+                                          IsChecked="{Binding CustomLaunchOptions.Windowed, Mode=TwoWay}"
+                                          Margin="0,4"/>
+                                <CheckBox Content="Borderless Window"
+                                          IsChecked="{Binding CustomLaunchOptions.Noborder, Mode=TwoWay}"
+                                          Margin="0,4"/>
+                                <Grid Margin="0,4,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Window Width" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1"
+                                            Value="{Binding CustomLaunchOptions.Width, Mode=TwoWay}"
+                                            Minimum="800" Maximum="3840"
+                                            Style="{StaticResource CustomSlider}"
+                                            Margin="8,0"/>
+                                    <TextBox Grid.Column="2"
+                                             Text="{Binding CustomLaunchOptions.Width, Mode=TwoWay}"
+                                             Style="{StaticResource NumericTextBox}"/>
+                                </Grid>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Window Height" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1"
+                                            Value="{Binding CustomLaunchOptions.Height, Mode=TwoWay}"
+                                            Minimum="600" Maximum="2160"
+                                            Style="{StaticResource CustomSlider}"
+                                            Margin="8,0"/>
+                                    <TextBox Grid.Column="2"
+                                             Text="{Binding CustomLaunchOptions.Height, Mode=TwoWay}"
+                                             Style="{StaticResource NumericTextBox}"/>
+                                </Grid>
+
+                                <!-- 游戏参数 -->
+                                <TextBlock Text="Game Settings"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="11"
+                                           Margin="0,0,0,8"/>
+                                <Grid Margin="0,4,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Max FPS (0=Unlimited)" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1"
+                                            Value="{Binding CustomLaunchOptions.FpsMax, Mode=TwoWay}"
+                                            Minimum="0" Maximum="300"
+                                            Style="{StaticResource CustomSlider}"
+                                            Margin="8,0"/>
+                                    <TextBox Grid.Column="2"
+                                             Text="{Binding CustomLaunchOptions.FpsMax, Mode=TwoWay}"
+                                             Style="{StaticResource NumericTextBox}"/>
+                                </Grid>
+                                <CheckBox Content="Show Position Info"
+                                          IsChecked="{Binding CustomLaunchOptions.ClShowpos, Mode=TwoWay}"
+                                          Margin="0,4"/>
+                                <Grid Margin="0,4,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="FOV Scale" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1"
+                                            Value="{Binding CustomLaunchOptions.ClFovScale, Mode=TwoWay}"
+                                            Minimum="1.0" Maximum="1.35"
+                                            SmallChange="0.01" LargeChange="0.05"
+                                            Style="{StaticResource CustomSlider}"
+                                            Margin="8,0"/>
+                                    <TextBox Grid.Column="2"
+                                             Text="{Binding CustomLaunchOptions.ClFovScale, StringFormat={}{0:F2}, Mode=TwoWay}"
+                                             Style="{StaticResource NumericTextBox}"/>
+                                </Grid>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Letterbox Aspect Min" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1"
+                                            Value="{Binding CustomLaunchOptions.MatLetterboxAspectMin, Mode=TwoWay}"
+                                            Minimum="0" Maximum="2.0"
+                                            SmallChange="0.1" LargeChange="0.1"
+                                            Style="{StaticResource CustomSlider}"
+                                            Margin="8,0"/>
+                                    <TextBox Grid.Column="2"
+                                             Text="{Binding CustomLaunchOptions.MatLetterboxAspectMin, StringFormat={}{0:F1}, Mode=TwoWay}"
+                                             Style="{StaticResource NumericTextBox}"/>
+                                </Grid>
+
+                                <!-- 网络参数 -->
+                                <TextBlock Text="Network"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="11"
+                                           Margin="0,0,0,8"/>
+                                <Grid Margin="0,4,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Interp" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1"
+                                            Value="{Binding CustomLaunchOptions.ClInterp, Mode=TwoWay}"
+                                            Minimum="0" Maximum="0.1"
+                                            SmallChange="0.001" LargeChange="0.01"
+                                            Style="{StaticResource CustomSlider}"
+                                            Margin="8,0"/>
+                                    <TextBox Grid.Column="2"
+                                             Text="{Binding CustomLaunchOptions.ClInterp, StringFormat={}{0:F3}, Mode=TwoWay}"
+                                             Style="{StaticResource NumericTextBox}"/>
+                                </Grid>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="40"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Interp Ratio" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1"
+                                            Value="{Binding CustomLaunchOptions.ClInterpRatio, Mode=TwoWay}"
+                                            Minimum="1" Maximum="10"
+                                            Style="{StaticResource CustomSlider}"
+                                            Margin="8,0"/>
+                                    <TextBox Grid.Column="2"
+                                             Text="{Binding CustomLaunchOptions.ClInterpRatio, Mode=TwoWay}"
+                                             Style="{StaticResource NumericTextBox}"/>
+                                </Grid>
+
+                                <!-- 调试参数 -->
+                                <TextBlock Text="Debug"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="11"
+                                           Margin="0,0,0,8"/>
+                                <CheckBox Content="Developer Mode (-dev)"
+                                          IsChecked="{Binding CustomLaunchOptions.Dev, Mode=TwoWay}"
+                                          Margin="0,4"/>
+                                <CheckBox Content="Enable Console (-console)"
+                                          IsChecked="{Binding CustomLaunchOptions.Console, Mode=TwoWay}"
+                                          Margin="0,4"/>
+
+                                <!-- 汇总显示 -->
+                                <Border Background="{DynamicResource SurfaceBrush}"
+                                        BorderBrush="{DynamicResource AccentBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource RadiusSm}"
+                                        Padding="8"
+                                        Margin="0,12,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Generated Launch Options:"
+                                                   Foreground="{DynamicResource AccentBrush}"
+                                                   FontSize="11"
+                                                   Margin="0,0,0,4"/>
+                                        <TextBlock Text="{Binding LaunchOptionsSummary}"
+                                                   TextWrapping="Wrap"
+                                                   FontFamily="{StaticResource FontFamilyMono}"
+                                                   FontSize="11"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
 
                         <Button Content="Copy to Clipboard"
                                 Command="{Binding CopyLaunchOptionsCommand}"
@@ -154,30 +518,30 @@
                     </StackPanel>
                 </Border>
 
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <!-- 视频设置 -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="VIDEO SETTINGS" Style="{StaticResource SectionHeader}"/>
 
                         <!-- 分辨率 -->
                         <TextBlock Text="Resolution" Margin="0,8,0,4"/>
-                        <ComboBox ItemsSource="{Binding ResolutionOptions}"
-                                  Style="{StaticResource CustomComboBox}"
-                                  Margin="0,0,0,12">
-                            <ComboBox.SelectedValue>
-                                <MultiBinding StringFormat="{}{0}x{1}">
-                                    <Binding Path="VideoConfig.DefaultRes"/>
-                                    <Binding Path="VideoConfig.DefaultResHeight"/>
-                                </MultiBinding>
-                            </ComboBox.SelectedValue>
+                        <ComboBox SelectedIndex="5" Style="{StaticResource CustomComboBox}" Margin="0,0,0,12">
+                            <ComboBoxItem Content="3840x2160"/>
+                            <ComboBoxItem Content="2560x1600"/>
+                            <ComboBoxItem Content="2560x1440"/>
+                            <ComboBoxItem Content="2560x1080"/>
+                            <ComboBoxItem Content="1920x1200"/>
+                            <ComboBoxItem Content="1920x1080"/>
+                            <ComboBoxItem Content="1680x1050"/>
+                            <ComboBoxItem Content="1600x900"/>
+                            <ComboBoxItem Content="1440x900"/>
+                            <ComboBoxItem Content="1280x1024"/>
+                            <ComboBoxItem Content="1280x960"/>
+                            <ComboBoxItem Content="1280x800"/>
+                            <ComboBoxItem Content="1280x720"/>
                         </ComboBox>
-
-                        <!-- 窗口模式 -->
-                        <TextBlock Text="Window Mode" Margin="0,0,0,4"/>
-                        <ComboBox ItemsSource="{Binding WindowModeOptions.Values}"
-                                  SelectedIndex="{Binding VideoConfig.WindowMode, Mode=TwoWay}"
-                                  Style="{StaticResource CustomComboBox}"
-                                  Margin="0,0,0,12"/>
 
                         <!-- 刷新率 -->
                         <Grid Margin="0,0,0,12">
@@ -197,7 +561,7 @@
                                      Style="{StaticResource NumericTextBox}"/>
                         </Grid>
 
-                        <!-- 伽马/亮度 -->
+                        <!-- 亮度/伽马 -->
                         <Grid Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -218,7 +582,9 @@
                     </StackPanel>
                 </Border>
 
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <!-- 画质设置 -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="QUALITY SETTINGS" Style="{StaticResource SectionHeader}"/>
@@ -262,17 +628,23 @@
 
                         <!-- 粒子效果 -->
                         <TextBlock Text="Particle Effects" Margin="0,0,0,4"/>
-                        <ComboBox ItemsSource="{Binding ParticleLevelOptions.Values}"
-                                  SelectedIndex="{Binding VideoConfig.ParticleCpuLevel, Mode=TwoWay}"
+                        <ComboBox SelectedIndex="{Binding VideoConfig.ParticleCpuLevel, Mode=TwoWay}"
                                   Style="{StaticResource CustomComboBox}"
-                                  Margin="0,0,0,12"/>
+                                  Margin="0,0,0,12">
+                            <ComboBoxItem Content="Low"/>
+                            <ComboBoxItem Content="Medium"/>
+                            <ComboBoxItem Content="High"/>
+                        </ComboBox>
 
                         <!-- SSAO -->
                         <TextBlock Text="Ambient Occlusion (SSAO)" Margin="0,0,0,4"/>
-                        <ComboBox ItemsSource="{Binding SsaoQualityOptions.Values}"
-                                  SelectedIndex="{Binding VideoConfig.SsaoQuality, Mode=TwoWay}"
+                        <ComboBox SelectedIndex="{Binding VideoConfig.SsaoQuality, Mode=TwoWay}"
                                   Style="{StaticResource CustomComboBox}"
-                                  Margin="0,0,0,12"/>
+                                  Margin="0,0,0,12">
+                            <ComboBoxItem Content="Off"/>
+                            <ComboBoxItem Content="Low"/>
+                            <ComboBoxItem Content="High"/>
+                        </ComboBox>
 
                         <!-- 体积效果 -->
                         <CheckBox Content="Volumetric Lighting"
@@ -289,24 +661,34 @@
                     </StackPanel>
                 </Border>
 
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <!-- 性能设置 -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="PERFORMANCE" Style="{StaticResource SectionHeader}"/>
 
                         <!-- 垂直同步 -->
                         <TextBlock Text="V-Sync" Margin="0,8,0,4"/>
-                        <ComboBox ItemsSource="{Binding VsyncOptions.Values}"
-                                  SelectedIndex="{Binding VideoConfig.MatVsyncMode, Mode=TwoWay}"
+                        <ComboBox SelectedIndex="{Binding VideoConfig.MatVsyncMode, Mode=TwoWay}"
                                   Style="{StaticResource CustomComboBox}"
-                                  Margin="0,0,0,12"/>
+                                  Margin="0,0,0,12">
+                            <ComboBoxItem Content="Off"/>
+                            <ComboBoxItem Content="On"/>
+                            <ComboBoxItem Content="Triple Buffered"/>
+                        </ComboBox>
 
                         <!-- 抗锯齿 -->
                         <TextBlock Text="Anti-Aliasing" Margin="0,0,0,4"/>
-                        <ComboBox ItemsSource="{Binding AntialiasOptions.Values}"
-                                  SelectedIndex="{Binding VideoConfig.MatAntialiasMode, Mode=TwoWay}"
+                        <ComboBox SelectedIndex="{Binding VideoConfig.MatAntialiasMode, Mode=TwoWay}"
                                   Style="{StaticResource CustomComboBox}"
-                                  Margin="0,0,0,12"/>
+                                  Margin="0,0,0,12">
+                            <ComboBoxItem Content="Off"/>
+                            <ComboBoxItem Content="FXAA"/>
+                            <ComboBoxItem Content="TXAA"/>
+                            <ComboBoxItem Content="MSAA 2x"/>
+                            <ComboBoxItem Content="MSAA 4x"/>
+                        </ComboBox>
 
                         <!-- 动态分辨率 -->
                         <CheckBox Content="Dynamic Resolution Scaling (DVS)"
@@ -315,7 +697,9 @@
                     </StackPanel>
                 </Border>
 
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <!-- 游戏设置 -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="GAME SETTINGS" Style="{StaticResource SectionHeader}"/>
@@ -391,7 +775,9 @@
                     </StackPanel>
                 </Border>
 
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <!-- 瞄准镜灵敏度 -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
                         <CheckBox Content="Use Per-Scope Sensitivity"
@@ -515,7 +901,9 @@
                     </StackPanel>
                 </Border>
 
-                <!-- 预设按钮 -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <!-- 预设 -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="PRESETS" Style="{StaticResource SectionHeader}"/>
