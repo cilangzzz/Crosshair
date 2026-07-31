@@ -62,16 +62,32 @@ WPF 应用入口、UI 层、窗口和控件实现。
 | [坑点](App/pitfalls.md) | 透明窗口、Shape 渲染、配置深拷贝等 |
 | [变更日志](App/CHANGELOG.md) | 模块变更历史 |
 
+### GameConfig - 游戏配置层
+游戏配置文件协议、字段定义、解析规则。
+
+| 文档 | 描述 |
+|------|------|
+| [README](GameConfig/Apex/README.md) | Apex Legends 配置协议概述 |
+| [videoconfig](GameConfig/Apex/videoconfig.md) | 视频配置详细选项 |
+| [settings](GameConfig/Apex/settings.md) | 游戏设置详细选项 |
+| [launch-options](GameConfig/Apex/launch-options.md) | 启动参数详解 |
+| [数据模型](GameConfig/Apex/data-model.md) | 配置数据结构定义 |
+| [变更日志](GameConfig/Apex/CHANGELOG.md) | 配置协议变更历史 |
+
 ## 文档统计
 
-- **模块数**: 5
-- **文档文件**: 21+
-- **总行数**: 约 4000+ 行
+- **模块数**: 6
+- **文档文件**: 27+
+- **总行数**: 约 5500+ 行
 - **最后更新**: 2026-07-31
 
 ## 最新变更
 
 ### 2026-07-31 更新
+- 新增 Apex Legends 配置协议文档
+- 新增 GameConfig/Apex 文档模块
+- 包含 videoconfig.txt 和 settings.cfg 完整字段定义
+- 提供数据模型、配置模板、优化建议
 - 新增游戏配置管理功能（GameConfig, GameConfigStrategy）
 - 新增 IGameConfigService 接口和 GameConfigService 实现
 - 支持 8 款主流 FPS 游戏配置
@@ -105,11 +121,19 @@ docs/
 │   ├── data-model.md
 │   ├── pitfalls.md
 │   └── CHANGELOG.md
-└── App/                      # 表现层
-    ├── README.md
-    ├── data-model.md
-    ├── pitfalls.md
-    └── CHANGELOG.md
+├── App/                      # 表现层
+│   ├── README.md
+│   ├── data-model.md
+│   ├── pitfalls.md
+│   └── CHANGELOG.md
+└── GameConfig/               # 游戏配置层
+    └── Apex/                 # Apex Legends 配置
+        ├── README.md
+        ├── videoconfig.md
+        ├── settings.md
+        ├── launch-options.md
+        ├── data-model.md
+        └── CHANGELOG.md
 ```
 
 ## 快速查找
@@ -140,6 +164,13 @@ docs/
 - [OverlayWindow](App/README.md#overlaywindow)
 - [MainViewModel](App/data-model.md#mainviewmodel)
 - [主题系统](App/README.md#主题系统)
+
+**游戏配置**:
+- [Apex 配置协议](GameConfig/Apex/README.md)
+- [视频配置选项](GameConfig/Apex/videoconfig.md)
+- [游戏设置选项](GameConfig/Apex/settings.md)
+- [启动参数详解](GameConfig/Apex/launch-options.md)
+- [配置数据模型](GameConfig/Apex/data-model.md)
 
 ### 按问题查找
 
