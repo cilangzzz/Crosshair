@@ -58,6 +58,58 @@ public partial class ApexVideoConfig : ObservableObject
     private float _monitorGamma = 2.2f;
 
     // ═══════════════════════════════════════════════════════════
+    // 分辨率选择辅助属性
+    // ═══════════════════════════════════════════════════════════
+
+    /// <summary>分辨率选项列表</summary>
+    public static readonly (int Width, int Height)[] ResolutionOptions = new[]
+    {
+        (3840, 2160),
+        (2560, 1600),
+        (2560, 1440),
+        (2560, 1080),
+        (1920, 1200),
+        (1920, 1080),
+        (1680, 1050),
+        (1600, 900),
+        (1440, 900),
+        (1280, 1024),
+        (1280, 960),
+        (1280, 800),
+        (1280, 720)
+    };
+
+    /// <summary>分辨率索引 (对应 ResolutionOptions)</summary>
+    [ObservableProperty]
+    private int _resolutionIndex = 5; // 默认 1920x1080
+
+    /// <summary>当分辨率索引改变时，更新 DefaultRes 和 DefaultResHeight</summary>
+    partial void OnResolutionIndexChanged(int value)
+    {
+        if (value >= 0 && value < ResolutionOptions.Length)
+        {
+            var (w, h) = ResolutionOptions[value];
+            DefaultRes = w;
+            DefaultResHeight = h;
+        }
+    }
+
+    /// <summary>根据 DefaultRes 和 DefaultResHeight 计算分辨率索引</summary>
+    public void UpdateResolutionIndex()
+    {
+        for (int i = 0; i < ResolutionOptions.Length; i++)
+        {
+            if (ResolutionOptions[i].Width == DefaultRes && ResolutionOptions[i].Height == DefaultResHeight)
+            {
+                ResolutionIndex = i;
+                return;
+            }
+        }
+        // 未找到匹配项，默认为 1920x1080
+        ResolutionIndex = 5;
+    }
+
+    // ═══════════════════════════════════════════════════════════
     // 画质设置 (Quality Settings)
     // ═══════════════════════════════════════════════════════════
 

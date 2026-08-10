@@ -9,6 +9,7 @@
     <RootNamespace>CrosshairPro.App</RootNamespace>
     <AssemblyName>CrosshairPro</AssemblyName>
     <Version>1.0.0</Version>
+    <SupportedCultures>en</SupportedCultures>
   </PropertyGroup>
 
   <!-- Project references -->

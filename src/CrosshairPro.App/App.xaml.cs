@@ -1,7 +1,9 @@
 using System.Windows;
 using CrosshairPro.Application.DI;
+using CrosshairPro.App.Localization;
 using CrosshairPro.App.ViewModels;
 using CrosshairPro.App.Views;
+using CrosshairPro.Core.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CrosshairPro.App;
@@ -33,8 +35,32 @@ public partial class App : System.Windows.Application
             .AddTransient<MainWindow>()
             .BuildServiceProvider();
 
+        // 初始化语言设置
+        InitializeLocalization();
+
         // 从容器获取主窗口并显示
         var mainWindow = _services.GetRequiredService<MainWindow>();
         mainWindow.Show();
+    }
+
+    private void InitializeLocalization()
+    {
+        try
+        {
+            var stateRepo = _services?.GetService<IAppStateRepository>();
+            if (stateRepo != null)
+            {
+                var state = stateRepo.LoadStateAsync().GetAwaiter().GetResult();
+                LocalizationProvider.Instance.Initialize(state.Language);
+            }
+            else
+            {
+                LocalizationProvider.Instance.Initialize();
+            }
+        }
+        catch
+        {
+            LocalizationProvider.Instance.Initialize();
+        }
     }
 }

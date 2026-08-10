@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- App -->
+  <data name="App.Title" xml:space="preserve">
+    <value>CROSSHAIR PRO</value>
+  </data>
+  <data name="App.Version" xml:space="preserve">
+    <value> v1.0</value>
+  </data>
+
+  <!-- Navigation -->
+  <data name="Nav.Crosshair" xml:space="preserve">
+    <value>Crosshair</value>
+  </data>
+  <data name="Nav.Games" xml:space="preserve">
+    <value>Games</value>
+  </data>
+  <data name="Nav.Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+
+  <!-- Preset -->
+  <data name="Preset.Label" xml:space="preserve">
+    <value>PRESET</value>
+  </data>
+  <data name="Preset.Default" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="Preset.Manage" xml:space="preserve">
+    <value>Manage Presets</value>
+  </data>
+
+  <!-- Actions -->
+  <data name="Action.Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Action.Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Action.Toggle" xml:space="preserve">
+    <value>Toggle</value>
+  </data>
+  <data name="Action.Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Action.OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Action.Replace" xml:space="preserve">
+    <value>Replace</value>
+  </data>
+  <data name="Action.Backup" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="Action.Export" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="Action.Import" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="Action.History" xml:space="preserve">
+    <value>History</value>
+  </data>
+  <data name="Action.Restore" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="Action.CopyToClipboard" xml:space="preserve">
+    <value>Copy to Clipboard</value>
+  </data>
+
+  <!-- Status -->
+  <data name="Status.CrosshairEnabled" xml:space="preserve">
+    <value>Crosshair Enabled</value>
+  </data>
+  <data name="Status.CrosshairDisabled" xml:space="preserve">
+    <value>Crosshair Disabled</value>
+  </data>
+  <data name="Status.HotkeyToggle" xml:space="preserve">
+    <value>Ctrl+Shift+X Toggle</value>
+  </data>
+
+  <!-- Crosshair Page -->
+  <data name="Crosshair.Preview" xml:space="preserve">
+    <value>PREVIEW</value>
+  </data>
+  <data name="Crosshair.Style" xml:space="preserve">
+    <value>STYLE</value>
+  </data>
+  <data name="Crosshair.Size" xml:space="preserve">
+    <value>SIZE</value>
+  </data>
+  <data name="Crosshair.Gap" xml:space="preserve">
+    <value>GAP</value>
+  </data>
+  <data name="Crosshair.Thickness" xml:space="preserve">
+    <value>THICKNESS</value>
+  </data>
+  <data name="Crosshair.Opacity" xml:space="preserve">
+    <value>OPACITY</value>
+  </data>
+  <data name="Crosshair.Brightness" xml:space="preserve">
+    <value>BRIGHTNESS</value>
+  </data>
+  <data name="Crosshair.CenterSize" xml:space="preserve">
+    <value>CENTER SIZE</value>
+  </data>
+  <data name="Crosshair.Color" xml:space="preserve">
+    <value>COLOR</value>
+  </data>
+  <data name="Crosshair.Advanced" xml:space="preserve">
+    <value>ADVANCED</value>
+  </data>
+  <data name="Crosshair.SelectImage" xml:space="preserve">
+    <value>Select Image...</value>
+  </data>
+  <data name="Crosshair.CustomColor" xml:space="preserve">
+    <value>Custom Color</value>
+  </data>
+
+  <!-- Crosshair Styles -->
+  <data name="CrosshairStyle.Cross" xml:space="preserve">
+    <value>Cross</value>
+  </data>
+  <data name="CrosshairStyle.Dot" xml:space="preserve">
+    <value>Dot</value>
+  </data>
+  <data name="CrosshairStyle.Circle" xml:space="preserve">
+    <value>Circle</value>
+  </data>
+  <data name="CrosshairStyle.TShape" xml:space="preserve">
+    <value>T-Shape</value>
+  </data>
+  <data name="CrosshairStyle.XShape" xml:space="preserve">
+    <value>X-Shape</value>
+  </data>
+  <data name="CrosshairStyle.CustomImage" xml:space="preserve">
+    <value>Custom Image</value>
+  </data>
+
+  <!-- Effects -->
+  <data name="Effects.Header" xml:space="preserve">
+    <value>Effects</value>
+  </data>
+  <data name="Effects.EnableOutline" xml:space="preserve">
+    <value>Enable Outline</value>
+  </data>
+  <data name="Effects.OutlineThickness" xml:space="preserve">
+    <value>Outline Thickness</value>
+  </data>
+  <data name="Effects.EnableShadow" xml:space="preserve">
+    <value>Enable Shadow</value>
+  </data>
+
+  <!-- Games Page -->
+  <data name="Games.SelectPrompt" xml:space="preserve">
+    <value>Select a game to configure</value>
+  </data>
+
+  <!-- Apex Legends -->
+  <data name="Apex.Title" xml:space="preserve">
+    <value>APEX LEGENDS CONFIGURATION</value>
+  </data>
+  <data name="Apex.ConfigFiles" xml:space="preserve">
+    <value>CONFIG FILES</value>
+  </data>
+  <data name="Apex.LaunchOptions" xml:space="preserve">
+    <value>LAUNCH OPTIONS</value>
+  </data>
+  <data name="Apex.LaunchOptionsDesc" xml:space="preserve">
+    <value>Steam launch parameters, paste in Steam game properties</value>
+  </data>
+  <data name="Apex.Preset" xml:space="preserve">
+    <value>Preset</value>
+  </data>
+  <data name="Apex.CustomLaunchOptions" xml:space="preserve">
+    <value>Custom Launch Options</value>
+  </data>
+  <data name="Apex.Performance" xml:space="preserve">
+    <value>Performance</value>
+  </data>
+  <data name="Apex.HighPriority" xml:space="preserve">
+    <value>High Priority (-high)</value>
+  </data>
+  <data name="Apex.Threads" xml:space="preserve">
+    <value>Threads (0=Auto)</value>
+  </data>
+  <data name="Apex.RefreshRate" xml:space="preserve">
+    <value>Refresh Rate (Hz)</value>
+  </data>
+  <data name="Apex.SkipIntro" xml:space="preserve">
+    <value>Skip Intro Video (-novid)</value>
+  </data>
+  <data name="Apex.DisableJoystick" xml:space="preserve">
+    <value>Disable Joystick (-nojoy)</value>
+  </data>
+  <data name="Apex.Window" xml:space="preserve">
+    <value>Window</value>
+  </data>
+  <data name="Apex.WindowedMode" xml:space="preserve">
+    <value>Windowed Mode</value>
+  </data>
+  <data name="Apex.BorderlessWindow" xml:space="preserve">
+    <value>Borderless Window</value>
+  </data>
+  <data name="Apex.WindowWidth" xml:space="preserve">
+    <value>Window Width</value>
+  </data>
+  <data name="Apex.WindowHeight" xml:space="preserve">
+    <value>Window Height</value>
+  </data>
+  <data name="Apex.GameSettings" xml:space="preserve">
+    <value>Game Settings</value>
+  </data>
+  <data name="Apex.MaxFPS" xml:space="preserve">
+    <value>Max FPS (0=Unlimited)</value>
+  </data>
+  <data name="Apex.ShowPositionInfo" xml:space="preserve">
+    <value>Show Position Info</value>
+  </data>
+  <data name="Apex.FOVScale" xml:space="preserve">
+    <value>FOV Scale</value>
+  </data>
+  <data name="Apex.LetterboxAspect" xml:space="preserve">
+    <value>Letterbox Aspect Min</value>
+  </data>
+  <data name="Apex.Network" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="Apex.Interp" xml:space="preserve">
+    <value>Interp</value>
+  </data>
+  <data name="Apex.InterpRatio" xml:space="preserve">
+    <value>Interp Ratio</value>
+  </data>
+  <data name="Apex.Debug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="Apex.DevMode" xml:space="preserve">
+    <value>Developer Mode (-dev)</value>
+  </data>
+  <data name="Apex.EnableConsole" xml:space="preserve">
+    <value>Enable Console (-console)</value>
+  </data>
+  <data name="Apex.GeneratedLaunchOptions" xml:space="preserve">
+    <value>Generated Launch Options:</value>
+  </data>
+  <data name="Apex.VideoSettings" xml:space="preserve">
+    <value>VIDEO SETTINGS</value>
+  </data>
+  <data name="Apex.Resolution" xml:space="preserve">
+    <value>Resolution</value>
+  </data>
+  <data name="Apex.Gamma" xml:space="preserve">
+    <value>Gamma (Brightness)</value>
+  </data>
+  <data name="Apex.QualitySettings" xml:space="preserve">
+    <value>QUALITY SETTINGS</value>
+  </data>
+  <data name="Apex.TextureQuality" xml:space="preserve">
+    <value>Texture Quality</value>
+  </data>
+  <data name="Apex.AnisotropicFiltering" xml:space="preserve">
+    <value>Anisotropic Filtering</value>
+  </data>
+  <data name="Apex.EnableShadows" xml:space="preserve">
+    <value>Enable Shadows</value>
+  </data>
+  <data name="Apex.CascadeShadowMaps" xml:space="preserve">
+    <value>Cascade Shadow Maps (CSM)</value>
+  </data>
+  <data name="Apex.ParticleEffects" xml:space="preserve">
+    <value>Particle Effects</value>
+  </data>
+  <data name="Apex.AmbientOcclusion" xml:space="preserve">
+    <value>Ambient Occlusion (SSAO)</value>
+  </data>
+  <data name="Apex.VolumetricLighting" xml:space="preserve">
+    <value>Volumetric Lighting</value>
+  </data>
+  <data name="Apex.VolumetricFog" xml:space="preserve">
+    <value>Volumetric Fog</value>
+  </data>
+  <data name="Apex.RagdollPhysics" xml:space="preserve">
+    <value>Ragdoll Physics</value>
+  </data>
+  <data name="Apex.PerformanceSection" xml:space="preserve">
+    <value>PERFORMANCE</value>
+  </data>
+  <data name="Apex.VSync" xml:space="preserve">
+    <value>V-Sync</value>
+  </data>
+  <data name="Apex.AntiAliasing" xml:space="preserve">
+    <value>Anti-Aliasing</value>
+  </data>
+  <data name="Apex.DynamicResolution" xml:space="preserve">
+    <value>Dynamic Resolution Scaling (DVS)</value>
+  </data>
+  <data name="Apex.MouseSensitivity" xml:space="preserve">
+    <value>Mouse Sensitivity</value>
+  </data>
+  <data name="Apex.MouseAcceleration" xml:space="preserve">
+    <value>Mouse Acceleration</value>
+  </data>
+  <data name="Apex.FieldOfView" xml:space="preserve">
+    <value>Field of View (FOV)</value>
+  </data>
+  <data name="Apex.ShowFPS" xml:space="preserve">
+    <value>Show FPS (cl_showfps)</value>
+  </data>
+  <data name="Apex.ShowPosition" xml:space="preserve">
+    <value>Show Position Info (cl_showpos)</value>
+  </data>
+  <data name="Apex.PerScopeSensitivity" xml:space="preserve">
+    <value>Use Per-Scope Sensitivity</value>
+  </data>
+  <data name="Apex.Scope1x" xml:space="preserve">
+    <value>1x (Red Dot/Holo)</value>
+  </data>
+  <data name="Apex.Scope2x" xml:space="preserve">
+    <value>2x Scope</value>
+  </data>
+  <data name="Apex.Scope3x" xml:space="preserve">
+    <value>3x Scope</value>
+  </data>
+  <data name="Apex.Scope4x" xml:space="preserve">
+    <value>4x Scope</value>
+  </data>
+  <data name="Apex.Scope6x" xml:space="preserve">
+    <value>6x Scope</value>
+  </data>
+  <data name="Apex.Scope8x10x" xml:space="preserve">
+    <value>8x/10x Scope</value>
+  </data>
+  <data name="Apex.Presets" xml:space="preserve">
+    <value>PRESETS</value>
+  </data>
+  <data name="Apex.Preset.Competitive" xml:space="preserve">
+    <value>Competitive</value>
+  </data>
+  <data name="Apex.Preset.HighQuality" xml:space="preserve">
+    <value>High Quality</value>
+  </data>
+  <data name="Apex.Preset.Default" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="Apex.ResetToDefault" xml:space="preserve">
+    <value>Reset to Default</value>
+  </data>
+  <data name="Apex.SaveConfiguration" xml:space="preserve">
+    <value>Save Configuration</value>
+  </data>
+
+  <!-- Quality Options -->
+  <data name="Quality.Highest" xml:space="preserve">
+    <value>Highest</value>
+  </data>
+  <data name="Quality.High" xml:space="preserve">
+    <value>High</value>
+  </data>
+  <data name="Quality.Medium" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="Quality.Low" xml:space="preserve">
+    <value>Low</value>
+  </data>
+  <data name="Quality.Off" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Quality.On" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="Quality.TripleBuffered" xml:space="preserve">
+    <value>Triple Buffered</value>
+  </data>
+
+  <!-- Window Modes -->
+  <data name="WindowMode.Fullscreen" xml:space="preserve">
+    <value>Fullscreen</value>
+  </data>
+  <data name="WindowMode.Windowed" xml:space="preserve">
+    <value>Windowed</value>
+  </data>
+  <data name="WindowMode.Borderless" xml:space="preserve">
+    <value>Borderless</value>
+  </data>
+
+  <!-- History -->
+  <data name="History.BackupHistory" xml:space="preserve">
+    <value>Backup History</value>
+  </data>
+  <data name="History.NoBackups" xml:space="preserve">
+    <value>No backups available</value>
+  </data>
+
+  <!-- Tray -->
+  <data name="Tray.ShowMainWindow" xml:space="preserve">
+    <value>Show Main Window</value>
+  </data>
+  <data name="Tray.ToggleCrosshair" xml:space="preserve">
+    <value>Toggle Crosshair</value>
+  </data>
+  <data name="Tray.Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+
+  <!-- Dialogs -->
+  <data name="Dialog.SavePreset" xml:space="preserve">
+    <value>Save Preset</value>
+  </data>
+  <data name="Dialog.EnterPresetName" xml:space="preserve">
+    <value>Enter preset name:</value>
+  </data>
+  <data name="Dialog.ImportPreset" xml:space="preserve">
+    <value>Import Preset</value>
+  </data>
+  <data name="Dialog.ExportPreset" xml:space="preserve">
+    <value>Export Preset</value>
+  </data>
+  <data name="Dialog.PickColor" xml:space="preserve">
+    <value>Pick Color</value>
+  </data>
+  <data name="Dialog.CustomColor" xml:space="preserve">
+    <value>CUSTOM COLOR</value>
+  </data>
+  <data name="Dialog.ManagePresets" xml:space="preserve">
+    <value>MANAGE PRESETS</value>
+  </data>
+  <data name="Dialog.SelectCrosshairImage" xml:space="preserve">
+    <value>Select Crosshair Image</value>
+  </data>
+  <data name="Dialog.SelectVideoConfig" xml:space="preserve">
+    <value>Select videoconfig.txt File</value>
+  </data>
+  <data name="Dialog.SelectSettingsConfig" xml:space="preserve">
+    <value>Select settings.cfg File</value>
+  </data>
+  <data name="Dialog.ExportVideoConfig" xml:space="preserve">
+    <value>Export videoconfig.txt</value>
+  </data>
+  <data name="Dialog.ExportSettingsConfig" xml:space="preserve">
+    <value>Export settings.cfg</value>
+  </data>
+
+  <!-- File Filters -->
+  <data name="Filter.ImageFiles" xml:space="preserve">
+    <value>Image Files (*.png;*.jpg;*.bmp)|*.png;*.jpg;*.bmp|All Files (*.*)|*.*</value>
+  </data>
+  <data name="Filter.JsonFiles" xml:space="preserve">
+    <value>JSON Files (*.json)|*.json|All Files (*.*)|*.*</value>
+  </data>
+  <data name="Filter.JsonOnly" xml:space="preserve">
+    <value>JSON Files (*.json)|*.json</value>
+  </data>
+  <data name="Filter.VideoConfig" xml:space="preserve">
+    <value>Video Config Files|videoconfig.txt|All Files|*.*</value>
+  </data>
+  <data name="Filter.SettingsConfig" xml:space="preserve">
+    <value>Settings Files|settings.cfg|All Files|*.*</value>
+  </data>
+
+  <!-- Toast Messages -->
+  <data name="Toast.PresetRestored" xml:space="preserve">
+    <value>Preset "{0}" restored</value>
+  </data>
+  <data name="Toast.PresetNotFound" xml:space="preserve">
+    <value>Last used preset not found, reverted to default</value>
+  </data>
+  <data name="Toast.ConfigLoadFailed" xml:space="preserve">
+    <value>Failed to load config, using default</value>
+  </data>
+  <data name="Toast.PresetSaved" xml:space="preserve">
+    <value>Preset "{0}" saved</value>
+  </data>
+  <data name="Toast.PresetImported" xml:space="preserve">
+    <value>Preset "{0}" imported</value>
+  </data>
+  <data name="Toast.ImportFailed" xml:space="preserve">
+    <value>Import failed: {0}</value>
+  </data>
+  <data name="Toast.ConfigExported" xml:space="preserve">
+    <value>Config exported to {0}</value>
+  </data>
+  <data name="Toast.ExportFailed" xml:space="preserve">
+    <value>Export failed: {0}</value>
+  </data>
+  <data name="Toast.ConfigReplaced" xml:space="preserve">
+    <value>Config file replaced and backed up</value>
+  </data>
+  <data name="Toast.ReplaceFailed" xml:space="preserve">
+    <value>Replace failed: invalid file format</value>
+  </data>
+  <data name="Toast.BackedUp" xml:space="preserve">
+    <value>Backed up to: {0}</value>
+  </data>
+  <data name="Toast.BackupFailed" xml:space="preserve">
+    <value>Backup failed: {0}</value>
+  </data>
+  <data name="Toast.ConfigExportedShort" xml:space="preserve">
+    <value>Config exported</value>
+  </data>
+  <data name="Toast.LaunchOptionsCopied" xml:space="preserve">
+    <value>Launch options copied to clipboard</value>
+  </data>
+  <data name="Toast.CopyFailed" xml:space="preserve">
+    <value>Copy failed: {0}</value>
+  </data>
+  <data name="Toast.PresetApplied" xml:space="preserve">
+    <value>Applied {0} preset</value>
+  </data>
+  <data name="Toast.ApexNotInstalled" xml:space="preserve">
+    <value>Apex Legends installation not detected</value>
+  </data>
+  <data name="Toast.ConfigSaved" xml:space="preserve">
+    <value>Configuration saved</value>
+  </data>
+  <data name="Toast.SaveFailed" xml:space="preserve">
+    <value>Save failed: {0}</value>
+  </data>
+  <data name="Toast.ResetToDefault" xml:space="preserve">
+    <value>Reset to default configuration</value>
+  </data>
+  <data name="Toast.LoadHistoryFailed" xml:space="preserve">
+    <value>Failed to load history: {0}</value>
+  </data>
+  <data name="Toast.RestoredTo" xml:space="preserve">
+    <value>Restored to: {0}</value>
+  </data>
+  <data name="Toast.RestoreFailed" xml:space="preserve">
+    <value>Restore failed</value>
+  </data>
+  <data name="Toast.RestoreFailedDetail" xml:space="preserve">
+    <value>Restore failed: {0}</value>
+  </data>
+  <data name="Toast.BackupDeleted" xml:space="preserve">
+    <value>Backup deleted</value>
+  </data>
+  <data name="Toast.DeleteFailed" xml:space="preserve">
+    <value>Delete failed: {0}</value>
+  </data>
+
+  <!-- Misc -->
+  <data name="Path.NotFound" xml:space="preserve">
+    <value>Not found</value>
+  </data>
+  <data name="Hotkey.ToggleCrosshair" xml:space="preserve">
+    <value>Toggle Crosshair</value>
+  </data>
+  <data name="Language.ZhCn" xml:space="preserve">
+    <value>中文</value>
+  </data>
+  <data name="Language.EnUs" xml:space="preserve">
+    <value>English</value>
+  </data>
+</root>

@@ -4,6 +4,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CrosshairPro.Application.Interfaces;
+using CrosshairPro.App.Localization;
 using CrosshairPro.Core.Models;
 using Microsoft.Win32;
 
@@ -49,46 +50,58 @@ public partial class ApexConfigViewModel : ObservableObject
     /// <summary>纹理质量选项</summary>
     public Dictionary<string, int> TextureQualityOptions { get; } = new()
     {
-        { "最高", -1 }, { "高", 0 }, { "中", 1 }, { "低", 2 }
+        { LocalizationProvider.Get("Quality.Highest"), -1 },
+        { LocalizationProvider.Get("Quality.High"), 0 },
+        { LocalizationProvider.Get("Quality.Medium"), 1 },
+        { LocalizationProvider.Get("Quality.Low"), 2 }
     };
 
     /// <summary>窗口模式选项</summary>
     public Dictionary<string, int> WindowModeOptions { get; } = new()
     {
-        { "全屏", 0 }, { "窗口化", 1 }, { "无边框窗口", 2 }
+        { LocalizationProvider.Get("WindowMode.Fullscreen"), 0 },
+        { LocalizationProvider.Get("WindowMode.Windowed"), 1 },
+        { LocalizationProvider.Get("WindowMode.Borderless"), 2 }
     };
 
     /// <summary>粒子效果选项</summary>
     public Dictionary<string, int> ParticleLevelOptions { get; } = new()
     {
-        { "低", 0 }, { "中", 1 }, { "高", 2 }
+        { LocalizationProvider.Get("Quality.Low"), 0 },
+        { LocalizationProvider.Get("Quality.Medium"), 1 },
+        { LocalizationProvider.Get("Quality.High"), 2 }
     };
 
     /// <summary>SSAO 质量选项</summary>
     public Dictionary<string, int> SsaoQualityOptions { get; } = new()
     {
-        { "关闭", 0 }, { "低", 1 }, { "高", 2 }
+        { LocalizationProvider.Get("Quality.Off"), 0 },
+        { LocalizationProvider.Get("Quality.Low"), 1 },
+        { LocalizationProvider.Get("Quality.High"), 2 }
     };
 
     /// <summary>垂直同步选项</summary>
     public Dictionary<string, int> VsyncOptions { get; } = new()
     {
-        { "关闭", 0 }, { "开启", 1 }, { "三重缓冲", 2 }
+        { LocalizationProvider.Get("Quality.Off"), 0 },
+        { LocalizationProvider.Get("Quality.On"), 1 },
+        { LocalizationProvider.Get("Quality.TripleBuffered"), 2 }
     };
 
     /// <summary>抗锯齿选项</summary>
     public Dictionary<string, int> AntialiasOptions { get; } = new()
     {
-        { "关闭", 0 }, { "FXAA", 1 }, { "TXAA", 2 }, { "MSAA 2x", 3 }, { "MSAA 4x", 4 }
+        { LocalizationProvider.Get("Quality.Off"), 0 },
+        { "FXAA", 1 }, { "TXAA", 2 }, { "MSAA 2x", 3 }, { "MSAA 4x", 4 }
     };
 
     /// <summary>启动选项预设</summary>
     public ObservableCollection<string> LaunchOptionPresets { get; } = new()
     {
-        "竞技优化",
-        "高帧率",
+        LocalizationProvider.Get("Apex.Preset.Competitive"),
+        LocalizationProvider.Get("Apex.Preset.HighQuality"),
         "调试模式",
-        "自定义"
+        LocalizationProvider.Get("Apex.CustomLaunchOptions")
     };
 
     [ObservableProperty]
@@ -168,8 +181,8 @@ public partial class ApexConfigViewModel : ObservableObject
             if (IsApexInstalled)
             {
                 // 加载配置文件路径
-                VideoConfigPath = _apexService.GetVideoConfigPath() ?? "未找到";
-                SettingsConfigPath = _apexService.GetSettingsConfigPath() ?? "未找到";
+                VideoConfigPath = _apexService.GetVideoConfigPath() ?? LocalizationProvider.Get("Path.NotFound");
+                SettingsConfigPath = _apexService.GetSettingsConfigPath() ?? LocalizationProvider.Get("Path.NotFound");
 
                 // 加载配置
                 VideoConfig = await _apexService.LoadVideoConfigAsync();
@@ -178,12 +191,12 @@ public partial class ApexConfigViewModel : ObservableObject
             }
             else
             {
-                StatusMessage = "未检测到 Apex Legends 安装";
+                StatusMessage = LocalizationProvider.Get("Toast.ApexNotInstalled");
             }
         }
         catch (Exception ex)
         {
-            StatusMessage = $"加载配置失败: {ex.Message}";
+            StatusMessage = LocalizationProvider.GetFormatted("Toast.SaveFailed", ex.Message);
         }
         finally
         {
@@ -200,8 +213,8 @@ public partial class ApexConfigViewModel : ObservableObject
     {
         var dlg = new OpenFileDialog
         {
-            Filter = "Video Config Files|videoconfig.txt|All Files|*.*",
-            Title = "选择 videoconfig.txt 文件"
+            Filter = LocalizationProvider.Get("Filter.VideoConfig"),
+            Title = LocalizationProvider.Get("Dialog.SelectVideoConfig")
         };
 
         if (dlg.ShowDialog() == true)
@@ -209,12 +222,12 @@ public partial class ApexConfigViewModel : ObservableObject
             var success = await _apexService.ReplaceVideoConfigAsync(dlg.FileName);
             if (success)
             {
-                ShowToast("配置文件已替换并备份");
+                ShowToast(LocalizationProvider.Get("Toast.ConfigReplaced"));
                 VideoConfig = await _apexService.LoadVideoConfigAsync();
             }
             else
             {
-                ShowToast("替换失败：文件格式无效");
+                ShowToast(LocalizationProvider.Get("Toast.ReplaceFailed"));
             }
         }
     }
@@ -224,8 +237,8 @@ public partial class ApexConfigViewModel : ObservableObject
     {
         var dlg = new OpenFileDialog
         {
-            Filter = "Settings Files|settings.cfg|All Files|*.*",
-            Title = "选择 settings.cfg 文件"
+            Filter = LocalizationProvider.Get("Filter.SettingsConfig"),
+            Title = LocalizationProvider.Get("Dialog.SelectSettingsConfig")
         };
 
         if (dlg.ShowDialog() == true)
@@ -233,12 +246,12 @@ public partial class ApexConfigViewModel : ObservableObject
             var success = await _apexService.ReplaceSettingsConfigAsync(dlg.FileName);
             if (success)
             {
-                ShowToast("配置文件已替换并备份");
+                ShowToast(LocalizationProvider.Get("Toast.ConfigReplaced"));
                 SettingsConfig = await _apexService.LoadSettingsConfigAsync();
             }
             else
             {
-                ShowToast("替换失败：文件格式无效");
+                ShowToast(LocalizationProvider.Get("Toast.ReplaceFailed"));
             }
         }
     }
@@ -249,11 +262,11 @@ public partial class ApexConfigViewModel : ObservableObject
         try
         {
             var backupPath = await _apexService.BackupVideoConfigAsync();
-            ShowToast($"已备份到: {Path.GetFileName(backupPath)}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.BackedUp", Path.GetFileName(backupPath)));
         }
         catch (Exception ex)
         {
-            ShowToast($"备份失败: {ex.Message}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.BackupFailed", ex.Message));
         }
     }
 
@@ -263,11 +276,11 @@ public partial class ApexConfigViewModel : ObservableObject
         try
         {
             var backupPath = await _apexService.BackupSettingsConfigAsync();
-            ShowToast($"已备份到: {Path.GetFileName(backupPath)}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.BackedUp", Path.GetFileName(backupPath)));
         }
         catch (Exception ex)
         {
-            ShowToast($"备份失败: {ex.Message}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.BackupFailed", ex.Message));
         }
     }
 
@@ -276,15 +289,15 @@ public partial class ApexConfigViewModel : ObservableObject
     {
         var dlg = new SaveFileDialog
         {
-            Filter = "Video Config Files|videoconfig.txt|All Files|*.*",
+            Filter = LocalizationProvider.Get("Filter.VideoConfig"),
             FileName = "videoconfig.txt",
-            Title = "导出 videoconfig.txt"
+            Title = LocalizationProvider.Get("Dialog.ExportVideoConfig")
         };
 
         if (dlg.ShowDialog() == true)
         {
             await _apexService.ExportVideoConfigAsync(dlg.FileName);
-            ShowToast("配置已导出");
+            ShowToast(LocalizationProvider.Get("Toast.ConfigExportedShort"));
         }
     }
 
@@ -293,15 +306,15 @@ public partial class ApexConfigViewModel : ObservableObject
     {
         var dlg = new SaveFileDialog
         {
-            Filter = "Settings Files|settings.cfg|All Files|*.*",
+            Filter = LocalizationProvider.Get("Filter.SettingsConfig"),
             FileName = "settings.cfg",
-            Title = "导出 settings.cfg"
+            Title = LocalizationProvider.Get("Dialog.ExportSettingsConfig")
         };
 
         if (dlg.ShowDialog() == true)
         {
             await _apexService.ExportSettingsConfigAsync(dlg.FileName);
-            ShowToast("配置已导出");
+            ShowToast(LocalizationProvider.Get("Toast.ConfigExportedShort"));
         }
     }
 
@@ -319,12 +332,12 @@ public partial class ApexConfigViewModel : ObservableObject
                 {
                     System.Windows.Clipboard.SetText(textToCopy);
                 });
-                ShowToast("启动选项已复制到剪贴板");
+                ShowToast(LocalizationProvider.Get("Toast.LaunchOptionsCopied"));
             }
         }
         catch (Exception ex)
         {
-            ShowToast($"复制失败: {ex.Message}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.CopyFailed", ex.Message));
         }
     }
 
@@ -337,12 +350,12 @@ public partial class ApexConfigViewModel : ObservableObject
     {
         VideoConfig = presetName switch
         {
-            "竞技优化" => _apexService.GetCompetitivePreset(),
-            "高画质" => _apexService.GetHighQualityPreset(),
+            _ when presetName == LocalizationProvider.Get("Apex.Preset.Competitive") => _apexService.GetCompetitivePreset(),
+            _ when presetName == LocalizationProvider.Get("Apex.Preset.HighQuality") => _apexService.GetHighQualityPreset(),
             _ => _apexService.GetDefaultPreset()
         };
 
-        ShowToast($"已应用 {presetName} 预设");
+        ShowToast(LocalizationProvider.GetFormatted("Toast.PresetApplied", presetName));
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -354,7 +367,7 @@ public partial class ApexConfigViewModel : ObservableObject
     {
         if (!IsApexInstalled)
         {
-            ShowToast("未检测到 Apex Legends 安装");
+            ShowToast(LocalizationProvider.Get("Toast.ApexNotInstalled"));
             return;
         }
 
@@ -364,11 +377,11 @@ public partial class ApexConfigViewModel : ObservableObject
             await _apexService.SaveSettingsConfigAsync(SettingsConfig);
             await _apexService.SaveLaunchOptionsAsync(LaunchOptions);
 
-            ShowToast("配置已保存");
+            ShowToast(LocalizationProvider.Get("Toast.ConfigSaved"));
         }
         catch (Exception ex)
         {
-            ShowToast($"保存失败: {ex.Message}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.SaveFailed", ex.Message));
         }
     }
 
@@ -380,7 +393,7 @@ public partial class ApexConfigViewModel : ObservableObject
         LaunchOptions = _apexService.GenerateLaunchOptions();
 
         await Save();
-        ShowToast("已重置为默认配置");
+        ShowToast(LocalizationProvider.Get("Toast.ResetToDefault"));
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -458,7 +471,7 @@ public partial class ApexConfigViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ShowToast($"加载历史记录失败: {ex.Message}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.LoadHistoryFailed", ex.Message));
         }
     }
 
@@ -475,7 +488,7 @@ public partial class ApexConfigViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ShowToast($"加载历史记录失败: {ex.Message}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.LoadHistoryFailed", ex.Message));
         }
     }
 
@@ -489,18 +502,18 @@ public partial class ApexConfigViewModel : ObservableObject
             var success = await _apexService.RestoreVideoConfigFromBackupAsync(backup.FilePath);
             if (success)
             {
-                ShowToast($"已恢复到: {backup.DisplayTime}");
+                ShowToast(LocalizationProvider.GetFormatted("Toast.RestoredTo", backup.DisplayTime));
                 VideoConfig = await _apexService.LoadVideoConfigAsync();
                 LoadVideoConfigBackups(); // 刷新历史列表
             }
             else
             {
-                ShowToast("恢复失败");
+                ShowToast(LocalizationProvider.Get("Toast.RestoreFailed"));
             }
         }
         catch (Exception ex)
         {
-            ShowToast($"恢复失败: {ex.Message}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.RestoreFailedDetail", ex.Message));
         }
     }
 
@@ -514,18 +527,18 @@ public partial class ApexConfigViewModel : ObservableObject
             var success = await _apexService.RestoreSettingsConfigFromBackupAsync(backup.FilePath);
             if (success)
             {
-                ShowToast($"已恢复到: {backup.DisplayTime}");
+                ShowToast(LocalizationProvider.GetFormatted("Toast.RestoredTo", backup.DisplayTime));
                 SettingsConfig = await _apexService.LoadSettingsConfigAsync();
                 LoadSettingsConfigBackups();
             }
             else
             {
-                ShowToast("恢复失败");
+                ShowToast(LocalizationProvider.Get("Toast.RestoreFailed"));
             }
         }
         catch (Exception ex)
         {
-            ShowToast($"恢复失败: {ex.Message}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.RestoreFailedDetail", ex.Message));
         }
     }
 
@@ -539,7 +552,7 @@ public partial class ApexConfigViewModel : ObservableObject
             var success = _apexService.DeleteBackup(backup.FilePath);
             if (success)
             {
-                ShowToast("已删除备份");
+                ShowToast(LocalizationProvider.Get("Toast.BackupDeleted"));
                 // 刷新列表
                 if (ShowVideoConfigHistory)
                     LoadVideoConfigBackups();
@@ -549,7 +562,7 @@ public partial class ApexConfigViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ShowToast($"删除失败: {ex.Message}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.DeleteFailed", ex.Message));
         }
     }
 }

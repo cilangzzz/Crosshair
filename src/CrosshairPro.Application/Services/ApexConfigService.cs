@@ -454,6 +454,9 @@ public class ApexConfigService : IApexConfigService
             }
         }
 
+        // 根据解析后的分辨率值更新分辨率索引
+        config.UpdateResolutionIndex();
+
         return config;
     }
 

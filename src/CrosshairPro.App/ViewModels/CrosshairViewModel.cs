@@ -2,6 +2,7 @@ using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CrosshairPro.Application.Interfaces;
+using CrosshairPro.App.Localization;
 using CrosshairPro.Core.Enums;
 using CrosshairPro.Core.Models;
 
@@ -20,10 +21,10 @@ public partial class CrosshairViewModel : ObservableObject
     private bool _isCrosshairVisible = true;
 
     [ObservableProperty]
-    private string _statusMessage = "准心已启用";
+    private string _statusMessage = LocalizationProvider.Instance["Status.CrosshairEnabled"];
 
     [ObservableProperty]
-    private string _currentPresetName = "默认配置";
+    private string _currentPresetName = LocalizationProvider.Instance["Preset.Default"];
 
     [ObservableProperty]
     private int _selectedStyleIndex;
@@ -69,13 +70,13 @@ public partial class CrosshairViewModel : ObservableObject
                     SelectedPreset = targetPreset;
                     _configService.CopyConfig(targetPreset.Config, Config);
                     CurrentPresetName = targetPreset.Name;
-                    ShowToast($"已恢复预设 \"{targetPreset.Name}\"");
+                    ShowToast(LocalizationProvider.GetFormatted("Toast.PresetRestored", targetPreset.Name));
                 }
                 else
                 {
                     _currentPresetId = "default";
                     SelectedPreset = Presets.FirstOrDefault();
-                    ShowToast("上次使用的预设已不存在，已回退到默认配置");
+                    ShowToast(LocalizationProvider.Get("Toast.PresetNotFound"));
                 }
             }
             else
@@ -93,7 +94,7 @@ public partial class CrosshairViewModel : ObservableObject
             Serilog.Log.Error(ex, "Failed to initialize CrosshairViewModel");
             _isInitializing = false;
             SelectedPreset = Presets.FirstOrDefault();
-            ShowToast("配置加载失败，已使用默认配置");
+            ShowToast(LocalizationProvider.Get("Toast.ConfigLoadFailed"));
         }
     }
 
@@ -119,7 +120,12 @@ public partial class CrosshairViewModel : ObservableObject
 
     public string[] CrosshairStyleNames { get; } = new[]
     {
-        "十字准心", "点状准心", "圆形准心", "T形准心", "X形准心", "自定义图片"
+        LocalizationProvider.Get("CrosshairStyle.Cross"),
+        LocalizationProvider.Get("CrosshairStyle.Dot"),
+        LocalizationProvider.Get("CrosshairStyle.Circle"),
+        LocalizationProvider.Get("CrosshairStyle.TShape"),
+        LocalizationProvider.Get("CrosshairStyle.XShape"),
+        LocalizationProvider.Get("CrosshairStyle.CustomImage")
     };
 
     public string[] PresetColors { get; } = new[]
@@ -184,7 +190,9 @@ public partial class CrosshairViewModel : ObservableObject
     private void ToggleCrosshair()
     {
         IsCrosshairVisible = !IsCrosshairVisible;
-        StatusMessage = IsCrosshairVisible ? "准心已启用" : "准心已禁用";
+        StatusMessage = IsCrosshairVisible
+            ? LocalizationProvider.Get("Status.CrosshairEnabled")
+            : LocalizationProvider.Get("Status.CrosshairDisabled");
         ToggleCrosshairRequested?.Invoke(this, EventArgs.Empty);
     }
 
@@ -194,7 +202,7 @@ public partial class CrosshairViewModel : ObservableObject
         var defaultConfig = _configService.CreateDefaultConfig();
         _configService.CopyConfig(defaultConfig, Config);
         SelectedStyleIndex = 0;
-        CurrentPresetName = "默认配置";
+        CurrentPresetName = LocalizationProvider.Get("Preset.Default");
         _currentPresetId = "default";
         SubscribeConfigEvents(Config);
 
@@ -251,7 +259,7 @@ public partial class CrosshairViewModel : ObservableObject
 
         await SaveCurrentStateAsync();
 
-        ShowToast($"预设 \"{name}\" 已保存");
+        ShowToast(LocalizationProvider.GetFormatted("Toast.PresetSaved", name));
     }
 
     /// <summary>
@@ -266,11 +274,11 @@ public partial class CrosshairViewModel : ObservableObject
             SelectedPreset = preset;
             _currentPresetId = preset.Id;
             await SaveCurrentStateAsync();
-            ShowToast($"预设 \"{preset.Name}\" 已导入");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.PresetImported", preset.Name));
         }
         catch (Exception ex)
         {
-            ShowToast($"导入失败: {ex.Message}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.ImportFailed", ex.Message));
         }
     }
 
@@ -287,11 +295,11 @@ public partial class CrosshairViewModel : ObservableObject
                 Config = _configService.CloneConfig(Config)
             };
             await _presetService.ExportPresetAsync(preset, filePath);
-            ShowToast($"配置已导出到 {System.IO.Path.GetFileName(filePath)}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.ConfigExported", System.IO.Path.GetFileName(filePath)));
         }
         catch (Exception ex)
         {
-            ShowToast($"导出失败: {ex.Message}");
+            ShowToast(LocalizationProvider.GetFormatted("Toast.ExportFailed", ex.Message));
         }
     }
 
@@ -317,7 +325,7 @@ public partial class CrosshairViewModel : ObservableObject
                 new()
                 {
                     Id = "default",
-                    Name = "默认配置",
+                    Name = LocalizationProvider.Get("Preset.Default"),
                     Config = new CrosshairConfig(),
                     IsDefault = true
                 }

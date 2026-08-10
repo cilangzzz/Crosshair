@@ -10,4 +10,7 @@ public class AppPersistedState
 
     /// <summary>当前配置是否已修改（未保存到预设）</summary>
     public bool IsConfigModified { get; set; }
+
+    /// <summary>用户选择的语言（如 "zh-CN"、"en-US"），null 表示跟随系统</summary>
+    public string? Language { get; set; }
 }

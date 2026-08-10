@@ -6,6 +6,7 @@
         xmlns:vm="clr-namespace:CrosshairPro.App.ViewModels"
         xmlns:views="clr-namespace:CrosshairPro.App.Views"
         xmlns:controls="clr-namespace:CrosshairPro.App.Controls"
+        xmlns:loc="clr-namespace:CrosshairPro.App.Localization"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="Crosshair Pro" Height="600" Width="900"
@@ -55,8 +56,8 @@
             <Grid MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Background="Transparent">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0" IsHitTestVisible="False">
                     <Image Source="Assets/app-icon.ico" Width="16" Height="16" Margin="0,0,8,0" RenderOptions.BitmapScalingMode="HighQuality"/>
-                    <TextBlock Text="CROSSHAIR PRO" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" FontFamily="{DynamicResource FontFamilyMono}" VerticalAlignment="Center"/>
-                    <TextBlock Text=" v1.0" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                    <TextBlock Text="{loc:Loc App.Title}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" FontFamily="{DynamicResource FontFamilyMono}" VerticalAlignment="Center"/>
+                    <TextBlock Text="{loc:Loc App.Version}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="6,0,0,0"/>
                 </StackPanel>
             </Grid>
         </DockPanel>
@@ -72,10 +73,18 @@
 
             <!-- 左侧导航栏 - 始终全高显示 -->
             <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
-                <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,4">
-                    <controls:TabNavItem IconGeometry="Crosshair" IsSelected="{Binding IsCrosshairPage, Mode=OneWay}" Command="{Binding NavigateToCrosshairCommand}" ToolTip="准心配置" Margin="4"/>
-                    <controls:TabNavItem IconGeometry="Gamepad" IsSelected="{Binding IsGamesPage, Mode=OneWay}" Command="{Binding NavigateToGamesCommand}" ToolTip="游戏配置" Margin="4"/>
-                </StackPanel>
+                <Grid>
+                    <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,4">
+                        <controls:TabNavItem IconGeometry="Crosshair" IsSelected="{Binding IsCrosshairPage, Mode=OneWay}" Command="{Binding NavigateToCrosshairCommand}" ToolTip="{loc:Loc Nav.Crosshair}" Margin="4"/>
+                        <controls:TabNavItem IconGeometry="Gamepad" IsSelected="{Binding IsGamesPage, Mode=OneWay}" Command="{Binding NavigateToGamesCommand}" ToolTip="{loc:Loc Nav.Games}" Margin="4"/>
+                    </StackPanel>
+                    <!-- 语言切换按钮 -->
+                    <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,8">
+                        <Button x:Name="LanguageButton" Content="🌐" FontSize="16" Width="36" Height="36"
+                                Style="{StaticResource TitleBarButton}" Padding="0"
+                                ToolTip="{loc:Loc Nav.Language}" Click="LanguageButton_Click"/>
+                    </StackPanel>
+                </Grid>
             </Border>
 
             <!-- 右侧内容区 - 包含页面内容 + 底部工具栏/状态栏 -->
@@ -126,14 +135,14 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="PRESET" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Preset.Label}" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <ComboBox Width="140" Style="{StaticResource CompactComboBox}" ItemsSource="{Binding CrosshairViewModel.Presets}" SelectedItem="{Binding CrosshairViewModel.SelectedPreset}" DisplayMemberPath="Name" Margin="0,0,4,0"/>
-                            <Button Content="&#x270E;" FontSize="14" Width="32" Height="32" Style="{StaticResource SecondaryButton}" Padding="0" Click="PresetManageButton_Click" ToolTip="Manage Presets"/>
+                            <Button Content="&#x270E;" FontSize="14" Width="32" Height="32" Style="{StaticResource SecondaryButton}" Padding="0" Click="PresetManageButton_Click" ToolTip="{loc:Loc Preset.Manage}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2" Orientation="Horizontal">
-                            <Button Content="Save" Command="{Binding CrosshairViewModel.SavePresetCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,6,0"/>
-                            <Button Content="Reset" Command="{Binding CrosshairViewModel.ResetConfigCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0"/>
-                            <Button Content="Toggle" Command="{Binding CrosshairViewModel.ToggleCrosshairCommand}" Style="{StaticResource PrimaryButton}"/>
+                            <Button Content="{loc:Loc Action.Save}" Command="{Binding CrosshairViewModel.SavePresetCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,6,0"/>
+                            <Button Content="{loc:Loc Action.Reset}" Command="{Binding CrosshairViewModel.ResetConfigCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0"/>
+                            <Button Content="{loc:Loc Action.Toggle}" Command="{Binding CrosshairViewModel.ToggleCrosshairCommand}" Style="{StaticResource PrimaryButton}"/>
                         </StackPanel>
                     </Grid>
 
@@ -141,7 +150,7 @@
                     <Border Margin="20,12,20,16" Background="{DynamicResource SurfaceBrush}" CornerRadius="{StaticResource RadiusSm}" Padding="12,6">
                         <Grid>
                             <TextBlock Text="{Binding CrosshairViewModel.StatusMessage}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="{DynamicResource FontSizeCaption}" HorizontalAlignment="Left"/>
-                            <TextBlock Text="Ctrl+Shift+X Toggle" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="{DynamicResource FontSizeCaption}" FontFamily="{DynamicResource FontFamilyMono}" HorizontalAlignment="Right"/>
+                            <TextBlock Text="{loc:Loc Status.HotkeyToggle}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="{DynamicResource FontSizeCaption}" FontFamily="{DynamicResource FontFamilyMono}" HorizontalAlignment="Right"/>
                         </Grid>
                     </Border>
                 </StackPanel>

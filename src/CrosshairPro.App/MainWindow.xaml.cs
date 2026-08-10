@@ -7,12 +7,14 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using CrosshairPro.App.Controls;
+using CrosshairPro.App.Localization;
 using CrosshairPro.App.ViewModels;
 using CrosshairPro.App.Views;
 using CrosshairPro.Core.Interfaces;
 using CrosshairPro.Core.Models;
 using CrosshairPro.Infrastructure.Hotkey;
 using Hardcodet.Wpf.TaskbarNotification;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CrosshairPro.App;
 
@@ -79,8 +81,8 @@ public partial class MainWindow : Window
         {
             var dlg = new Microsoft.Win32.OpenFileDialog
             {
-                Filter = "图片文件 (*.png;*.jpg;*.bmp)|*.png;*.jpg;*.bmp|所有文件 (*.*)|*.*",
-                Title = "选择准心图片"
+                Filter = LocalizationProvider.Get("Filter.ImageFiles"),
+                Title = LocalizationProvider.Get("Dialog.SelectCrosshairImage")
             };
             if (dlg.ShowDialog() == true)
             {
@@ -92,7 +94,7 @@ public partial class MainWindow : Window
         // 保存预设 → 弹出命名对话框
         _viewModel.SavePresetRequested += async (s, e) =>
         {
-            var name = ShowInputDialog("保存预设", "请输入预设名称:", _viewModel.CrosshairViewModel.CurrentPresetName);
+            var name = ShowInputDialog(LocalizationProvider.Get("Dialog.SavePreset"), LocalizationProvider.Get("Dialog.EnterPresetName"), _viewModel.CrosshairViewModel.CurrentPresetName);
             if (!string.IsNullOrWhiteSpace(name))
                 await _viewModel.SavePresetWithNameAsync(name);
         };
@@ -102,8 +104,8 @@ public partial class MainWindow : Window
         {
             var dlg = new Microsoft.Win32.OpenFileDialog
             {
-                Filter = "JSON 文件 (*.json)|*.json|所有文件 (*.*)|*.*",
-                Title = "导入预设"
+                Filter = LocalizationProvider.Get("Filter.JsonFiles"),
+                Title = LocalizationProvider.Get("Dialog.ImportPreset")
             };
             if (dlg.ShowDialog() == true)
                 await _viewModel.ImportPresetFromFileAsync(dlg.FileName);
@@ -114,8 +116,8 @@ public partial class MainWindow : Window
         {
             var dlg = new Microsoft.Win32.SaveFileDialog
             {
-                Filter = "JSON 文件 (*.json)|*.json",
-                Title = "导出预设",
+                Filter = LocalizationProvider.Get("Filter.JsonOnly"),
+                Title = LocalizationProvider.Get("Dialog.ExportPreset"),
                 FileName = _viewModel.CrosshairViewModel.CurrentPresetName
             };
             if (dlg.ShowDialog() == true)
@@ -184,11 +186,11 @@ public partial class MainWindow : Window
         sepStyle.Setters.Add(new Setter(Separator.TemplateProperty, sepTemplate));
         menu.Resources[typeof(Separator)] = sepStyle;
 
-        var showItem = new MenuItem { Header = "打开主窗口" };
+        var showItem = new MenuItem { Header = LocalizationProvider.Get("Tray.ShowMainWindow") };
         showItem.Click += (s, e) => ShowMainWindow();
         menu.Items.Add(showItem);
 
-        var toggleItem = new MenuItem { Header = "切换准心显示" };
+        var toggleItem = new MenuItem { Header = LocalizationProvider.Get("Tray.ToggleCrosshair") };
         toggleItem.Click += (s, e) =>
         {
             _overlayWindow.ToggleVisibility();
@@ -198,7 +200,7 @@ public partial class MainWindow : Window
 
         menu.Items.Add(new Separator());
 
-        var exitItem = new MenuItem { Header = "退出" };
+        var exitItem = new MenuItem { Header = LocalizationProvider.Get("Tray.Exit") };
         exitItem.Click += (s, e) => ReallyExit();
         menu.Items.Add(exitItem);
 
@@ -282,7 +284,7 @@ public partial class MainWindow : Window
         var toggleBinding = new HotkeyBinding
         {
             Id = "toggle-crosshair",
-            Name = "切换准心",
+            Name = LocalizationProvider.Get("Hotkey.ToggleCrosshair"),
             Combo = "Ctrl+Shift+X",
             Action = HotkeyAction.ToggleCrosshair
         };
@@ -316,7 +318,9 @@ public partial class MainWindow : Window
         Dispatcher.Invoke(() =>
         {
             _viewModel.CrosshairViewModel.IsCrosshairVisible = _overlayWindow.IsCrosshairVisible;
-            _viewModel.CrosshairViewModel.StatusMessage = _overlayWindow.IsCrosshairVisible ? "准心已启用" : "准心已禁用";
+            _viewModel.CrosshairViewModel.StatusMessage = _overlayWindow.IsCrosshairVisible
+                ? LocalizationProvider.Get("Status.CrosshairEnabled")
+                : LocalizationProvider.Get("Status.CrosshairDisabled");
         });
     }
 
@@ -410,7 +414,7 @@ public partial class MainWindow : Window
 
         var cancelBtn = new Button
         {
-            Content = "Cancel",
+            Content = LocalizationProvider.Get("Action.Cancel"),
             Padding = new Thickness(16, 6, 16, 6),
             Margin = new Thickness(0, 0, 8, 0),
             Background = controlBrush,
@@ -423,7 +427,7 @@ public partial class MainWindow : Window
 
         var okBtn = new Button
         {
-            Content = "Save",
+            Content = LocalizationProvider.Get("Action.Save"),
             Padding = new Thickness(16, 6, 16, 6),
             Background = accentBrush,
             Foreground = Brushes.Black,
@@ -490,7 +494,7 @@ public partial class MainWindow : Window
 
         var dialog = new Window
         {
-            Title = "Pick Color",
+            Title = LocalizationProvider.Get("Dialog.PickColor"),
             Width = 300,
             Height = 340,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -519,7 +523,7 @@ public partial class MainWindow : Window
         // Title
         panel.Children.Add(new TextBlock
         {
-            Text = "CUSTOM COLOR",
+            Text = LocalizationProvider.Get("Dialog.CustomColor"),
             Foreground = accentBrush,
             FontSize = 13,
             FontWeight = FontWeights.SemiBold,
@@ -599,7 +603,7 @@ public partial class MainWindow : Window
 
         var cancelBtn = new Button
         {
-            Content = "Cancel",
+            Content = LocalizationProvider.Get("Action.Cancel"),
             Style = (Style)FindResource("SecondaryButton"),
             Margin = new Thickness(0, 0, 8, 0)
         };
@@ -607,7 +611,7 @@ public partial class MainWindow : Window
 
         var okBtn = new Button
         {
-            Content = "OK",
+            Content = LocalizationProvider.Get("Action.OK"),
             Style = (Style)FindResource("PrimaryButton")
         };
         okBtn.Click += (s, ev) =>
@@ -688,7 +692,7 @@ public partial class MainWindow : Window
 
         var popup = new Window
         {
-            Title = "Manage Presets",
+            Title = LocalizationProvider.Get("Dialog.ManagePresets"),
             Width = 340,
             Height = 360,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -718,7 +722,7 @@ public partial class MainWindow : Window
         var header = new DockPanel { Margin = new Thickness(16, 12, 16, 4) };
         header.Children.Add(new TextBlock
         {
-            Text = "MANAGE PRESETS",
+            Text = LocalizationProvider.Get("Dialog.ManagePresets"),
             Foreground = accentBrush,
             FontSize = 13,
             FontWeight = FontWeights.SemiBold,
@@ -747,13 +751,13 @@ public partial class MainWindow : Window
         };
         var importBtn = new Button
         {
-            Content = "＋ Import", Padding = new Thickness(10, 4, 10, 4),
+            Content = $"+ {LocalizationProvider.Get("Action.Import")}", Padding = new Thickness(10, 4, 10, 4),
             Style = (Style)FindResource("SecondaryButton"), Margin = new Thickness(0, 0, 6, 0)
         };
         importBtn.Click += (s, ev) => { popup.Close(); _viewModel.CrosshairViewModel.ImportPresetCommand.Execute(null); };
         var exportBtn = new Button
         {
-            Content = "↗ Export", Padding = new Thickness(10, 4, 10, 4),
+            Content = $"→ {LocalizationProvider.Get("Action.Export")}", Padding = new Thickness(10, 4, 10, 4),
             Style = (Style)FindResource("SecondaryButton")
         };
         exportBtn.Click += (s, ev) => { popup.Close(); _viewModel.CrosshairViewModel.ExportPresetCommand.Execute(null); };
@@ -874,6 +878,38 @@ public partial class MainWindow : Window
     }
 
     // ── Title Bar Button Handlers ──
+
+    private void LanguageButton_Click(object sender, RoutedEventArgs e)
+    {
+        var currentCulture = LocalizationProvider.Instance.CurrentCulture.TwoLetterISOLanguageName;
+        var newCulture = currentCulture == "zh" ? "en-US" : "zh-CN";
+        LocalizationProvider.Instance.SetCulture(newCulture);
+
+        // 保存语言偏好
+        _ = SaveLanguagePreferenceAsync(newCulture);
+
+        // 显示切换成功提示
+        ShowToast(currentCulture == "zh" ? "Language switched to English" : "语言已切换为中文");
+    }
+
+    private async Task SaveLanguagePreferenceAsync(string culture)
+    {
+        try
+        {
+            var app = (App)System.Windows.Application.Current;
+            var stateRepo = app.Services?.GetService<CrosshairPro.Core.Interfaces.IAppStateRepository>();
+            if (stateRepo != null)
+            {
+                var state = await stateRepo.LoadStateAsync();
+                state.Language = culture;
+                await stateRepo.SaveStateAsync(state);
+            }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Failed to save language preference");
+        }
+    }
 
     private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
