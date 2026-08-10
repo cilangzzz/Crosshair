@@ -24,43 +24,58 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
-        // 配置依赖注入容器
-        _services = new ServiceCollection()
-            .AddCrosshairProServices()
-            .AddSingleton<CrosshairViewModel>()
-            .AddSingleton<GamesViewModel>()
-            .AddSingleton<ApexConfigViewModel>()
-            .AddSingleton<MainViewModel>()
-            .AddSingleton<OverlayWindow>()
-            .AddTransient<MainWindow>()
-            .BuildServiceProvider();
+        // 全局异常处理
+        DispatcherUnhandledException += (s, args) =>
+        {
+            System.Windows.MessageBox.Show($"Unhandled exception: {args.Exception}", "Error",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            args.Handled = true;
+        };
 
-        // 初始化语言设置
-        InitializeLocalization();
-
-        // 从容器获取主窗口并显示
-        var mainWindow = _services.GetRequiredService<MainWindow>();
-        mainWindow.Show();
-    }
-
-    private void InitializeLocalization()
-    {
         try
         {
-            var stateRepo = _services?.GetService<IAppStateRepository>();
-            if (stateRepo != null)
-            {
-                var state = stateRepo.LoadStateAsync().GetAwaiter().GetResult();
-                LocalizationProvider.Instance.Initialize(state.Language);
-            }
-            else
-            {
-                LocalizationProvider.Instance.Initialize();
-            }
-        }
-        catch
-        {
+            // 配置依赖注入容器
+            _services = new ServiceCollection()
+                .AddCrosshairProServices()
+                .AddSingleton<CrosshairViewModel>()
+                .AddSingleton<GamesViewModel>()
+                .AddSingleton<ApexConfigViewModel>()
+                .AddSingleton<MainViewModel>()
+                .AddSingleton<OverlayWindow>()
+                .AddTransient<MainWindow>()
+                .BuildServiceProvider();
+
+            // 初始化语言设置（使用默认，等待主窗口加载）
             LocalizationProvider.Instance.Initialize();
+
+            // 从容器获取主窗口并显示
+            var mainWindow = _services.GetRequiredService<MainWindow>();
+
+            // 启动后异步加载语言设置
+            mainWindow.Loaded += async (s, args) =>
+            {
+                try
+                {
+                    var stateRepo = _services?.GetService<IAppStateRepository>();
+                    if (stateRepo != null)
+                    {
+                        var state = await stateRepo.LoadStateAsync();
+                        if (!string.IsNullOrEmpty(state.Language))
+                        {
+                            LocalizationProvider.Instance.Initialize(state.Language);
+                        }
+                    }
+                }
+                catch { }
+            };
+
+            mainWindow.Show();
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Startup error: {ex}", "Error",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown();
         }
     }
 }

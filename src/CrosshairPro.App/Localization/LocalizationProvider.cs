@@ -80,7 +80,7 @@ public sealed class LocalizationProvider : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// 初始化：根据系统语言或保存的偏好设置初始语言
+    /// 初始化：根据保存的偏好设置初始语言，如果没有保存则默认使用中文
     /// </summary>
     public void Initialize(string? savedLanguage = null)
     {
@@ -92,16 +92,13 @@ public sealed class LocalizationProvider : INotifyPropertyChanged
             }
             catch
             {
-                _currentCulture = CultureInfo.CurrentUICulture;
+                _currentCulture = new CultureInfo("zh-CN"); // 默认中文
             }
         }
         else
         {
-            // 根据系统语言自动选择
-            var sysCulture = CultureInfo.CurrentUICulture;
-            _currentCulture = SupportedCultures.Any(c => c.TwoLetterISOLanguageName == sysCulture.TwoLetterISOLanguageName)
-                ? SupportedCultures.First(c => c.TwoLetterISOLanguageName == sysCulture.TwoLetterISOLanguageName)
-                : new CultureInfo("zh-CN");
+            // 默认使用中文（强制）
+            _currentCulture = new CultureInfo("zh-CN");
         }
 
         CultureInfo.CurrentUICulture = _currentCulture;
