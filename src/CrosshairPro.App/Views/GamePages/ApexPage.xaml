@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:controls="clr-namespace:CrosshairPro.App.Controls"
+      xmlns:loc="clr-namespace:CrosshairPro.App.Localization"
       mc:Ignorable="d"
       d:DesignHeight="900" d:DesignWidth="800">
 
@@ -15,7 +16,7 @@
         </Grid.RowDefinitions>
 
         <!-- 鏍囬 -->
-        <TextBlock Grid.Row="0" Text="APEX LEGENDS CONFIGURATION"
+        <TextBlock Grid.Row="0" Text="{loc:Loc Key=Apex.Title}"
                    FontSize="16" FontWeight="SemiBold"
                    Foreground="{DynamicResource AccentBrush}"
                    Margin="0,0,0,16"/>
@@ -29,7 +30,7 @@
                 <!-- 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?-->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="CONFIG FILES" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Loc Key=Apex.ConfigFiles}" Style="{StaticResource SectionHeader}"/>
 
                         <!-- videoconfig.txt -->
                         <Grid Margin="0,4,0,0">
@@ -50,13 +51,13 @@
                                        Margin="12,0,12,0"
                                        TextTrimming="CharacterEllipsis"/>
                             <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                <Button Content="Replace" Command="{Binding ReplaceVideoConfigCommand}"
+                                <Button Content="{loc:Loc Key=Action.Replace}" Command="{Binding ReplaceVideoConfigCommand}"
                                         Style="{StaticResource SecondaryButton}" Padding="10,4" FontSize="12" Margin="0,0,4,0"/>
-                                <Button Content="Backup" Command="{Binding BackupVideoConfigCommand}"
+                                <Button Content="{loc:Loc Key=Action.Backup}" Command="{Binding BackupVideoConfigCommand}"
                                         Style="{StaticResource SecondaryButton}" Padding="10,4" FontSize="12" Margin="0,0,4,0"/>
-                                <Button Content="Export" Command="{Binding ExportVideoConfigCommand}"
+                                <Button Content="{loc:Loc Key=Action.Export}" Command="{Binding ExportVideoConfigCommand}"
                                         Style="{StaticResource SecondaryButton}" Padding="10,4" FontSize="12" Margin="0,0,4,0"/>
-                                <Button Content="History" Command="{Binding ToggleVideoConfigHistoryCommand}"
+                                <Button Content="{loc:Loc Key=Action.History}" Command="{Binding ToggleVideoConfigHistoryCommand}"
                                         Style="{StaticResource SecondaryButton}" Padding="10,4" FontSize="12"/>
                             </StackPanel>
                         </Grid>
@@ -67,7 +68,7 @@
                                 Padding="8" Margin="0,8,0,0"
                                 Visibility="{Binding ShowVideoConfigHistory, Converter={StaticResource BoolToVisibilityConverter}}">
                             <StackPanel>
-                                <TextBlock Text="Backup History" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
+                                <TextBlock Text="{loc:Loc Key=History.BackupHistory}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
                                 <ItemsControl ItemsSource="{Binding VideoConfigBackups}" MaxHeight="150">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
@@ -82,7 +83,7 @@
                                                     <TextBlock Text=" 鈥?" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                                                     <TextBlock Text="{Binding DisplaySize}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                                                 </StackPanel>
-                                                <Button Grid.Column="1" Content="Restore"
+                                                <Button Grid.Column="1" Content="{loc:Loc Key=Action.Restore}"
                                                         Command="{Binding DataContext.RestoreVideoConfigBackupCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                         CommandParameter="{Binding}"
                                                         Style="{StaticResource SecondaryButton}" Padding="8,2" FontSize="11" Margin="0,0,4,0"/>
@@ -94,7 +95,7 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                                <TextBlock Text="No backups available" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"
+                                <TextBlock Text="{loc:Loc Key=History.NoBackups}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"
                                            Visibility="{Binding VideoConfigBackups.Count, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             </StackPanel>
                         </Border>
@@ -121,13 +122,13 @@
                                        Margin="12,0,12,0"
                                        TextTrimming="CharacterEllipsis"/>
                             <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                <Button Content="Replace" Command="{Binding ReplaceSettingsConfigCommand}"
+                                <Button Content="{loc:Loc Key=Action.Replace}" Command="{Binding ReplaceSettingsConfigCommand}"
                                         Style="{StaticResource SecondaryButton}" Padding="10,4" FontSize="12" Margin="0,0,4,0"/>
-                                <Button Content="Backup" Command="{Binding BackupSettingsConfigCommand}"
+                                <Button Content="{loc:Loc Key=Action.Backup}" Command="{Binding BackupSettingsConfigCommand}"
                                         Style="{StaticResource SecondaryButton}" Padding="10,4" FontSize="12" Margin="0,0,4,0"/>
-                                <Button Content="Export" Command="{Binding ExportSettingsConfigCommand}"
+                                <Button Content="{loc:Loc Key=Action.Export}" Command="{Binding ExportSettingsConfigCommand}"
                                         Style="{StaticResource SecondaryButton}" Padding="10,4" FontSize="12" Margin="0,0,4,0"/>
-                                <Button Content="History" Command="{Binding ToggleSettingsConfigHistoryCommand}"
+                                <Button Content="{loc:Loc Key=Action.History}" Command="{Binding ToggleSettingsConfigHistoryCommand}"
                                         Style="{StaticResource SecondaryButton}" Padding="10,4" FontSize="12"/>
                             </StackPanel>
                         </Grid>
@@ -138,7 +139,7 @@
                                 Padding="8" Margin="0,8,0,0"
                                 Visibility="{Binding ShowSettingsConfigHistory, Converter={StaticResource BoolToVisibilityConverter}}">
                             <StackPanel>
-                                <TextBlock Text="Backup History" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
+                                <TextBlock Text="{loc:Loc Key=History.BackupHistory}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
                                 <ItemsControl ItemsSource="{Binding SettingsConfigBackups}" MaxHeight="150">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
@@ -153,7 +154,7 @@
                                                     <TextBlock Text=" 鈥?" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                                                     <TextBlock Text="{Binding DisplaySize}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                                                 </StackPanel>
-                                                <Button Grid.Column="1" Content="Restore"
+                                                <Button Grid.Column="1" Content="{loc:Loc Key=Action.Restore}"
                                                         Command="{Binding DataContext.RestoreSettingsConfigBackupCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                         CommandParameter="{Binding}"
                                                         Style="{StaticResource SecondaryButton}" Padding="8,2" FontSize="11" Margin="0,0,4,0"/>
@@ -165,7 +166,7 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                                <TextBlock Text="No backups available" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"
+                                <TextBlock Text="{loc:Loc Key=History.NoBackups}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"
                                            Visibility="{Binding SettingsConfigBackups.Count, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             </StackPanel>
                         </Border>
@@ -177,8 +178,8 @@
                 <!-- 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?-->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="LAUNCH OPTIONS" Style="{StaticResource SectionHeader}"/>
-                        <TextBlock Text="Steam 鍚姩鍙傛暟锛屽鍒跺悗鍦?Steam 娓告垙灞炴€т腑绮樿创"
+                        <TextBlock Text="{loc:Loc Key=Apex.LaunchOptions}" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Loc Key=Apex.LaunchOptionsDesc}"
                                    Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,12"/>
 
                         <!-- 棰勮閫夋嫨 -->
@@ -187,7 +188,7 @@
                                 <ColumnDefinition Width="Auto" MinWidth="120"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Preset" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.Preset}" VerticalAlignment="Center"/>
                             <ComboBox Grid.Column="1"
                                       ItemsSource="{Binding LaunchOptionPresets}"
                                       SelectedIndex="{Binding SelectedLaunchPresetIndex, Mode=TwoWay}"
@@ -207,18 +208,18 @@
                                 Visibility="{Binding UseCustomLaunchOptions, Converter={StaticResource BoolToVisibilityConverter}}"
                                 Margin="0,0,0,12">
                             <StackPanel>
-                                <TextBlock Text="Custom Launch Options" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                <TextBlock Text="{loc:Loc Key=Apex.CustomLaunchOptions}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" Margin="0,0,0,12"/>
 
                                 <!-- Performance -->
-                                <TextBlock Text="Performance" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
-                                <CheckBox Content="High Priority (-high)" IsChecked="{Binding CustomLaunchOptions.High, Mode=TwoWay}" Margin="0,4"/>
+                                <TextBlock Text="{loc:Loc Key=Apex.Performance}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
+                                <CheckBox Content="{loc:Loc Key=Apex.HighPriority}" IsChecked="{Binding CustomLaunchOptions.High, Mode=TwoWay}" Margin="0,4"/>
                                 <Grid Margin="0,4,0,8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="60"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Threads (0=Auto)" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.Threads}" VerticalAlignment="Center"/>
                                     <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.Threads, Mode=TwoWay}"
                                             Minimum="0" Maximum="16" Style="{StaticResource CustomSlider}" Margin="8,0"/>
                                     <TextBox Grid.Column="2" Text="{Binding CustomLaunchOptions.Threads, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
@@ -229,25 +230,25 @@
                                         <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="60"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Refresh Rate (Hz)" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.RefreshRate}" VerticalAlignment="Center"/>
                                     <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.Freq, Mode=TwoWay}"
                                             Minimum="0" Maximum="360" Style="{StaticResource CustomSlider}" Margin="8,0"/>
                                     <TextBox Grid.Column="2" Text="{Binding CustomLaunchOptions.Freq, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
                                 </Grid>
-                                <CheckBox Content="Skip Intro Video (-novid)" IsChecked="{Binding CustomLaunchOptions.Novid, Mode=TwoWay}" Margin="0,4"/>
-                                <CheckBox Content="Disable Joystick (-nojoy)" IsChecked="{Binding CustomLaunchOptions.Nojoy, Mode=TwoWay}" Margin="0,4,0,12"/>
+                                <CheckBox Content="{loc:Loc Key=Apex.SkipIntro}" IsChecked="{Binding CustomLaunchOptions.Novid, Mode=TwoWay}" Margin="0,4"/>
+                                <CheckBox Content="{loc:Loc Key=Apex.DisableJoystick}" IsChecked="{Binding CustomLaunchOptions.Nojoy, Mode=TwoWay}" Margin="0,4,0,12"/>
 
                                 <!-- Window -->
-                                <TextBlock Text="Window" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
-                                <CheckBox Content="Windowed Mode" IsChecked="{Binding CustomLaunchOptions.Windowed, Mode=TwoWay}" Margin="0,4"/>
-                                <CheckBox Content="Borderless Window" IsChecked="{Binding CustomLaunchOptions.Noborder, Mode=TwoWay}" Margin="0,4"/>
+                                <TextBlock Text="{loc:Loc Key=Apex.Window}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
+                                <CheckBox Content="{loc:Loc Key=Apex.WindowedMode}" IsChecked="{Binding CustomLaunchOptions.Windowed, Mode=TwoWay}" Margin="0,4"/>
+                                <CheckBox Content="{loc:Loc Key=Apex.BorderlessWindow}" IsChecked="{Binding CustomLaunchOptions.Noborder, Mode=TwoWay}" Margin="0,4"/>
                                 <Grid Margin="0,4,0,8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="60"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Window Width" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.WindowWidth}" VerticalAlignment="Center"/>
                                     <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.Width, Mode=TwoWay}"
                                             Minimum="800" Maximum="3840" Style="{StaticResource CustomSlider}" Margin="8,0"/>
                                     <TextBox Grid.Column="2" Text="{Binding CustomLaunchOptions.Width, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
@@ -258,33 +259,33 @@
                                         <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="60"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Window Height" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.WindowHeight}" VerticalAlignment="Center"/>
                                     <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.Height, Mode=TwoWay}"
                                             Minimum="600" Maximum="2160" Style="{StaticResource CustomSlider}" Margin="8,0"/>
                                     <TextBox Grid.Column="2" Text="{Binding CustomLaunchOptions.Height, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
                                 </Grid>
 
                                 <!-- Game Settings -->
-                                <TextBlock Text="Game Settings" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
+                                <TextBlock Text="{loc:Loc Key=Apex.GameSettings}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
                                 <Grid Margin="0,4,0,8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="60"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Max FPS (0=Unlimited)" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.MaxFPS}" VerticalAlignment="Center"/>
                                     <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.FpsMax, Mode=TwoWay}"
                                             Minimum="0" Maximum="300" Style="{StaticResource CustomSlider}" Margin="8,0"/>
                                     <TextBox Grid.Column="2" Text="{Binding CustomLaunchOptions.FpsMax, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
                                 </Grid>
-                                <CheckBox Content="Show Position Info" IsChecked="{Binding CustomLaunchOptions.ClShowpos, Mode=TwoWay}" Margin="0,4"/>
+                                <CheckBox Content="{loc:Loc Key=Apex.ShowPositionInfo}" IsChecked="{Binding CustomLaunchOptions.ClShowpos, Mode=TwoWay}" Margin="0,4"/>
                                 <Grid Margin="0,4,0,8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="60"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="FOV Scale" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.FOVScale}" VerticalAlignment="Center"/>
                                     <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.ClFovScale, Mode=TwoWay}"
                                             Minimum="1.0" Maximum="1.35" SmallChange="0.01" LargeChange="0.05"
                                             Style="{StaticResource CustomSlider}" Margin="8,0"/>
@@ -296,7 +297,7 @@
                                         <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="60"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Letterbox Aspect Min" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.LetterboxAspect}" VerticalAlignment="Center"/>
                                     <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.MatLetterboxAspectMin, Mode=TwoWay}"
                                             Minimum="0" Maximum="2.0" SmallChange="0.1" LargeChange="0.1"
                                             Style="{StaticResource CustomSlider}" Margin="8,0"/>
@@ -304,14 +305,14 @@
                                 </Grid>
 
                                 <!-- Network -->
-                                <TextBlock Text="Network" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
+                                <TextBlock Text="{loc:Loc Key=Apex.Network}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
                                 <Grid Margin="0,4,0,8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="60"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Interp" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.Interp}" VerticalAlignment="Center"/>
                                     <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.ClInterp, Mode=TwoWay}"
                                             Minimum="0" Maximum="0.1" SmallChange="0.001" LargeChange="0.01"
                                             Style="{StaticResource CustomSlider}" Margin="8,0"/>
@@ -323,23 +324,23 @@
                                         <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="60"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Interp Ratio" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.InterpRatio}" VerticalAlignment="Center"/>
                                     <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.ClInterpRatio, Mode=TwoWay}"
                                             Minimum="1" Maximum="10" Style="{StaticResource CustomSlider}" Margin="8,0"/>
                                     <TextBox Grid.Column="2" Text="{Binding CustomLaunchOptions.ClInterpRatio, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
                                 </Grid>
 
                                 <!-- Debug -->
-                                <TextBlock Text="Debug" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
-                                <CheckBox Content="Developer Mode (-dev)" IsChecked="{Binding CustomLaunchOptions.Dev, Mode=TwoWay}" Margin="0,4"/>
-                                <CheckBox Content="Enable Console (-console)" IsChecked="{Binding CustomLaunchOptions.Console, Mode=TwoWay}" Margin="0,4"/>
+                                <TextBlock Text="{loc:Loc Key=Apex.Debug}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8"/>
+                                <CheckBox Content="{loc:Loc Key=Apex.DevMode}" IsChecked="{Binding CustomLaunchOptions.Dev, Mode=TwoWay}" Margin="0,4"/>
+                                <CheckBox Content="{loc:Loc Key=Apex.EnableConsole}" IsChecked="{Binding CustomLaunchOptions.Console, Mode=TwoWay}" Margin="0,4"/>
 
                                 <!-- 姹囨€绘樉绀?-->
                                 <Border Background="{DynamicResource SurfaceBrush}"
                                         BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1"
                                         CornerRadius="{StaticResource RadiusSm}" Padding="8" Margin="0,12,0,0">
                                     <StackPanel>
-                                        <TextBlock Text="Generated Launch Options:" Foreground="{DynamicResource AccentBrush}" FontSize="11" Margin="0,0,0,4"/>
+                                        <TextBlock Text="{loc:Loc Key=Apex.GeneratedLaunchOptions}" Foreground="{DynamicResource AccentBrush}" FontSize="11" Margin="0,0,0,4"/>
                                         <TextBlock Text="{Binding LaunchOptionsSummary}" TextWrapping="Wrap"
                                                    FontFamily="{StaticResource FontFamilyMono}" FontSize="11"/>
                                     </StackPanel>
@@ -347,7 +348,7 @@
                             </StackPanel>
                         </Border>
 
-                        <Button Content="Copy to Clipboard" Command="{Binding CopyLaunchOptionsCommand}"
+                        <Button Content="{loc:Loc Key=Action.CopyToClipboard}" Command="{Binding CopyLaunchOptionsCommand}"
                                 Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" Padding="12,4" FontSize="12"/>
                     </StackPanel>
                 </Border>
@@ -357,7 +358,7 @@
                 <!-- 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?-->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="VIDEO SETTINGS" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Loc Key=Apex.VideoSettings}" Style="{StaticResource SectionHeader}"/>
 
                         <!-- 鍒嗚鲸鐜?-->
                         <Grid Margin="0,4,0,0">
@@ -365,7 +366,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Resolution" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.Resolution}" VerticalAlignment="Center"/>
                             <ComboBox Grid.Column="1" Width="160"
                                       SelectedIndex="{Binding VideoConfig.ResolutionIndex, Mode=TwoWay}"
                                       Style="{StaticResource CustomComboBox}">
@@ -392,7 +393,7 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="60"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Refresh Rate (Hz)" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.RefreshRate}" VerticalAlignment="Center"/>
                             <Slider Grid.Column="1" Value="{Binding VideoConfig.RefreshRate, Mode=TwoWay}"
                                     Minimum="60" Maximum="360" Style="{StaticResource CustomSlider}" Margin="8,0"/>
                             <TextBox Grid.Column="2" Text="{Binding VideoConfig.RefreshRate, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
@@ -405,7 +406,7 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="60"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Gamma (Brightness)" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.Gamma}" VerticalAlignment="Center"/>
                             <Slider Grid.Column="1" Value="{Binding VideoConfig.Gamma, Mode=TwoWay}"
                                     Minimum="0.5" Maximum="2.5" SmallChange="0.1" LargeChange="0.1"
                                     Style="{StaticResource CustomSlider}" Margin="8,0"/>
@@ -419,7 +420,7 @@
                 <!-- 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?-->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="QUALITY SETTINGS" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Loc Key=Apex.QualitySettings}" Style="{StaticResource SectionHeader}"/>
 
                         <!-- 绾圭悊ㄩ噺 -->
                         <Grid Margin="0,4,0,0">
@@ -427,14 +428,14 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Texture Quality" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.TextureQuality}" VerticalAlignment="Center"/>
                             <ComboBox Grid.Column="1" Width="160"
                                       SelectedIndex="{Binding VideoConfig.MatPicmip, Mode=TwoWay}"
                                       Style="{StaticResource CustomComboBox}">
-                                <ComboBoxItem Content="Highest"/>
-                                <ComboBoxItem Content="High"/>
-                                <ComboBoxItem Content="Medium"/>
-                                <ComboBoxItem Content="Low"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.Highest}"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.High}"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.Medium}"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.Low}"/>
                             </ComboBox>
                         </Grid>
 
@@ -445,17 +446,17 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="60"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Anisotropic Filtering" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.AnisotropicFiltering}" VerticalAlignment="Center"/>
                             <Slider Grid.Column="1" Value="{Binding VideoConfig.MatForceaniso, Mode=TwoWay}"
                                     Minimum="1" Maximum="16" Style="{StaticResource CustomSlider}" Margin="8,0"/>
                             <TextBox Grid.Column="2" Text="{Binding VideoConfig.MatForceaniso, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
                         </Grid>
 
                         <!-- 闃村奖 -->
-                        <CheckBox Content="Enable Shadows"
+                        <CheckBox Content="{loc:Loc Key=Apex.EnableShadows}"
                                   IsChecked="{Binding VideoConfig.ShadowEnable, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                   Margin="0,12,0,0"/>
-                        <CheckBox Content="Cascade Shadow Maps (CSM)"
+                        <CheckBox Content="{loc:Loc Key=Apex.CascadeShadowMaps}"
                                   IsChecked="{Binding VideoConfig.CsmEnabled, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                   Margin="24,4,0,0"/>
 
@@ -465,13 +466,13 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Particle Effects" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.ParticleEffects}" VerticalAlignment="Center"/>
                             <ComboBox Grid.Column="1" Width="160"
                                       SelectedIndex="{Binding VideoConfig.ParticleCpuLevel, Mode=TwoWay}"
                                       Style="{StaticResource CustomComboBox}">
-                                <ComboBoxItem Content="Low"/>
-                                <ComboBoxItem Content="Medium"/>
-                                <ComboBoxItem Content="High"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.Low}"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.Medium}"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.High}"/>
                             </ComboBox>
                         </Grid>
 
@@ -481,26 +482,26 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Ambient Occlusion (SSAO)" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.AmbientOcclusion}" VerticalAlignment="Center"/>
                             <ComboBox Grid.Column="1" Width="160"
                                       SelectedIndex="{Binding VideoConfig.SsaoQuality, Mode=TwoWay}"
                                       Style="{StaticResource CustomComboBox}">
-                                <ComboBoxItem Content="Off"/>
-                                <ComboBoxItem Content="Low"/>
-                                <ComboBoxItem Content="High"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.Off}"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.Low}"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.High}"/>
                             </ComboBox>
                         </Grid>
 
                         <!-- 浣撶Н鏁堟灉 -->
-                        <CheckBox Content="Volumetric Lighting"
+                        <CheckBox Content="{loc:Loc Key=Apex.VolumetricLighting}"
                                   IsChecked="{Binding VideoConfig.VolumetricLighting, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                   Margin="0,12,0,0"/>
-                        <CheckBox Content="Volumetric Fog"
+                        <CheckBox Content="{loc:Loc Key=Apex.VolumetricFog}"
                                   IsChecked="{Binding VideoConfig.VolumetricFog, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                   Margin="0,8,0,0"/>
 
                         <!-- 鐗╃悊鏁堟灉 -->
-                        <CheckBox Content="Ragdoll Physics"
+                        <CheckBox Content="{loc:Loc Key=Apex.RagdollPhysics}"
                                   IsChecked="{Binding VideoConfig.ClGibAllow, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                   Margin="0,12,0,0"/>
                     </StackPanel>
@@ -511,7 +512,7 @@
                 <!-- 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?-->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="PERFORMANCE" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Loc Key=Apex.PerformanceSection}" Style="{StaticResource SectionHeader}"/>
 
                         <!-- 鍨傜洿鍚屾 -->
                         <Grid Margin="0,4,0,0">
@@ -519,13 +520,13 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="V-Sync" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.VSync}" VerticalAlignment="Center"/>
                             <ComboBox Grid.Column="1" Width="160"
                                       SelectedIndex="{Binding VideoConfig.MatVsyncMode, Mode=TwoWay}"
                                       Style="{StaticResource CustomComboBox}">
-                                <ComboBoxItem Content="Off"/>
-                                <ComboBoxItem Content="On"/>
-                                <ComboBoxItem Content="Triple Buffered"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.Off}"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.On}"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.TripleBuffered}"/>
                             </ComboBox>
                         </Grid>
 
@@ -535,11 +536,11 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Anti-Aliasing" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.AntiAliasing}" VerticalAlignment="Center"/>
                             <ComboBox Grid.Column="1" Width="160"
                                       SelectedIndex="{Binding VideoConfig.MatAntialiasMode, Mode=TwoWay}"
                                       Style="{StaticResource CustomComboBox}">
-                                <ComboBoxItem Content="Off"/>
+                                <ComboBoxItem Content="{loc:Loc Key=Quality.Off}"/>
                                 <ComboBoxItem Content="FXAA"/>
                                 <ComboBoxItem Content="TXAA"/>
                                 <ComboBoxItem Content="MSAA 2x"/>
@@ -548,7 +549,7 @@
                         </Grid>
 
                         <!-- 鍔ㄦ€佸垎杈ㄧ巼 -->
-                        <CheckBox Content="Dynamic Resolution Scaling (DVS)"
+                        <CheckBox Content="{loc:Loc Key=Apex.DynamicResolution}"
                                   IsChecked="{Binding VideoConfig.DvsEnable, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                   Margin="0,12,0,0"/>
                     </StackPanel>
@@ -559,7 +560,7 @@
                 <!-- 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?-->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="Game Settings" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Loc Key=Apex.GameSettings}" Style="{StaticResource SectionHeader}"/>
 
                         <!-- 榧犳爣鐏垫晱搴?-->
                         <Grid Margin="0,4,0,0">
@@ -568,7 +569,7 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="60"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Mouse Sensitivity" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.MouseSensitivity}" VerticalAlignment="Center"/>
                             <Slider Grid.Column="1" Value="{Binding SettingsConfig.MouseSensitivity, Mode=TwoWay}"
                                     Minimum="0.1" Maximum="10.0" SmallChange="0.1" LargeChange="0.5"
                                     Style="{StaticResource CustomSlider}" Margin="8,0"/>
@@ -576,7 +577,7 @@
                         </Grid>
 
                         <!-- 榧犳爣鍔犻€?-->
-                        <CheckBox Content="Mouse Acceleration"
+                        <CheckBox Content="{loc:Loc Key=Apex.MouseAcceleration}"
                                   IsChecked="{Binding SettingsConfig.MAcceleration, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                   Margin="0,12,0,0"/>
 
@@ -587,7 +588,7 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="60"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Field of View (FOV)" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.FieldOfView}" VerticalAlignment="Center"/>
                             <Slider Grid.Column="1" Value="{Binding SettingsConfig.ClFovScale, Mode=TwoWay}"
                                     Minimum="1.0" Maximum="1.35" SmallChange="0.01" LargeChange="0.05"
                                     Style="{StaticResource CustomSlider}" Margin="8,0"/>
@@ -601,17 +602,17 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="60"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Max FPS (0=Unlimited)" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.MaxFPS}" VerticalAlignment="Center"/>
                             <Slider Grid.Column="1" Value="{Binding SettingsConfig.FpsMax, Mode=TwoWay}"
                                     Minimum="0" Maximum="300" Style="{StaticResource CustomSlider}" Margin="8,0"/>
                             <TextBox Grid.Column="2" Text="{Binding SettingsConfig.FpsMax, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
                         </Grid>
 
                         <!-- 鏄剧ず閫夐」 -->
-                        <CheckBox Content="Show FPS (cl_showfps)"
+                        <CheckBox Content="{loc:Loc Key=Apex.ShowFPS}"
                                   IsChecked="{Binding SettingsConfig.ClShowfps, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                   Margin="0,12,0,0"/>
-                        <CheckBox Content="Show Position Info (cl_showpos)"
+                        <CheckBox Content="{loc:Loc Key=Apex.ShowPosition}"
                                   IsChecked="{Binding SettingsConfig.ClShowpos, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                   Margin="0,8,0,0"/>
                     </StackPanel>
@@ -622,7 +623,7 @@
                 <!-- 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?-->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
-                        <CheckBox Content="Use Per-Scope Sensitivity"
+                        <CheckBox Content="{loc:Loc Key=Apex.PerScopeSensitivity}"
                                   IsChecked="{Binding SettingsConfig.MouseUsePerScopeSensitivityScalars, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                   Style="{StaticResource CustomCheckBox}" Margin="0,0,0,12"/>
 
@@ -633,7 +634,7 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="60"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="1x (Red Dot/Holo)" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.Scope1x}" VerticalAlignment="Center"/>
                             <Slider Grid.Column="1" Value="{Binding SettingsConfig.MouseZoomedSensitivityScalar0, Mode=TwoWay}"
                                     Minimum="0.1" Maximum="2.0" SmallChange="0.1" LargeChange="0.1"
                                     Style="{StaticResource CustomSlider}" Margin="8,0"/>
@@ -647,7 +648,7 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="60"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="2x Scope" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.Scope2x}" VerticalAlignment="Center"/>
                             <Slider Grid.Column="1" Value="{Binding SettingsConfig.MouseZoomedSensitivityScalar1, Mode=TwoWay}"
                                     Minimum="0.1" Maximum="2.0" SmallChange="0.1" LargeChange="0.1"
                                     Style="{StaticResource CustomSlider}" Margin="8,0"/>
@@ -661,7 +662,7 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="60"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="3x Scope" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.Scope3x}" VerticalAlignment="Center"/>
                             <Slider Grid.Column="1" Value="{Binding SettingsConfig.MouseZoomedSensitivityScalar2, Mode=TwoWay}"
                                     Minimum="0.1" Maximum="2.0" SmallChange="0.1" LargeChange="0.1"
                                     Style="{StaticResource CustomSlider}" Margin="8,0"/>
@@ -675,7 +676,7 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="60"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="4x Scope" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.Scope4x}" VerticalAlignment="Center"/>
                             <Slider Grid.Column="1" Value="{Binding SettingsConfig.MouseZoomedSensitivityScalar3, Mode=TwoWay}"
                                     Minimum="0.1" Maximum="2.0" SmallChange="0.1" LargeChange="0.1"
                                     Style="{StaticResource CustomSlider}" Margin="8,0"/>
@@ -689,7 +690,7 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="60"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="6x Scope" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.Scope6x}" VerticalAlignment="Center"/>
                             <Slider Grid.Column="1" Value="{Binding SettingsConfig.MouseZoomedSensitivityScalar4, Mode=TwoWay}"
                                     Minimum="0.1" Maximum="2.0" SmallChange="0.1" LargeChange="0.1"
                                     Style="{StaticResource CustomSlider}" Margin="8,0"/>
@@ -703,7 +704,7 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="60"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="8x/10x Scope" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.Scope8x10x}" VerticalAlignment="Center"/>
                             <Slider Grid.Column="1" Value="{Binding SettingsConfig.MouseZoomedSensitivityScalar5, Mode=TwoWay}"
                                     Minimum="0.1" Maximum="2.0" SmallChange="0.1" LargeChange="0.1"
                                     Style="{StaticResource CustomSlider}" Margin="8,0"/>
@@ -717,13 +718,13 @@
                 <!-- 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?-->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="PRESETS" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Loc Key=Apex.Presets}" Style="{StaticResource SectionHeader}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                            <Button Content="Competitive" Command="{Binding ApplyPresetCommand}" CommandParameter="竞技优化"
+                            <Button Content="{loc:Loc Key=Apex.Preset.Competitive}" Command="{Binding ApplyPresetCommand}" CommandParameter="竞技优化"
                                     Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Padding="12,6"/>
-                            <Button Content="High Quality" Command="{Binding ApplyPresetCommand}" CommandParameter="高画质"
+                            <Button Content="{loc:Loc Key=Apex.Preset.HighQuality}" Command="{Binding ApplyPresetCommand}" CommandParameter="高画质"
                                     Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Padding="12,6"/>
-                            <Button Content="Default" Command="{Binding ApplyPresetCommand}" CommandParameter="默认"
+                            <Button Content="{loc:Loc Key=Apex.Preset.Default}" Command="{Binding ApplyPresetCommand}" CommandParameter="默认"
                                     Style="{StaticResource SecondaryButton}" Padding="12,6"/>
                         </StackPanel>
                     </StackPanel>
@@ -733,9 +734,9 @@
 
         <!-- 搴曢儴鎸夐挳 -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button Content="Reset to Default" Command="{Binding ResetCommand}"
+            <Button Content="{loc:Loc Key=Apex.ResetToDefault}" Command="{Binding ResetCommand}"
                     Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
-            <Button Content="Save Configuration" Command="{Binding SaveCommand}"
+            <Button Content="{loc:Loc Key=Apex.SaveConfiguration}" Command="{Binding SaveCommand}"
                     Style="{StaticResource PrimaryButton}"/>
         </StackPanel>
     </Grid>

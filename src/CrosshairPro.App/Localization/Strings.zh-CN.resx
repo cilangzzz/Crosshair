@@ -1,0 +1,637 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 应用 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="App.Title" xml:space="preserve">
+    <value>CROSSHAIR PRO</value>
+  </data>
+  <data name="App.Version" xml:space="preserve">
+    <value> v1.0</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 导航 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="Nav.Crosshair" xml:space="preserve">
+    <value>准心配置</value>
+  </data>
+  <data name="Nav.Games" xml:space="preserve">
+    <value>游戏配置</value>
+  </data>
+  <data name="Nav.Language" xml:space="preserve">
+    <value>语言</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 预设 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="Preset.Label" xml:space="preserve">
+    <value>PRESET</value>
+  </data>
+  <data name="Preset.Default" xml:space="preserve">
+    <value>默认配置</value>
+  </data>
+  <data name="Preset.Manage" xml:space="preserve">
+    <value>管理预设</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 操作按钮 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="Action.Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Action.Reset" xml:space="preserve">
+    <value>重置</value>
+  </data>
+  <data name="Action.Toggle" xml:space="preserve">
+    <value>切换</value>
+  </data>
+  <data name="Action.Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Action.OK" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="Action.Replace" xml:space="preserve">
+    <value>替换</value>
+  </data>
+  <data name="Action.Backup" xml:space="preserve">
+    <value>备份</value>
+  </data>
+  <data name="Action.Export" xml:space="preserve">
+    <value>导出</value>
+  </data>
+  <data name="Action.Import" xml:space="preserve">
+    <value>导入</value>
+  </data>
+  <data name="Action.History" xml:space="preserve">
+    <value>历史</value>
+  </data>
+  <data name="Action.Restore" xml:space="preserve">
+    <value>恢复</value>
+  </data>
+  <data name="Action.CopyToClipboard" xml:space="preserve">
+    <value>复制到剪贴板</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 状态栏 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="Status.CrosshairEnabled" xml:space="preserve">
+    <value>准心已启用</value>
+  </data>
+  <data name="Status.CrosshairDisabled" xml:space="preserve">
+    <value>准心已禁用</value>
+  </data>
+  <data name="Status.HotkeyToggle" xml:space="preserve">
+    <value>Ctrl+Shift+X 切换</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 准心页面 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="Crosshair.Preview" xml:space="preserve">
+    <value>预览</value>
+  </data>
+  <data name="Crosshair.Style" xml:space="preserve">
+    <value>样式</value>
+  </data>
+  <data name="Crosshair.Size" xml:space="preserve">
+    <value>大小</value>
+  </data>
+  <data name="Crosshair.Gap" xml:space="preserve">
+    <value>间距</value>
+  </data>
+  <data name="Crosshair.Thickness" xml:space="preserve">
+    <value>粗细</value>
+  </data>
+  <data name="Crosshair.Opacity" xml:space="preserve">
+    <value>不透明度</value>
+  </data>
+  <data name="Crosshair.Brightness" xml:space="preserve">
+    <value>亮度</value>
+  </data>
+  <data name="Crosshair.CenterSize" xml:space="preserve">
+    <value>中心大小</value>
+  </data>
+  <data name="Crosshair.Color" xml:space="preserve">
+    <value>颜色</value>
+  </data>
+  <data name="Crosshair.Advanced" xml:space="preserve">
+    <value>高级</value>
+  </data>
+  <data name="Crosshair.SelectImage" xml:space="preserve">
+    <value>选择图片...</value>
+  </data>
+  <data name="Crosshair.CustomColor" xml:space="preserve">
+    <value>自定义颜色</value>
+  </data>
+
+  <!-- 准心样式名称 -->
+  <data name="CrosshairStyle.Cross" xml:space="preserve">
+    <value>十字准心</value>
+  </data>
+  <data name="CrosshairStyle.Dot" xml:space="preserve">
+    <value>点状准心</value>
+  </data>
+  <data name="CrosshairStyle.Circle" xml:space="preserve">
+    <value>圆形准心</value>
+  </data>
+  <data name="CrosshairStyle.TShape" xml:space="preserve">
+    <value>T形准心</value>
+  </data>
+  <data name="CrosshairStyle.XShape" xml:space="preserve">
+    <value>X形准心</value>
+  </data>
+  <data name="CrosshairStyle.CustomImage" xml:space="preserve">
+    <value>自定义图片</value>
+  </data>
+
+  <!-- 效果 -->
+  <data name="Effects.Header" xml:space="preserve">
+    <value>效果</value>
+  </data>
+  <data name="Effects.EnableOutline" xml:space="preserve">
+    <value>启用描边</value>
+  </data>
+  <data name="Effects.OutlineThickness" xml:space="preserve">
+    <value>描边粗细</value>
+  </data>
+  <data name="Effects.EnableShadow" xml:space="preserve">
+    <value>启用阴影</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 游戏页面 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="Games.SelectPrompt" xml:space="preserve">
+    <value>选择一款游戏进行配置</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- Apex Legends 配置 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="Apex.Title" xml:space="preserve">
+    <value>APEX LEGENDS 配置</value>
+  </data>
+  <data name="Apex.ConfigFiles" xml:space="preserve">
+    <value>配置文件</value>
+  </data>
+  <data name="Apex.LaunchOptions" xml:space="preserve">
+    <value>启动选项</value>
+  </data>
+  <data name="Apex.LaunchOptionsDesc" xml:space="preserve">
+    <value>Steam 启动参数，复制后在 Steam 游戏属性中粘贴</value>
+  </data>
+  <data name="Apex.Preset" xml:space="preserve">
+    <value>预设</value>
+  </data>
+  <data name="Apex.CustomLaunchOptions" xml:space="preserve">
+    <value>自定义启动选项</value>
+  </data>
+  <data name="Apex.Performance" xml:space="preserve">
+    <value>性能</value>
+  </data>
+  <data name="Apex.HighPriority" xml:space="preserve">
+    <value>高优先级 (-high)</value>
+  </data>
+  <data name="Apex.Threads" xml:space="preserve">
+    <value>线程数 (0=自动)</value>
+  </data>
+  <data name="Apex.RefreshRate" xml:space="preserve">
+    <value>刷新率 (Hz)</value>
+  </data>
+  <data name="Apex.SkipIntro" xml:space="preserve">
+    <value>跳过开场视频 (-novid)</value>
+  </data>
+  <data name="Apex.DisableJoystick" xml:space="preserve">
+    <value>禁用摇杆 (-nojoy)</value>
+  </data>
+  <data name="Apex.Window" xml:space="preserve">
+    <value>窗口</value>
+  </data>
+  <data name="Apex.WindowedMode" xml:space="preserve">
+    <value>窗口化模式</value>
+  </data>
+  <data name="Apex.BorderlessWindow" xml:space="preserve">
+    <value>无边框窗口</value>
+  </data>
+  <data name="Apex.WindowWidth" xml:space="preserve">
+    <value>窗口宽度</value>
+  </data>
+  <data name="Apex.WindowHeight" xml:space="preserve">
+    <value>窗口高度</value>
+  </data>
+  <data name="Apex.GameSettings" xml:space="preserve">
+    <value>游戏设置</value>
+  </data>
+  <data name="Apex.MaxFPS" xml:space="preserve">
+    <value>最大 FPS (0=无限制)</value>
+  </data>
+  <data name="Apex.ShowPositionInfo" xml:space="preserve">
+    <value>显示位置信息</value>
+  </data>
+  <data name="Apex.FOVScale" xml:space="preserve">
+    <value>FOV 缩放</value>
+  </data>
+  <data name="Apex.LetterboxAspect" xml:space="preserve">
+    <value>信箱模式宽高比</value>
+  </data>
+  <data name="Apex.Network" xml:space="preserve">
+    <value>网络</value>
+  </data>
+  <data name="Apex.Interp" xml:space="preserve">
+    <value>插值</value>
+  </data>
+  <data name="Apex.InterpRatio" xml:space="preserve">
+    <value>插值比率</value>
+  </data>
+  <data name="Apex.Debug" xml:space="preserve">
+    <value>调试</value>
+  </data>
+  <data name="Apex.DevMode" xml:space="preserve">
+    <value>开发者模式 (-dev)</value>
+  </data>
+  <data name="Apex.EnableConsole" xml:space="preserve">
+    <value>启用控制台 (-console)</value>
+  </data>
+  <data name="Apex.GeneratedLaunchOptions" xml:space="preserve">
+    <value>生成的启动选项：</value>
+  </data>
+  <data name="Apex.VideoSettings" xml:space="preserve">
+    <value>视频设置</value>
+  </data>
+  <data name="Apex.Resolution" xml:space="preserve">
+    <value>分辨率</value>
+  </data>
+  <data name="Apex.Gamma" xml:space="preserve">
+    <value>伽马 (亮度)</value>
+  </data>
+  <data name="Apex.QualitySettings" xml:space="preserve">
+    <value>画质设置</value>
+  </data>
+  <data name="Apex.TextureQuality" xml:space="preserve">
+    <value>纹理质量</value>
+  </data>
+  <data name="Apex.AnisotropicFiltering" xml:space="preserve">
+    <value>各向异性过滤</value>
+  </data>
+  <data name="Apex.EnableShadows" xml:space="preserve">
+    <value>启用阴影</value>
+  </data>
+  <data name="Apex.CascadeShadowMaps" xml:space="preserve">
+    <value>级联阴影贴图 (CSM)</value>
+  </data>
+  <data name="Apex.ParticleEffects" xml:space="preserve">
+    <value>粒子效果</value>
+  </data>
+  <data name="Apex.AmbientOcclusion" xml:space="preserve">
+    <value>环境光遮蔽 (SSAO)</value>
+  </data>
+  <data name="Apex.VolumetricLighting" xml:space="preserve">
+    <value>体积光照</value>
+  </data>
+  <data name="Apex.VolumetricFog" xml:space="preserve">
+    <value>体积雾</value>
+  </data>
+  <data name="Apex.RagdollPhysics" xml:space="preserve">
+    <value>布娃娃物理</value>
+  </data>
+  <data name="Apex.PerformanceSection" xml:space="preserve">
+    <value>性能</value>
+  </data>
+  <data name="Apex.VSync" xml:space="preserve">
+    <value>垂直同步</value>
+  </data>
+  <data name="Apex.AntiAliasing" xml:space="preserve">
+    <value>抗锯齿</value>
+  </data>
+  <data name="Apex.DynamicResolution" xml:space="preserve">
+    <value>动态分辨率缩放 (DVS)</value>
+  </data>
+  <data name="Apex.MouseSensitivity" xml:space="preserve">
+    <value>鼠标灵敏度</value>
+  </data>
+  <data name="Apex.MouseAcceleration" xml:space="preserve">
+    <value>鼠标加速</value>
+  </data>
+  <data name="Apex.FieldOfView" xml:space="preserve">
+    <value>视野 (FOV)</value>
+  </data>
+  <data name="Apex.ShowFPS" xml:space="preserve">
+    <value>显示 FPS (cl_showfps)</value>
+  </data>
+  <data name="Apex.ShowPosition" xml:space="preserve">
+    <value>显示位置信息 (cl_showpos)</value>
+  </data>
+  <data name="Apex.PerScopeSensitivity" xml:space="preserve">
+    <value>使用瞄准镜灵敏度</value>
+  </data>
+  <data name="Apex.Scope1x" xml:space="preserve">
+    <value>1x (红点/全息)</value>
+  </data>
+  <data name="Apex.Scope2x" xml:space="preserve">
+    <value>2x 瞄准镜</value>
+  </data>
+  <data name="Apex.Scope3x" xml:space="preserve">
+    <value>3x 瞄准镜</value>
+  </data>
+  <data name="Apex.Scope4x" xml:space="preserve">
+    <value>4x 瞄准镜</value>
+  </data>
+  <data name="Apex.Scope6x" xml:space="preserve">
+    <value>6x 瞄准镜</value>
+  </data>
+  <data name="Apex.Scope8x10x" xml:space="preserve">
+    <value>8x/10x 瞄准镜</value>
+  </data>
+  <data name="Apex.Presets" xml:space="preserve">
+    <value>预设</value>
+  </data>
+  <data name="Apex.Preset.Competitive" xml:space="preserve">
+    <value>竞技优化</value>
+  </data>
+  <data name="Apex.Preset.HighQuality" xml:space="preserve">
+    <value>高画质</value>
+  </data>
+  <data name="Apex.Preset.Default" xml:space="preserve">
+    <value>默认</value>
+  </data>
+  <data name="Apex.ResetToDefault" xml:space="preserve">
+    <value>重置为默认</value>
+  </data>
+  <data name="Apex.SaveConfiguration" xml:space="preserve">
+    <value>保存配置</value>
+  </data>
+
+  <!-- 画质选项 -->
+  <data name="Quality.Highest" xml:space="preserve">
+    <value>最高</value>
+  </data>
+  <data name="Quality.High" xml:space="preserve">
+    <value>高</value>
+  </data>
+  <data name="Quality.Medium" xml:space="preserve">
+    <value>中</value>
+  </data>
+  <data name="Quality.Low" xml:space="preserve">
+    <value>低</value>
+  </data>
+  <data name="Quality.Off" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="Quality.On" xml:space="preserve">
+    <value>开启</value>
+  </data>
+  <data name="Quality.TripleBuffered" xml:space="preserve">
+    <value>三重缓冲</value>
+  </data>
+
+  <!-- 窗口模式 -->
+  <data name="WindowMode.Fullscreen" xml:space="preserve">
+    <value>全屏</value>
+  </data>
+  <data name="WindowMode.Windowed" xml:space="preserve">
+    <value>窗口化</value>
+  </data>
+  <data name="WindowMode.Borderless" xml:space="preserve">
+    <value>无边框窗口</value>
+  </data>
+
+  <!-- 历史记录 -->
+  <data name="History.BackupHistory" xml:space="preserve">
+    <value>备份历史</value>
+  </data>
+  <data name="History.NoBackups" xml:space="preserve">
+    <value>暂无备份</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 系统托盘 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="Tray.ShowMainWindow" xml:space="preserve">
+    <value>打开主窗口</value>
+  </data>
+  <data name="Tray.ToggleCrosshair" xml:space="preserve">
+    <value>切换准心显示</value>
+  </data>
+  <data name="Tray.Exit" xml:space="preserve">
+    <value>退出</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 对话框 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="Dialog.SavePreset" xml:space="preserve">
+    <value>保存预设</value>
+  </data>
+  <data name="Dialog.EnterPresetName" xml:space="preserve">
+    <value>请输入预设名称:</value>
+  </data>
+  <data name="Dialog.ImportPreset" xml:space="preserve">
+    <value>导入预设</value>
+  </data>
+  <data name="Dialog.ExportPreset" xml:space="preserve">
+    <value>导出预设</value>
+  </data>
+  <data name="Dialog.PickColor" xml:space="preserve">
+    <value>选择颜色</value>
+  </data>
+  <data name="Dialog.CustomColor" xml:space="preserve">
+    <value>自定义颜色</value>
+  </data>
+  <data name="Dialog.ManagePresets" xml:space="preserve">
+    <value>管理预设</value>
+  </data>
+  <data name="Dialog.SelectCrosshairImage" xml:space="preserve">
+    <value>选择准心图片</value>
+  </data>
+  <data name="Dialog.SelectVideoConfig" xml:space="preserve">
+    <value>选择 videoconfig.txt 文件</value>
+  </data>
+  <data name="Dialog.SelectSettingsConfig" xml:space="preserve">
+    <value>选择 settings.cfg 文件</value>
+  </data>
+  <data name="Dialog.ExportVideoConfig" xml:space="preserve">
+    <value>导出 videoconfig.txt</value>
+  </data>
+  <data name="Dialog.ExportSettingsConfig" xml:space="preserve">
+    <value>导出 settings.cfg</value>
+  </data>
+
+  <!-- 文件过滤器 -->
+  <data name="Filter.ImageFiles" xml:space="preserve">
+    <value>图片文件 (*.png;*.jpg;*.bmp)|*.png;*.jpg;*.bmp|所有文件 (*.*)|*.*</value>
+  </data>
+  <data name="Filter.JsonFiles" xml:space="preserve">
+    <value>JSON 文件 (*.json)|*.json|所有文件 (*.*)|*.*</value>
+  </data>
+  <data name="Filter.JsonOnly" xml:space="preserve">
+    <value>JSON 文件 (*.json)|*.json</value>
+  </data>
+  <data name="Filter.VideoConfig" xml:space="preserve">
+    <value>视频配置文件|videoconfig.txt|所有文件|*.*</value>
+  </data>
+  <data name="Filter.SettingsConfig" xml:space="preserve">
+    <value>设置文件|settings.cfg|所有文件|*.*</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- Toast 消息 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="Toast.PresetRestored" xml:space="preserve">
+    <value>已恢复预设 "{0}"</value>
+  </data>
+  <data name="Toast.PresetNotFound" xml:space="preserve">
+    <value>上次使用的预设已不存在，已回退到默认配置</value>
+  </data>
+  <data name="Toast.ConfigLoadFailed" xml:space="preserve">
+    <value>配置加载失败，已使用默认配置</value>
+  </data>
+  <data name="Toast.PresetSaved" xml:space="preserve">
+    <value>预设 "{0}" 已保存</value>
+  </data>
+  <data name="Toast.PresetImported" xml:space="preserve">
+    <value>预设 "{0}" 已导入</value>
+  </data>
+  <data name="Toast.ImportFailed" xml:space="preserve">
+    <value>导入失败: {0}</value>
+  </data>
+  <data name="Toast.ConfigExported" xml:space="preserve">
+    <value>配置已导出到 {0}</value>
+  </data>
+  <data name="Toast.ExportFailed" xml:space="preserve">
+    <value>导出失败: {0}</value>
+  </data>
+  <data name="Toast.ConfigReplaced" xml:space="preserve">
+    <value>配置文件已替换并备份</value>
+  </data>
+  <data name="Toast.ReplaceFailed" xml:space="preserve">
+    <value>替换失败：文件格式无效</value>
+  </data>
+  <data name="Toast.BackedUp" xml:space="preserve">
+    <value>已备份到: {0}</value>
+  </data>
+  <data name="Toast.BackupFailed" xml:space="preserve">
+    <value>备份失败: {0}</value>
+  </data>
+  <data name="Toast.ConfigExportedShort" xml:space="preserve">
+    <value>配置已导出</value>
+  </data>
+  <data name="Toast.LaunchOptionsCopied" xml:space="preserve">
+    <value>启动选项已复制到剪贴板</value>
+  </data>
+  <data name="Toast.CopyFailed" xml:space="preserve">
+    <value>复制失败: {0}</value>
+  </data>
+  <data name="Toast.PresetApplied" xml:space="preserve">
+    <value>已应用 {0} 预设</value>
+  </data>
+  <data name="Toast.ApexNotInstalled" xml:space="preserve">
+    <value>未检测到 Apex Legends 安装</value>
+  </data>
+  <data name="Toast.ConfigSaved" xml:space="preserve">
+    <value>配置已保存</value>
+  </data>
+  <data name="Toast.SaveFailed" xml:space="preserve">
+    <value>保存失败: {0}</value>
+  </data>
+  <data name="Toast.ResetToDefault" xml:space="preserve">
+    <value>已重置为默认配置</value>
+  </data>
+  <data name="Toast.LoadHistoryFailed" xml:space="preserve">
+    <value>加载历史记录失败: {0}</value>
+  </data>
+  <data name="Toast.RestoredTo" xml:space="preserve">
+    <value>已恢复到: {0}</value>
+  </data>
+  <data name="Toast.RestoreFailed" xml:space="preserve">
+    <value>恢复失败</value>
+  </data>
+  <data name="Toast.RestoreFailedDetail" xml:space="preserve">
+    <value>恢复失败: {0}</value>
+  </data>
+  <data name="Toast.BackupDeleted" xml:space="preserve">
+    <value>已删除备份</value>
+  </data>
+  <data name="Toast.DeleteFailed" xml:space="preserve">
+    <value>删除失败: {0}</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 其他 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="Path.NotFound" xml:space="preserve">
+    <value>未找到</value>
+  </data>
+  <data name="Hotkey.ToggleCrosshair" xml:space="preserve">
+    <value>切换准心</value>
+  </data>
+  <data name="Language.ZhCn" xml:space="preserve">
+    <value>中文</value>
+  </data>
+  <data name="Language.EnUs" xml:space="preserve">
+    <value>English</value>
+  </data>
+</root>

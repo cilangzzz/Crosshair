@@ -1,18 +1,16 @@
+using System.Windows.Data;
 using System.Windows.Markup;
 
 namespace CrosshairPro.App.Localization;
 
 /// <summary>
 /// XAML 本地化标记扩展
-/// 用法：{loc:Loc Key=SomeKey}
-/// 或简写：{loc:Loc SomeKey}
+/// 用法：{loc:Loc Key=SomeKey} 或 {loc:Loc SomeKey}
+/// 通过 Binding 索引器路径 [{Key}] 绑定到 LocalizationProvider，切换语言时自动更新
 /// </summary>
-[MarkupExtensionReturnType(typeof(string))]
+[MarkupExtensionReturnType(typeof(BindingExpression))]
 public class LocExtension : MarkupExtension
 {
-    /// <summary>
-    /// 资源键名
-    /// </summary>
     public string Key { get; set; } = string.Empty;
 
     public LocExtension() { }
@@ -27,16 +25,14 @@ public class LocExtension : MarkupExtension
         if (string.IsNullOrEmpty(Key))
             return string.Empty;
 
-        try
+        // 使用 Binding 索引器路径：[Key] 等价于 LocalizationProvider.this[Key]
+        // 当 LocalizationProvider 触发 "Item[]" PropertyChanged 时，所有绑定自动更新
+        var binding = new Binding($"[{Key}]")
         {
-            // 直接返回翻译文本
-            var result = LocalizationProvider.Instance[Key];
-            return result ?? Key;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"LocExtension error for key '{Key}': {ex}");
-            return Key;
-        }
+            Source = LocalizationProvider.Instance,
+            Mode = BindingMode.OneWay
+        };
+
+        return binding.ProvideValue(serviceProvider);
     }
 }

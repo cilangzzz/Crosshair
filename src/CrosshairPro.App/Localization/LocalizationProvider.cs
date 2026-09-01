@@ -7,16 +7,17 @@ namespace CrosshairPro.App.Localization;
 /// <summary>
 /// 本地化提供者（单例）
 /// 管理当前语言文化，提供翻译查询，支持动态语言切换
+/// 通过索引器暴露翻译，配合 Binding "{Key}]" 路径实现 XAML 动态更新
 /// </summary>
 public sealed class LocalizationProvider : INotifyPropertyChanged
 {
     private static readonly Lazy<LocalizationProvider> _instance = new(() => new LocalizationProvider());
     public static LocalizationProvider Instance => _instance.Value;
 
-    private CultureInfo _currentCulture = CultureInfo.CurrentUICulture;
+    private CultureInfo _currentCulture = new("zh-CN");
 
     /// <summary>
-    /// 当前语言文化，设置后触发所有绑定更新
+    /// 当前语言文化
     /// </summary>
     public CultureInfo CurrentCulture
     {
@@ -28,13 +29,13 @@ public sealed class LocalizationProvider : INotifyPropertyChanged
             CultureInfo.CurrentUICulture = value;
             CultureInfo.CurrentCulture = value;
             OnPropertyChanged();
-            // 索引器变化 → 通知所有绑定更新
+            // 关键：通知索引器变化，触发所有 "[Key]" 路径的 Binding 更新
             OnPropertyChanged("Item[]");
         }
     }
 
     /// <summary>
-    /// 通过 key 获取翻译文本
+    /// 通过 key 获取翻译文本（XAML 索引器绑定使用）
     /// 用法：LocalizationProvider.Instance["Key"]
     /// </summary>
     public string this[string key] =>
@@ -66,21 +67,28 @@ public sealed class LocalizationProvider : INotifyPropertyChanged
     /// </summary>
     public static CultureInfo[] SupportedCultures { get; } =
     [
-        new("zh-CN"),  // 简体中文（默认）
-        new("en-US"),  // 英文
+        new("zh-CN"),
+        new("en-US"),
     ];
 
     /// <summary>
-    /// 切换语言
+    /// 切换语言（会触发所有 XAML 绑定更新）
     /// </summary>
     public void SetCulture(string cultureName)
     {
-        var culture = new CultureInfo(cultureName);
-        CurrentCulture = culture;
+        try
+        {
+            var culture = new CultureInfo(cultureName);
+            CurrentCulture = culture;
+        }
+        catch
+        {
+            // 无效 culture 名时，忽略
+        }
     }
 
     /// <summary>
-    /// 初始化：根据保存的偏好设置初始语言，如果没有保存则默认使用中文
+    /// 初始化：默认中文，可选指定已保存的语言
     /// </summary>
     public void Initialize(string? savedLanguage = null)
     {
@@ -92,12 +100,11 @@ public sealed class LocalizationProvider : INotifyPropertyChanged
             }
             catch
             {
-                _currentCulture = new CultureInfo("zh-CN"); // 默认中文
+                _currentCulture = new CultureInfo("zh-CN");
             }
         }
         else
         {
-            // 默认使用中文（强制）
             _currentCulture = new CultureInfo("zh-CN");
         }
 
