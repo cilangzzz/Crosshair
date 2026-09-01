@@ -403,5 +403,102 @@ enum TickRate {
 | CS:GO | 最后版本 |
 
 ---
+
+## CrosshairPro 集成数据模型
+
+CS2 配置协议 → CrosshairPro `GameConfigStrategy(builtin-cs2)` 的字段映射。
+
+### GameProfile
+
+```typescript
+interface GameProfile {
+  Id: "builtin-cs2";
+  DisplayName: "Counter-Strike 2";
+  ProcessName: "cs2";          // cs2.exe 主进程名
+  Priority: 100;
+  AutoSwitch: true;
+  FullscreenOnly: false;
+  PresetId?: string;            // 关联的准心预设
+}
+```
+
+### GameConfigStrategy
+
+```typescript
+interface GameConfigStrategy {
+  GameId: "builtin-cs2";
+  SupportsLaunchOptions: true;
+  LaunchOptionsDescription: "CS2 启动项参数，如 -high -threads 12 -novid";
+  Sections: [
+    {
+      Name: "video",
+      DisplayName: "视频设置",
+      Items: [
+        { Key: "fullscreen",    Type: "Bool", DefaultValue: true },
+        { Key: "resolution",    Type: "Enum", DefaultValue: "1920x1080", Options: ["1920x1080","1680x1050","1600x900","1440x900","1280x1024","1280x960","1280x800","1280x720"] },
+        { Key: "aspect_ratio",  Type: "Enum", DefaultValue: "16:9", Options: ["16:9","16:10","4:3"] },
+        { Key: "refresh_rate",  Type: "Int",  DefaultValue: 144, MinValue: 60, MaxValue: 360 }
+      ]
+    },
+    {
+      Name: "game",
+      DisplayName: "游戏设置",
+      Items: [
+        { Key: "fps_max",    Type: "Int",  DefaultValue: 0,   MinValue: 0, MaxValue: 999, Description: "0 表示无限制" },
+        { Key: "cl_showfps", Type: "Bool", DefaultValue: false }
+      ]
+    }
+  ];
+}
+```
+
+### 字段映射表
+
+| Strategy Key | Type | CS2 cvar / 配置键 | 写入文件 | 默认值 |
+|--------------|------|-------------------|----------|--------|
+| `video.fullscreen` | Bool | `setting.fullscreen` | `video.txt` | `1` |
+| `video.resolution` | Enum | `setting.defaultres` + `setting.defaultresheight` | `video.txt` | `1920x1080` |
+| `video.aspect_ratio` | Enum | （由分辨率推断，不直接写入） | — | `16:9` |
+| `video.refresh_rate` | Int | `setting.refreshrate` | `video.txt` | `144` |
+| `game.fps_max` | Int | `fps_max` | `autoexec.cfg` | `0`（无限制） |
+| `game.cl_showfps` | Bool | `cl_showfps` | `autoexec.cfg` | `0` |
+
+### GameConfig 持久化
+
+```typescript
+interface GameConfig {
+  GameId: "builtin-cs2";
+  LaunchOptions: string;        // Steam 启动参数，如 "-novid -high +exec autoexec.cfg"
+  Settings: {
+    "fullscreen": boolean;
+    "resolution": string;       // "1920x1080"
+    "aspect_ratio": string;     // "16:9"
+    "refresh_rate": number;     // 144
+    "fps_max": number;          // 0
+    "cl_showfps": boolean;
+  };
+}
+```
+
+**存储路径**：`%APPDATA%\CrosshairPro\gameconfigs\builtin-cs2.json`
+
+```json
+{
+  "GameId": "builtin-cs2",
+  "LaunchOptions": "-novid -high -threads 8 -freq 144 +exec autoexec.cfg",
+  "Settings": {
+    "fullscreen": true,
+    "resolution": "1920x1080",
+    "aspect_ratio": "16:9",
+    "refresh_rate": 144,
+    "fps_max": 0,
+    "cl_showfps": false
+  }
+}
+```
+
+> 完整集成流程见 [integration.md](integration.md)，CS2 配置坑点见 [pitfalls.md](pitfalls.md)。
+
+---
 **创建时间**: 2026-07-31
-**协议版本**: 1.0
+**协议版本**: 1.1

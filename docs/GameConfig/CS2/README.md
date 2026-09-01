@@ -54,6 +54,8 @@ Steam\steamapps\common\Counter-Strike 2\game\cfg\
 | [config.cfg](config.md) | 游戏设置详细选项 |
 | [launch-options.md](launch-options.md) | 启动参数详解 |
 | [data-model.md](data-model.md) | 数据结构与字段定义 |
+| [integration.md](integration.md) | 与 CrosshairPro 集成的映射指南 |
+| [pitfalls.md](pitfalls.md) | CS2 配置常见坑点（VAC、Steam 云同步、编码等） |
 | [CHANGELOG.md](CHANGELOG.md) | 变更日志 |
 
 ---
@@ -228,9 +230,11 @@ exec autoexec.cfg
 - [video.md](video.md) - 视频配置详解
 - [config.md](config.md) - 游戏设置详解
 - [launch-options.md](launch-options.md) - 启动参数详解
+- [integration.md](integration.md) - 与 CrosshairPro 集成指南
+- [pitfalls.md](pitfalls.md) - CS2 配置坑点
 - [Total CS2 配置指南](https://totalcsgo.com/command)
 - [CS2 控制台命令](https://cs2console.com)
 
 ---
 **创建时间**: 2026-07-31
-**协议版本**: 1.0
+**协议版本**: 1.1

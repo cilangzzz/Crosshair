@@ -610,4 +610,68 @@
   <data name="Language.EnUs" xml:space="preserve">
     <value>English</value>
   </data>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- CS2 Page -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="Cs2.Title" xml:space="preserve">
+    <value>Counter-Strike 2 Configuration</value>
+  </data>
+  <data name="Cs2.VideoSection" xml:space="preserve">
+    <value>Video Settings (video.txt)</value>
+  </data>
+  <data name="Cs2.GameSection" xml:space="preserve">
+    <value>Game Settings (autoexec.cfg)</value>
+  </data>
+  <data name="Cs2.LaunchSection" xml:space="preserve">
+    <value>Steam Launch Options</value>
+  </data>
+  <data name="Cs2.LaunchOptionsHint" xml:space="preserve">
+    <value>CS2 launch options, e.g. -high -threads 8 -novid +exec autoexec.cfg. Steam UI truncates around 1023 characters.</value>
+  </data>
+  <data name="Cs2.VideoFileNote" xml:space="preserve">
+    <value>CrosshairPro only saves to its local config and does not modify video.txt directly. Writes are skipped while the game is running to avoid VAC and Steam cloud-sync conflicts.</value>
+  </data>
+  <data name="Cs2.AutoexecFileNote" xml:space="preserve">
+    <value>CrosshairPro only saves to its local config and does not modify autoexec.cfg directly. Configure autoexec loading inside the game.</value>
+  </data>
+  <data name="Cs2.Fullscreen" xml:space="preserve">
+    <value>Fullscreen Mode</value>
+  </data>
+  <data name="Cs2.Resolution" xml:space="preserve">
+    <value>Resolution</value>
+  </data>
+  <data name="Cs2.AspectRatio" xml:space="preserve">
+    <value>Aspect Ratio</value>
+  </data>
+  <data name="Cs2.RefreshRate" xml:space="preserve">
+    <value>Refresh Rate (Hz)</value>
+  </data>
+  <data name="Cs2.MaxFps" xml:space="preserve">
+    <value>Max FPS (fps_max, 0 = unlimited)</value>
+  </data>
+  <data name="Cs2.ShowFps" xml:space="preserve">
+    <value>Show FPS (cl_showfps)</value>
+  </data>
+  <data name="Cs2.LaunchOptions" xml:space="preserve">
+    <value>Launch Options</value>
+  </data>
+  <data name="Cs2.LaunchOptionsChars" xml:space="preserve">
+    <value>{0} / 1000 chars</value>
+  </data>
+  <data name="Cs2.CopyToClipboard" xml:space="preserve">
+    <value>Copy to Clipboard</value>
+  </data>
+  <data name="Cs2.SaveSuccess" xml:space="preserve">
+    <value>CS2 configuration saved</value>
+  </data>
+  <data name="Cs2.ResetSuccess" xml:space="preserve">
+    <value>CS2 configuration reset</value>
+  </data>
+  <data name="Cs2.SavedToClipboard" xml:space="preserve">
+    <value>Launch options copied to clipboard</value>
+  </data>
+  <data name="Cs2.SaveFailed" xml:space="preserve">
+    <value>Save failed: {0}</value>
+  </data>
 </root>

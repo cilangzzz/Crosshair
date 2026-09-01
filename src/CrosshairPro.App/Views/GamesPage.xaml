@@ -55,6 +55,11 @@
                             <local:ApexPage/>
                         </DataTemplate>
                     </local:GamePageSelector.ApexTemplate>
+                    <local:GamePageSelector.Cs2Template>
+                        <DataTemplate>
+                            <local:Cs2Page/>
+                        </DataTemplate>
+                    </local:GamePageSelector.Cs2Template>
                     <local:GamePageSelector.DefaultTemplate>
                         <DataTemplate>
                             <TextBlock Text="{loc:Loc Key=Games.SelectPrompt}"

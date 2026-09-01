@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
+using CrosshairPro.App.Controls;
+using CrosshairPro.App.ViewModels;
 
 namespace CrosshairPro.App.Views.GamePages;
 
@@ -9,6 +11,7 @@ namespace CrosshairPro.App.Views.GamePages;
 public class GamePageSelector : DataTemplateSelector
 {
     public DataTemplate? ApexTemplate { get; set; }
+    public DataTemplate? Cs2Template { get; set; }
     public DataTemplate? DefaultTemplate { get; set; }
 
     public override DataTemplate? SelectTemplate(object? item, DependencyObject container)
@@ -18,6 +21,7 @@ public class GamePageSelector : DataTemplateSelector
             return gameId switch
             {
                 "builtin-apex" => ApexTemplate,
+                "builtin-cs2" => Cs2Template,
                 _ => DefaultTemplate
             };
         }

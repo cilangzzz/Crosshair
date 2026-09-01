@@ -634,4 +634,68 @@
   <data name="Language.EnUs" xml:space="preserve">
     <value>English</value>
   </data>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- CS2 页面 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="Cs2.Title" xml:space="preserve">
+    <value>Counter-Strike 2 配置</value>
+  </data>
+  <data name="Cs2.VideoSection" xml:space="preserve">
+    <value>视频设置（video.txt）</value>
+  </data>
+  <data name="Cs2.GameSection" xml:space="preserve">
+    <value>游戏设置（autoexec.cfg）</value>
+  </data>
+  <data name="Cs2.LaunchSection" xml:space="preserve">
+    <value>Steam 启动项</value>
+  </data>
+  <data name="Cs2.LaunchOptionsHint" xml:space="preserve">
+    <value>CS2 启动项参数，如 -high -threads 8 -novid +exec autoexec.cfg。Steam UI 单字段最大长度约 1023 字符。</value>
+  </data>
+  <data name="Cs2.VideoFileNote" xml:space="preserve">
+    <value>CrosshairPro 仅保存到本地配置，不会直接修改 video.txt。游戏运行时也不会触发写入，避免与 VAC 和 Steam 云同步冲突。</value>
+  </data>
+  <data name="Cs2.AutoexecFileNote" xml:space="preserve">
+    <value>CrosshairPro 仅保存到本地配置，不会直接修改 autoexec.cfg。请在游戏内自行配置 autoexec 加载方式。</value>
+  </data>
+  <data name="Cs2.Fullscreen" xml:space="preserve">
+    <value>全屏模式</value>
+  </data>
+  <data name="Cs2.Resolution" xml:space="preserve">
+    <value>分辨率</value>
+  </data>
+  <data name="Cs2.AspectRatio" xml:space="preserve">
+    <value>宽高比</value>
+  </data>
+  <data name="Cs2.RefreshRate" xml:space="preserve">
+    <value>刷新率 (Hz)</value>
+  </data>
+  <data name="Cs2.MaxFps" xml:space="preserve">
+    <value>最大 FPS（fps_max，0 = 无限制）</value>
+  </data>
+  <data name="Cs2.ShowFps" xml:space="preserve">
+    <value>显示 FPS（cl_showfps）</value>
+  </data>
+  <data name="Cs2.LaunchOptions" xml:space="preserve">
+    <value>启动项参数</value>
+  </data>
+  <data name="Cs2.LaunchOptionsChars" xml:space="preserve">
+    <value>{0} / 1000 字符</value>
+  </data>
+  <data name="Cs2.CopyToClipboard" xml:space="preserve">
+    <value>复制到剪贴板</value>
+  </data>
+  <data name="Cs2.SaveSuccess" xml:space="preserve">
+    <value>CS2 配置已保存</value>
+  </data>
+  <data name="Cs2.ResetSuccess" xml:space="preserve">
+    <value>CS2 配置已重置</value>
+  </data>
+  <data name="Cs2.SavedToClipboard" xml:space="preserve">
+    <value>启动项已复制到剪贴板</value>
+  </data>
+  <data name="Cs2.SaveFailed" xml:space="preserve">
+    <value>保存失败：{0}</value>
+  </data>
 </root>

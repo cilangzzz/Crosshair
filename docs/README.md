@@ -148,6 +148,9 @@ Core → (无依赖)
 5. **配置深拷贝**: `ConfigurationService.CloneConfig()` 必须递归克隆所有嵌套对象
 6. **预设管理**: 默认预设（IsDefault=true）不能被删除/保存
 7. **服务单例**: `JsonConfigRepository` 同时实现 `IConfigRepository` 和 `IAppStateRepository`，共享文件锁
+8. **CS2 配置写入**: 游戏运行时不应直接 patch `video.txt`/`config.cfg`（存在冲突），仅在未运行时写入；详见 [CS2 pitfalls](GameConfig/CS2/pitfalls.md)
+9. **CS2 文件编码**: 配置文件需 UTF-8 无 BOM，避免被 CS2 拒绝解析
+10. **VAC 边界**: CrosshairPro 不写入任何受 VAC 监控的命令，仅 patch 本协议白名单内的字段
 
 ## 模块变更日志
 

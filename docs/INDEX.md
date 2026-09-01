@@ -85,6 +85,8 @@ WPF 应用入口、UI 层、窗口和控件实现。
 | [config](GameConfig/CS2/config.md) | 游戏配置详细选项 |
 | [launch-options](GameConfig/CS2/launch-options.md) | 启动参数详解 |
 | [数据模型](GameConfig/CS2/data-model.md) | 配置数据结构定义 |
+| [integration](GameConfig/CS2/integration.md) | 与 CrosshairPro 集成指南（Strategy/Profile/Config 映射） |
+| [pitfalls](GameConfig/CS2/pitfalls.md) | CS2 配置坑点（VAC、云同步、编码、CS2 vs CS:GO 差异） |
 | [变更日志](GameConfig/CS2/CHANGELOG.md) | 配置协议变更历史 |
 
 ## 文档统计
@@ -95,6 +97,12 @@ WPF 应用入口、UI 层、窗口和控件实现。
 - **最后更新**: 2026-07-31
 
 ## 最新变更
+
+### 2026-09-01 更新
+- 完善 CS2 配置文档，新增集成指南与坑点文档
+- 新增 CS2 [integration.md](GameConfig/CS2/integration.md) - 与 CrosshairPro `GameConfigStrategy`/`GameProfile` 映射
+- 新增 CS2 [pitfalls.md](GameConfig/CS2/pitfalls.md) - VAC 边界、Steam 云同步冲突、CS2 vs CS:GO 命令差异、文件 patch 而非覆盖等
+- 更新 CS2 README/data-model/CHANGELOG 引用新文档
 
 ### 2026-07-31 更新
 - 新增 CS2 (Counter-Strike 2) 配置协议文档
@@ -157,6 +165,8 @@ docs/
         ├── config.md
         ├── launch-options.md
         ├── data-model.md
+        ├── integration.md
+        ├── pitfalls.md
         └── CHANGELOG.md
 ```
 
@@ -198,6 +208,8 @@ docs/
 - [CS2 视频配置](GameConfig/CS2/video.md)
 - [CS2 游戏配置](GameConfig/CS2/config.md)
 - [CS2 启动参数](GameConfig/CS2/launch-options.md)
+- [CS2 与 CrosshairPro 集成](GameConfig/CS2/integration.md)
+- [CS2 配置坑点](GameConfig/CS2/pitfalls.md)
 
 ### 按问题查找
 
