@@ -4,7 +4,7 @@
 
 ## 概述
 
-- 源码位置：`src/CrosshairPro.Core`，共 18 个源文件（枚举 2 / 接口文件 4 / 模型文件 12）
+- 源码位置：`src/CrosshairPro.Core`，共 19 个源文件（根目录 1 / 枚举 2 / 接口文件 4 / 模型文件 12）
 - 依赖 NuGet 包：CommunityToolkit.Mvvm 8.3.2（`ObservableObject` / `[ObservableProperty]`）、System.Text.Json 8.0.5（csproj 声明，Core 代码当前未直接使用）
 - 被依赖：CrosshairPro.Infrastructure、CrosshairPro.Services、CrosshairPro.Application、CrosshairPro.App
 
@@ -12,6 +12,7 @@
 
 ```
 CrosshairPro.Core/
+├── CrosshairProPaths.cs       # 应用数据目录/持久化文件路径唯一权威定义（%APPDATA%\CrosshairPro）
 ├── Enums/
 │   ├── AppState.cs            # 应用状态枚举（Idle/GameMode/CrosshairVisible/CrosshairHidden）
 │   └── CrosshairStyle.cs      # 准心样式枚举（6 种样式）

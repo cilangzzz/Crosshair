@@ -47,13 +47,13 @@
 
 **规避**：读写 float 一律使用 `CultureInfo.InvariantCulture`。
 
-## 6. `GenerateOptionsString` 的无条件与条件输出
+## 6. `GenerateOptionsString` 的条件输出（2026-10-14 调整）
 
 **证据**（`ApexLaunchOptions.GenerateOptionsString`）：
 
-- `+fps_max {FpsMax}` **无条件输出**，`FpsMax=0` 也会生成 `+fps_max 0`（语义是"无限制"，通常无害但无法省略）
+- `+fps_max` 自 2026-10-14 起改为 `FpsMax > 0` 条件输出（此前恒输出，`FpsMax=0` 也会生成 `+fps_max 0`）；`+cl_fovScale` 输出已移除——fps_max/cl_showfps/cl_showpos/cl_fov_scale 统一由 settings.cfg（游戏设置卡）管理，避免启动项默认值覆盖用户设置
 - `-w` / `-h` 仅在 `Windowed || Noborder` 时输出，单独设置 `Width`/`Height` 不生效
-- `+cl_fovScale` 固定两位小数并带引号（`+cl_fovScale "1.27"`）
+- 其余数值参数仅在大于 0 时输出
 
 **规避**：预期输出与实际不一致时先对照 [launch-options.md](launch-options.md) 的生成规则表。
 

@@ -5,10 +5,45 @@
 
 ---
 
+## [2026-10-14] feat: 新增 CrosshairProPaths 路径权威定义
+
+**类型**: feat
+**提交**: 未提交（工作区）
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| src/CrosshairPro.Core/CrosshairProPaths.cs | +19（新增） | `AppDirectory`（%APPDATA%\CrosshairPro）与 `AppStateFile`（appstate.json）静态字段；仓库实现与绕过异步接口直接读文件的调用方必须引用此类，避免存储契约多处硬编码后漂移 |
+
+### 影响范围
+- **动因**: App 层单实例校验需在语言初始化前同步读 appstate.json（见 App/CHANGELOG 同日条目），出现第二个独立读取方，路径/文件名定义收敛到 Core 单点
+- **跨模块**: Services JsonConfigRepository 构造函数改用（见 Services/CHANGELOG 同日条目）；App 单实例校验读取路径改用（见 App/CHANGELOG 同日条目）
+
+---
+
+## [2026-10-14] fix: Apex 启动项生成不再输出默认 fps_max/cl_fovScale
+
+**类型**: fix
+**提交**: b546b85
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| src/CrosshairPro.Core/Models/ApexLaunchOptions.cs | ~2 处 | `GenerateOptionsString()`：`+fps_max` 由无条件输出改为 `FpsMax > 0` 条件输出；移除 `+cl_fovScale` 输出行 |
+
+### 影响范围
+- **动因**: Apex 页游戏设置类条目（fps_max/FOV/显示位置等）已收敛为 settings.cfg 单一来源（App 页面同日把游戏设置卡并入启动选项卡分区）；启动项默认值（`+fps_max 0`、`+cl_fovScale "1.27"`）此前会覆盖 settings.cfg 中的用户设置
+- **兼容性**: 自定义模式 JSON 中已保存的 ClFovScale/FpsMax 旧值不再经结构化生成输出；直接编辑的文本模式与 UI 预设字符串（硬编码含 `+fps_max`/`+cl_fovScale`）不受影响
+- **跨模块**: App 层 ApexPage 同日重构（见 App/CHANGELOG）；协议文档 GameConfig/Apex/pitfalls.md §6、launch-options.md 生成规则表已同步
+
+---
+
 ## [2026-10-14] feat: 内置游戏档案仅保留 CS2 与 Apex
 
 **类型**: feat
-**提交**: 未提交
+**提交**: b546b85（当时为工作区变更，后随该提交入库）
 **风险**: MEDIUM
 
 ### 变更文件

@@ -5,6 +5,23 @@
 
 ---
 
+## [2026-10-14] refactor: JsonConfigRepository 路径推导改用 Core.CrosshairProPaths
+
+**类型**: refactor
+**提交**: 未提交（工作区）
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Configuration/JsonConfigRepository.cs | +4/-5 | 构造函数不再内联推导 %APPDATA%\CrosshairPro 目录与 appstate.json 路径，改用 `CrosshairProPaths.AppDirectory`/`AppStateFile`（config.json 仍从 AppDirectory 组合），行为不变 |
+
+### 影响范围
+- **动因**: App 层新增第二个 appstate.json 直接读取方（单实例校验，见 App/CHANGELOG 同日条目），路径定义收敛到 Core 单点（见 Core/CHANGELOG 同日条目）
+- **行为**: 无变化（目录创建与文件路径推导等价）
+
+---
+
 ## [2026-07-03] refactor: restructure project architecture
 
 **类型**: refactor

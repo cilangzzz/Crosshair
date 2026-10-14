@@ -128,7 +128,7 @@ public partial class GamesViewModel : ObservableObject
 
 | 成员 | 说明 |
 |------|------|
-| Games | 来自 `GameProfile.BuiltIn.GetAll()` 的 2 个内置游戏（Counter-Strike 2、Apex Legends），见 [../Core/data-model.md](../Core/data-model.md) |
+| Games | 来自 `GameProfile.BuiltIn.GetAll()` 的 3 个内置条目（Counter-Strike 2、Apex Legends、电脑优化占位），见 [../Core/data-model.md](../Core/data-model.md) |
 | CurrentGameId | 当前选中游戏 ID（GamesPage 的 ContentControl 绑定它驱动 GamePageSelector） |
 | SelectedGame | 当前选中的游戏，变更时同步 IsSelected 标记与 CurrentGameId |
 | SelectGameCommand(game) | 选择游戏（列表按钮绑定） |
@@ -259,7 +259,7 @@ public bool IsCrosshairVisible => _isVisible;
 | 构造 | WindowStyle.None、AllowsTransparency、Topmost、Focusable=false、尺寸=主屏；SourceInitialized 时加 `WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW`（不加 WS_EX_LAYERED） |
 | UpdateConfig(config) | `_config.CopyFrom(config)` 同步副本；内部订阅自身配置四级 PropertyChanged 自动重绘 |
 | ToggleVisibility() | 切换 Visibility 并触发 CrosshairVisibilityChanged |
-| RenderCrosshair() | 按样式绘制：Cross 四线 / Dot 圆点 / Circle 圆环 / TShape 倒 T（竖线朝下）/ XShape 四对角线 / CustomImage 加载图片（缺失或失败回退十字，加载失败另回退红色小十字） |
+| RenderCrosshair() | 按样式绘制：Cross 四线 / Dot 圆点 / Circle 圆环 / TShape 倒 T（竖线朝下）/ XShape 四对角线 / CustomImage 加载图片（缺失或失败回退十字，加载失败另回退红色小十字）；`Config.Rotation != 0` 时对 `_canvas` 施加 `RenderTransform(RotateTransform, 窗口中心)`，0° 置 null（CrosshairPage 预览同型实现） |
 | AddLine/AddDot/AddCircle/AddImage | 添加形状；描边通过先画黑色加粗底层实现；每个 Shape 单独设置 Opacity |
 | ApplyBrightness(color, brightness) | 亮度系数 100=原色、0=全黑、200=全白 |
 
@@ -270,7 +270,7 @@ public bool IsCrosshairVisible => _isVisible;
 准心配置页（UserControl）：
 
 - 左侧 PreviewCard：`GridCanvas`（7x7 网格）+ `CrosshairCanvas`（准心），网格在下层
-- 右侧控制面板：样式 ComboBox（SelectedStyleIndex）、自定义图片按钮（SelectedStyleIndex==5 时可见）、大小/间隙/粗细/透明度/亮度/中心点滑块+数值框、预设颜色 RadioButton（GroupName="CrosshairColor"）+ 彩虹渐变自定义色按钮、效果区平铺三行（启用描边/启用阴影为标签居左 + `ToggleSwitch` 药丸开关居右，描边粗细为缩进 24 的标签+NumericTextBox 行，无 Expander）
+- 右侧控制面板：样式 ComboBox（SelectedStyleIndex）、自定义图片按钮（SelectedStyleIndex==5 时可见）、大小/间隙/粗细/透明度/亮度/旋转（0-360，绑定既有 `Config.Rotation`，此前模型已支持但 UI 未暴露）/中心点滑块+数值框、预设颜色 RadioButton（GroupName="CrosshairColor"）+ 彩虹渐变自定义色按钮、效果区平铺三行（启用描边/启用阴影为标签居左 + `ToggleSwitch` 矩形微圆角开关居右，描边粗细为与开关行同缩进的标签+NumericTextBox 行（数值框 `Margin="8,0,0,0"` 与其他滑杆行同规格），无 Expander）
 - `SetViewModel(vm)` / `OnLoaded`：从 `Window.GetWindow(this).DataContext`（MainViewModel）取 CrosshairViewModel 并订阅 ConfigUpdated
 - `CustomColor_Click`：使用 `System.Windows.Forms.ColorDialog` 选色，直接写 `Config.Color`
 
@@ -296,6 +296,7 @@ public class GamePageSelector : DataTemplateSelector
 {
     public DataTemplate? ApexTemplate { get; set; }     // gameId == "builtin-apex"
     public DataTemplate? Cs2Template { get; set; }      // gameId == "builtin-cs2"
+    public DataTemplate? PcOptimizeTemplate { get; set; } // gameId == "builtin-pcopt"（电脑优化占位页）
     public DataTemplate? DefaultTemplate { get; set; }  // 其他（"请选择游戏"提示）
 }
 
@@ -314,7 +315,7 @@ public class ConfigItemTemplateSelector : DataTemplateSelector  // Views/GamePag
 }
 ```
 
-Cs2Page 资源中声明 `ConfigItemTemplateSelector` 并为三/四类模板提供统一行规格（开关行「标签居左 + `ToggleSwitch` 药丸开关居右」、滑杆行 `*/160/64` 三列、下拉行 ComboBox 宽 160），ApexPage 手写行遵循同一规格。
+Cs2Page 资源中声明 `ConfigItemTemplateSelector` 并为三/四类模板提供统一行规格（开关行「标签居左 + `ToggleSwitch` 矩形微圆角开关居右」、滑杆行 `*/160/64` 三列、下拉行 ComboBox 宽 160），ApexPage 手写行遵循同一规格。ApexPage 卡片结构：启动选项卡内含「启动参数（预设/文本框/自定义面板：性能/窗口/网络/调试）」与「游戏设置（settings.cfg）」两个分区（游戏设置卡已于 2026-10-14 并入），瞄准镜灵敏度独立成卡；父子联动（级联阴影←启用阴影、体积雾←体积光照、倍镜滑杆←独立倍镜灵敏度开关）经 `x:Name` + `ElementName` 绑定 IsChecked→IsEnabled 实现，子项与父项同列无缩进；布尔子项另有值联动——父开关经 UI 点击（Click 事件，绑定更新不触发）关闭时 `CsmEnabled`/`VolumetricFog` 同步置 0（ApexPage.xaml.cs 处理器），重新开启父项不自动恢复。
 
 ## 自定义控件
 
@@ -379,6 +380,8 @@ public string? GetInputResult();  // 从 Tag 中取输入框文本
 | ConfigTypeToVisibilityConverter | ConfigTypeToVisibilityConverter | value 为 ConfigItemType 且 parameter（字符串）解析后相等 → Visible |
 | IntToBoolConverter | IntToBoolConverter | 0 → false，非 0 → true；ConvertBack：true → 1 |
 | InverseBooleanToVisibilityConverter | InverseBoolToVisibilityConverter | true → Collapsed，false → Visible |
+| UtcToLocalTimeConverter | UtcToLocalTimeConverter | UTC DateTime → 本地时间字符串（yyyy-MM-dd HH:mm） |
+| GameProfileTitleConverter | GameProfileTitleConverter | IMultiValueConverter：[0]=DisplayName、[1]=DisplayNameLocKey、[2]=CurrentCulture（语言切换触发重算）；LocKey 非空取 LocalizationProvider.Get，否则回退 DisplayName |
 
 另使用 WPF 内置 `BooleanToVisibilityConverter`（键 BoolToVisibilityConverter）。
 

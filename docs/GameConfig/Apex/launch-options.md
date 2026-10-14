@@ -115,16 +115,16 @@ CrosshairPro 允许两种模式：直接编辑字符串，或使用结构化的 
 | `Novid` / `Nojoy` | `-novid` / `-nojoy` | 为 true |
 | `Windowed` / `Noborder` / `Fullscreen` | `-windowed` / `-noborder` / `-fullscreen` | 为 true |
 | `Width` / `Height` | `-w N` / `-h N` | **仅当 `Windowed \|\| Noborder`** 且值 > 0 |
-| `FpsMax` | `+fps_max N` | **无条件输出**（0 也会输出 `+fps_max 0`） |
+| `FpsMax` | `+fps_max N` | 值 > 0（2026-10-14 起不再恒输出，0 不再生成 `+fps_max 0`） |
 | `ClShowfps` | `+cl_showfps N` | 值 > 0 |
 | `ClShowpos` | `+cl_showpos 1` | 为 true |
-| `ClFovScale` | `+cl_fovScale "F2"` | 值 > 0，两位小数并带引号 |
+| `ClFovScale` | — | 已移除（2026-10-14 起 `cl_fov_scale` 由 settings.cfg 渠道管理，避免默认值覆盖） |
 | `MatLetterboxAspectMin` | `+mat_letterbox_aspect_min F1` | 值 > 0，一位小数 |
 | `MRawinput` | `+m_rawinput 1` | 为 true |
 | `ClInterp` / `ClInterpRatio` / `ClCmdrate` / `ClUpdaterate` | 对应 `+cl_*` | 值 > 0 |
 | `Dev` / `Console` | `-dev` / `-console` | 为 true |
 
-各参数按上述顺序拼接，空格分隔。
+各参数按上述顺序拼接，空格分隔。注意：fps_max/cl_showfps/cl_showpos/cl_fov_scale 的常规配置入口是 settings.cfg（游戏设置卡），启动项仅作为补充通道。
 
 ## 应用侧预设
 

@@ -13,7 +13,7 @@ CrosshairPro 是一款 Windows 桌面准心覆盖工具，为 FPS 游戏玩家�
 ## 模块文档
 
 ### Core - 核心层
-核心模型、接口和枚举定义，作为架构基础被所有模块依赖。（18 个源文件）
+核心模型、接口和枚举定义，作为架构基础被所有模块依赖。（19 个源文件）
 
 | 文档 | 描述 |
 |------|------|
@@ -56,7 +56,7 @@ Windows API 封装、热键管理、Win32 P/Invoke 声明。（3 个源文件）
 | [变更日志](Application/CHANGELOG.md) | 模块变更历史 |
 
 ### App - 表现层
-WPF 应用入口、UI 层、窗口和控件实现。（41 个源文件）
+WPF 应用入口、UI 层、窗口和控件实现。（46 个源文件）
 
 | 文档 | 描述 |
 |------|------|
@@ -102,14 +102,21 @@ WPF 应用入口、UI 层、窗口和控件实现。（41 个源文件）
 | 文档 | 描述 |
 |------|------|
 | [tab-navigation-design](../.claude/docs/design/tab-navigation-design.md) | 标签页导航系统设计（权威位置 `.claude/docs/design/`） |
+| [games-tab-overflow-design](../.claude/docs/design/games-tab-overflow-design.md) | 游戏页 tab 溢出设计方案（现状分析/阈值/方案对比/实现草图，仅设计未实现） |
 
 ## 文档统计
 
 - **模块目录**: 7（5 个代码模块 + GameConfig 配置层 + design 设计文档）
-- **文档文件**: 41（docs/ 树，含 README.md 与本索引；权威树 `.claude/docs/` 共 40 个 .md，design 仅存于权威树）
-- **最后更新**: 2026-10-13
+- **文档文件**: 41（docs/ 树，含 README.md 与本索引；权威树 `.claude/docs/` 共 41 个 .md，design 仅存于权威树）
+- **最后更新**: 2026-10-14
 
 ## 最新变更
+
+### 2026-10-14 更新
+- 游戏页新增「电脑优化」占位 tab：[PcOptimizePage](App/README.md)（空状态占位，GameProfile 新增 builtin-pcopt 条目与 DisplayNameLocKey 本地化键）
+- 修复游戏页 tab 与内容左对齐（消除子页面双重 20px 边距）、底部保存/重置按钮增加 16px 底部留白
+- 新增设计文档 [games-tab-overflow-design](../.claude/docs/design/games-tab-overflow-design.md)（tab 溢出方案：横向滚动推荐 + 阈值分析，仅设计未实现）
+- 文件数口径更新（Core 19 / App 46）；App 值转换器 5→6（新增 GameProfileTitleConverter）
 
 ### 2026-10-13 更新
 - 全文档体系增量更新：本地化（Localization）、Apex/CS2 配置页面、GameConfigService/ApexConfigService、JsonPresetRepository 等新内容入册
@@ -182,7 +189,8 @@ docs/
         └── CHANGELOG.md
 
 .claude/docs/design/          # 设计文档（权威位置，不在 docs/ 镜像内）
-└── tab-navigation-design.md
+├── tab-navigation-design.md
+└── games-tab-overflow-design.md
 ```
 
 ## 快速查找

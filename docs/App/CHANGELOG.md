@@ -5,7 +5,29 @@
 
 ---
 
-## [2026-10-14] feat: 预设管理优化（创建时间/重名序号）与效果区平铺药丸开关
+## [2026-10-14] fix: 预设选择按 Id 保全防删除重置；主题画笔全部冻结防动画泄漏
+
+**类型**: fix
+**提交**: 未提交（工作区）
+**风险**: MEDIUM
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| ViewModels/CrosshairViewModel.cs | +79/-14 | `LoadPresets()` 替换列表前捕获 `SelectedPreset?.Id`，替换后按 Id 重解析选中项（新增 `_updatingPresets` 抑制标志，`OnSelectedPresetChanged` 对 null/抑制期早退，不触发 CopyConfig/持久化，保住未保存微调）；仅当 Id 确实不存在才回退默认。根因：列表每次整体替换（反序列化新实例+重合成默认预设），ComboBox（TwoWay）与弹窗列表清空选中后 null 回推，触发回退分支把当前配置静默重置为默认并改写 appstate——评审代理在真实 WPF 环境实测复现（弹窗 TwoWay 与 ComboBox 两条路径各复现一次）。二轮评审再发现并修复同型缺口：catch 分支（预设仓库瞬时加载失败）原在抑制块外整体替换降级列表且不保留选中 Id，损失被推迟放大为下一次成功重载时的静默重置——新增 `_lastSelectedPresetId` 字段（非抑制选中时记录），回退分支先按该 Id 无副作用恢复（抑制块内，不 CopyConfig/不写 appstate），Id 确实不存在才回退默认；catch 分支降级列表替换纳入抑制块并按该 Id 尽力恢复选中。附带：`ImportPresetFromFileAsync` 改为按 Id 从重载列表选中（原选保存前实例，不在重载列表中，ComboBox 高亮会丢）；默认预设名随界面语言本地化（`Preset.Default`，堵住英文界面保存 "Default" 不触发重名序号的缺口） |
+| MainWindow.xaml.cs | +1/-1 | 弹窗 ListBox SelectedItem 绑定 TwoWay→OneWay：弹窗定位为纯管理界面（删除/导入/导出），点击行仅本地高亮、不影响生效预设（与最初一次性赋值语义一致）；列表刷新能力（ItemsSource 属性绑定）保留 |
+| Themes/DesignTokens.xaml | +29/-25 | 全部 22 个 SolidColorBrush 加 `PresentationOptions:Freeze="True"`：冻结后模板内属性路径动画（ToggleSwitch 勾选态、按钮/复选框/文本框悬停聚焦）在元素实例上自动克隆画笔，不再原地改写共享资源——修复开启描边/阴影期间全应用 `TextSecondaryBrush` 等被污染为霓虹绿；既有样式同型泄漏一并修复 |
+
+### 影响范围
+- **行为**: 删除任意非当前预设不再影响当前准心配置与 appstate；预设仓库瞬时加载失败不再放大为静默配置重置（catch 降级 + 恢复后按最近选中 Id 无副作用恢复）；开启效果开关期间全局次级文字/控件颜色保持不变；英文界面默认预设显示 "Default" 且同名保存会加序号
+- **弹窗语义**: 点击行不再应用预设（管理界面定位）；如需行点击应用，应显式加 SelectionChanged→按 Id 设置 `SelectedPreset`（会恢复 CopyConfig 语义，需另行评估未保存微调）
+- **冻结语义**: 主题画笔运行时不可变（全仓静态扫描确认无运行时改写点）；后续如需运行时换肤须改为克隆/替换资源方式
+- **验证**: 两轮评审工作流（真实 BAML/STA 环境 + Fake 仓库身份抖动/可注入异常）：冻结修复 141 项动态断言全过；选择保全修复首轮 42/42（六场景 + 标志卫生），二轮评审发现 catch 分支缺口，修复后复验 74/74（T7 加载失败→恢复不重置、默认预设降级恢复、六场景回归、新回退分支语义与异常注入）
+- **关联**: 修复对象为上文「预设管理优化」条目相关改动引入/暴露的回归
+
+---
+
+## [2026-10-14] feat: 单实例校验（命名 Mutex 防重复启动）
 
 **类型**: feat
 **提交**: 未提交（工作区）
@@ -14,10 +36,65 @@
 ### 变更文件
 | 文件 | 变更 | 说明 |
 |------|------|------|
+| App.xaml.cs | +92/-0 | OnStartup 最先尝试创建 `Local\CrosshairPro.SingleInstance` 命名 Mutex：未获得所有权时经 `ExitAsAlreadyRunning()` 按已保存的语言偏好（`ReadSavedLanguage()` 同步读取，规避 LoadStateAsync 在 UI 线程 sync-over-async 死锁）弹本地化提示（`App.AlreadyRunning`）后 `Shutdown()` 退出；构造抛 `UnauthorizedAccessException`（同名互斥体存在但无权打开，如同会话管理员实例先启动/名称被占用）时走同一优雅退出路径；新增 OnExit 主动 Release/Dispose（未持有所有权时吞异常，退出路径已提前 Dispose 置空） |
+| Localization/Strings.resx · Strings.zh-CN.resx · Strings.en.resx | +1 键×3 | 新增 `App.AlreadyRunning` 提示文案（弹窗标题复用既有 `App.Title`） |
+
+### 影响范围
+- **行为**: 重复启动不再产生第二个准心叠加层，同时避免第二实例全局热键注册失败（RegisterHotKey 冲突）；互斥体被无权打开时不再崩溃（此前会在 DispatcherUnhandledException 注册前直接崩溃，已实测复现）
+- **锁定语义**: Mutex 为 `Local\` 命名空间（同一登录会话内唯一，多用户会话互不影响）；进程异常退出时系统自动回收，不会残留锁
+- **跨模块**: Core（新增 CrosshairProPaths.cs，见 Core/CHANGELOG）；Services（JsonConfigRepository 路径推导改用，见 Services/CHANGELOG）
+
+---
+
+## [2026-10-14] style: 开关滑块改方圆造型
+
+**类型**: style
+**提交**: 未提交（工作区）
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Themes/ControlStyles.xaml | ~1 处 | `ToggleSwitch` 滑块 CornerRadius 8（圆形）→ `RadiusSm`（方圆），与轨道圆角一致；尺寸/颜色/行程/动画不变 |
+
+### 影响范围
+- **UI**: 全部 `ToggleSwitch` 用点（CrosshairPage 效果区、ApexPage、Cs2Page）滑块同步变方圆；此前 cdf152f 仅轨道改矩形微圆角、滑块仍为圆形。CustomSlider 的圆形滑块点不受影响
+
+---
+
+## [2026-10-14] refactor: Apex 启动参数与游戏设置同卡分区，开关改矩形微圆角并加父子联动
+
+**类型**: refactor
+**提交**: ControlStyles 外形随 cdf152f 提交；ApexPage 分区重构与父子联动未提交（工作区）
+**风险**: MEDIUM
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Themes/ControlStyles.xaml | ~3 处 | `ToggleSwitch` 40×22 胶囊 → 44×22 矩形微圆角（CornerRadius 用 `RadiusSm`），滑块边距 2→3、行程 X 20→22（随 cdf152f 提交） |
+| Views/GamePages/ApexPage.xaml | +90/-93 | ① 自定义启动面板移除「游戏设置」组（MaxFPS/ShowPositionInfo/FOVScale/LetterboxAspect 4 行，与游戏设置卡重复）；信箱比例行移入「窗口」组 ② 独立「游戏设置」卡并入「启动选项」卡：Separator + Accent 子标题分区，含鼠标灵敏度/鼠标加速/FOV/FPS/显示FPS/显示位置 6 行——启动参数与游戏设置同卡、与视频/画质等其他配置分开 ③ 父子联动：级联阴影←启用阴影、体积雾←体积光照、倍镜灵敏度 6 个滑杆行←独立倍镜灵敏度开关（`x:Name` + `ElementName` 绑定 IsChecked→IsEnabled，父关子整行禁用） ④ 联动子项取消缩进（级联阴影/体积雾标签与父项同列） ⑤ 值联动：父开关经 UI 点击关闭时子开关值同步置 0 |
+| Views/GamePages/ApexPage.xaml.cs | +22 | `OnEnableShadowsClick`/`OnVolumetricLightingClick`：用 Click 事件（仅用户点击触发，加载配置/应用预设经绑定更新 IsChecked 不触发）检测父开关关闭，置 `CsmEnabled`/`VolumetricFog` = 0，经 PropertyChanged 刷新子开关 UI |
+
+### 影响范围
+- **数据流**: 游戏设置类条目（fps_max/cl_fov_scale/cl_showfps/cl_showpos）常规配置入口收敛为 settings.cfg；配套 Core `ApexLaunchOptions.GenerateOptionsString()` 改为 `+fps_max` 条件输出并移除 `+cl_fovScale`（见 Core/CHANGELOG 同日条目，随 b546b85 提交），**结构化生成通道**（自定义面板）的启动项默认值不再覆盖游戏设置。注意：启动项预设字符串（竞技优化/高画质仍含 `+fps_max 0`/`+cl_fovScale "2"`）与文本模式行为未变，选用预设或手填后仍可能覆盖 settings.cfg——如需彻底收敛可后续清理预设模板
+- **UI**: 开关为 44×22 矩形微圆角（滑块同为方圆，见上方 style 条目）；联动子项父开关关闭时整行禁用（Opacity 0.4），布尔子项值同步置 0（重新开启父项不自动恢复，保持关闭）；倍镜滑杆子项仅禁用不禁值
+- **跨模块**: Core（ApexLaunchOptions.cs）；文档同步 Core/data-model、GameConfig/Apex/pitfalls+launch-options（双树）
+
+---
+
+## [2026-10-14] feat: 预设管理优化（创建时间/重名序号）与效果区平铺药丸开关
+
+**类型**: feat
+**提交**: cdf152f（App 代码）/ b2b8175（PresetService 排序），文档随 ddfff7e；行数以 e946b95..cdf152f 为基线
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
 | Views/CrosshairPage.xaml | +18/-12 | 效果区去掉 Expander 展开收起，平铺三行：启用描边/启用阴影改为「标签居左 + `ToggleSwitch` 药丸开关居右」（复用 ControlStyles 既有样式），描边粗细为缩进 24 的标签+NumericTextBox 行；区块标题由 `Crosshair.Advanced`（高级）改为 `Effects.Header`（效果） |
 | MainWindow.xaml.cs | +33/-10 | 预设管理弹窗列表项改为「名称 + 创建时间（11px 次级色，`IsDefault` 时经 DataTrigger 隐藏）+ 删除×」两行布局，创建时间 Tooltip 用新键 `Preset.CreatedAt`；列表 ItemsSource/SelectedItem 由一次性赋值改为对 CrosshairViewModel 的属性绑定（`LoadPresets()` 会替换整个列表实例，原写法弹窗内删除后不刷新） |
-| ViewModels/CrosshairViewModel.cs | +34/-3 | `SavePresetWithNameAsync` 重名处理：已存在同名预设时末尾追加数字序号（`x`→`x (1)`→`x (2)`；名称自带 ` (n)` 序号时从下一号续起），Toast/`CurrentPresetName` 使用最终名称 |
-| UtcToLocalTimeConverter.cs | +27/-0 | 新增 UTC DateTime → 本地时间字符串转换器（`yyyy-MM-dd HH:mm`），供创建时间绑定 |
+| ViewModels/CrosshairViewModel.cs | +36/-3 | `SavePresetWithNameAsync` 重名处理：已存在同名预设时末尾追加数字序号（`x`→`x (1)`→`x (2)`；名称自带 ` (n)` 序号时从下一号续起，超长序号 TryParse 防御），Toast/`CurrentPresetName` 使用最终名称 |
+| UtcToLocalTimeConverter.cs | +26/-0 | 新增 UTC DateTime → 本地时间字符串转换器（`yyyy-MM-dd HH:mm`），供创建时间绑定 |
 | App.xaml | +3/-0 | 注册 `UtcToLocalTimeConverter` 资源（代码构建的模板内亦直接实例化） |
 | Localization/Strings{,.zh-CN,.en}.resx | +3/each | 新增键 `Preset.CreatedAt`（创建时间 / Created at） |
 
@@ -32,7 +109,7 @@
 ## [2026-10-14] style: 布尔选项行改为药丸开关（标签居左、开关居右）
 
 **类型**: style
-**提交**: 未提交（工作区）
+**提交**: cdf152f（当时为工作区变更，后与后续样式调整合并入该提交）
 **风险**: LOW
 
 ### 变更文件
@@ -52,7 +129,7 @@
 ## [2026-10-14] fix: 游戏配置导航图标改为设置样式
 
 **类型**: fix
-**提交**: 未提交（工作区）
+**提交**: cdf152f（当时为工作区变更，后随该提交入库）
 **风险**: LOW
 
 ### 变更文件
@@ -69,7 +146,7 @@
 ## [2026-10-14] fix: 加快 SmoothScrollViewer 滚轮滚动速度
 
 **类型**: fix
-**提交**: 未提交（工作区）
+**提交**: cdf152f（当时为工作区变更，后随该提交入库）
 **风险**: LOW
 
 ### 变更文件
@@ -165,7 +242,7 @@
 ## [2026-10-14] feat: 统一 Apex/CS2 配置页排版，配置管理移至底部并支持生成配置文件
 
 **类型**: feat
-**提交**: 未提交
+**提交**: cdf152f（当时为工作区变更，后随该提交入库）
 **风险**: MEDIUM
 
 ### 变更文件

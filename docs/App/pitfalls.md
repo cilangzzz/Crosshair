@@ -283,3 +283,13 @@ OverlayWindow.RenderCrosshair 绘制 TShape 为倒 T（竖线朝下，注释说�
 ## 22. 全局热键只注册了切换键
 
 MainWindow.RegisterHotkeys 仅注册 `Ctrl+Shift+X`（toggle-crosshair）。`OnHotkeyTriggered` 中保留 `IncreaseSize` / `DecreaseSize` 分支（Size ±5），但没有对应的热键绑定——新增调节大小热键时需在 RegisterHotkeys 中补充注册，否则分支是死代码。
+
+## 23. 单实例 Mutex 校验
+
+`App.OnStartup` 最先创建命名 Mutex `Local\CrosshairPro.SingleInstance`（`createdNew=false` 即重复启动），经 `ExitAsAlreadyRunning()` 弹本地化提示后 `Shutdown()`。改动启动流程时注意：
+
+- 构造函数需 try/catch `UnauthorizedAccessException`：同名互斥体已存在但当前用户无权打开时（如同会话管理员实例先启动、或名称被其他程序占用）构造会抛异常，不捕获会在 DispatcherUnhandledException 注册前直接崩溃（已实测复现），应按"已在运行"走同一优雅退出路径
+- 校验位于 `LocalizationProvider.Initialize()` 之前，此时语言尚未恢复——`App.ReadSavedLanguage()` 同步读 appstate.json 取语言偏好。不要改回 `LoadStateAsync().GetAwaiter().GetResult()`：UI 线程 sync-over-async，await 续延派回 Dispatcher 而 Dispatcher 正在执行 OnStartup，会死锁
+- `OnExit` 主动 `ReleaseMutex()` + `Dispose()`；`ReleaseMutex` 在线程未持有时抛异常（退出路径已提前 Dispose 并置空字段），需 try/catch 兜底
+- Mutex 用 `Local\` 而非 `Global\`：准心覆盖层按登录会话隔离，多用户会话内各允许一个实例
+- appstate.json 路径来自 `Core.CrosshairProPaths.AppStateFile`（与 JsonConfigRepository 同源），不要重新硬编码 `%APPDATA%\CrosshairPro` 路径

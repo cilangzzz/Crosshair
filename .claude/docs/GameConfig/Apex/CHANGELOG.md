@@ -1,5 +1,25 @@
 # Apex Legends 配置变更日志
 
+## [2026-10-14] fix: 启动项生成通道与 settings.cfg 解耦，UI 分区重构
+
+**类型**: fix
+**提交**: 部分（b546b85）
+**风险**: MEDIUM
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| src/CrosshairPro.Core/Models/ApexLaunchOptions.cs | ~2 处 | `GenerateOptionsString()`：`+fps_max` 改条件输出（`FpsMax > 0`），移除 `+cl_fovScale`（随 b546b85 提交，详见 [Core/CHANGELOG](../../../Core/CHANGELOG.md) 同日条目） |
+| src/CrosshairPro.App/Views/GamePages/ApexPage.xaml | +90/-93 | 自定义启动面板移除与游戏设置卡重复的「游戏设置」组（信箱比例移入「窗口」组）；独立「游戏设置」卡并入「启动选项」卡作下半分区；父子联动（级联阴影←启用阴影、体积雾←体积光照、倍镜滑杆←独立倍镜开关，ElementName 绑定 IsChecked→IsEnabled）；子项取消缩进与父项同列；父开关经 UI 点击关闭时子开关值同步置 0（Click 处理器，见 App/CHANGELOG 同日条目） |
+| docs/GameConfig/Apex/pitfalls.md | ~§6 | 无条件输出坑点改写为已调整状态（fps_max 条件化、cl_fovScale 移除） |
+| docs/GameConfig/Apex/launch-options.md | ~3 处 | 生成规则表 FpsMax/ClFovScale 行更新；补充 settings.cfg 为主通道说明 |
+
+### 影响范围
+- **数据流**: fps_max/cl_showfps/cl_showpos/cl_fov_scale 常规配置单一来源为 settings.cfg；**结构化生成通道**（自定义面板）的启动项默认值不再覆盖游戏设置——启动项预设字符串与文本模式行为未变，选用预设或手填后仍可能覆盖 settings.cfg
+- **协议**: 生成规则变化只影响结构化生成（自定义模式）；预设字符串与文本模式不变
+
+---
+
 ## [2026-09-01] feat: add Chinese localization support
 
 **类型**: feat
