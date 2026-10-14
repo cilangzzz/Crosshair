@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using CrosshairPro.Core;
 using CrosshairPro.Core.Interfaces;
 using CrosshairPro.Core.Models;
 
@@ -18,11 +19,9 @@ public class JsonConfigRepository : IConfigRepository, IAppStateRepository
 
     public JsonConfigRepository()
     {
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var appPath = Path.Combine(appDataPath, "CrosshairPro");
-        Directory.CreateDirectory(appPath);
-        _configFilePath = Path.Combine(appPath, "config.json");
-        _stateFilePath = Path.Combine(appPath, "appstate.json");
+        Directory.CreateDirectory(CrosshairProPaths.AppDirectory);
+        _configFilePath = Path.Combine(CrosshairProPaths.AppDirectory, "config.json");
+        _stateFilePath = CrosshairProPaths.AppStateFile;
 
         _jsonOptions = new JsonSerializerOptions
         {
