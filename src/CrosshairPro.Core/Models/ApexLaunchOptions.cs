@@ -99,10 +99,11 @@ public partial class ApexLaunchOptions : ObservableObject
             if (Height > 0) options.Add($"-h {Height}");
         }
 
-        options.Add($"+fps_max {FpsMax}");
+        // fps_max / cl_showfps / cl_showpos / cl_fovScale 由 settings.cfg（游戏设置卡）管理，
+        // 启动项仅在显式配置时输出，避免默认值覆盖 settings.cfg
+        if (FpsMax > 0) options.Add($"+fps_max {FpsMax}");
         if (ClShowfps > 0) options.Add($"+cl_showfps {ClShowfps}");
         if (ClShowpos) options.Add("+cl_showpos 1");
-        if (ClFovScale > 0) options.Add($"+cl_fovScale \"{ClFovScale:F2}\"");
         if (MatLetterboxAspectMin > 0) options.Add($"+mat_letterbox_aspect_min {MatLetterboxAspectMin:F1}");
         if (MRawinput) options.Add("+m_rawinput 1");
 

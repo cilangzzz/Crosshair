@@ -60,53 +60,10 @@ public partial class GameProfile : ObservableObject
                 },
                 new GameProfile
                 {
-                    Id = "builtin-csgo",
-                    DisplayName = "CS:GO",
-                    ProcessName = "csgo",
-                    Priority = 90
-                },
-                new GameProfile
-                {
-                    Id = "builtin-valorant",
-                    DisplayName = "Valorant",
-                    ProcessName = "VALORANT-Win64-Shipping",
-                    Priority = 100,
-                    FullscreenOnly = true
-                },
-                new GameProfile
-                {
                     Id = "builtin-apex",
                     DisplayName = "Apex Legends",
                     ProcessName = "r5apex",
                     Priority = 100
-                },
-                new GameProfile
-                {
-                    Id = "builtin-overwatch2",
-                    DisplayName = "Overwatch 2",
-                    ProcessName = "Overwatch",
-                    Priority = 100
-                },
-                new GameProfile
-                {
-                    Id = "builtin-pubg",
-                    DisplayName = "PUBG",
-                    ProcessName = "TslGame",
-                    Priority = 90
-                },
-                new GameProfile
-                {
-                    Id = "builtin-fortnite",
-                    DisplayName = "Fortnite",
-                    ProcessName = "FortniteClient-Win64-Shipping",
-                    Priority = 90
-                },
-                new GameProfile
-                {
-                    Id = "builtin-r6",
-                    DisplayName = "Rainbow Six Siege",
-                    ProcessName = "RainbowSix",
-                    Priority = 90
                 }
             };
         }
