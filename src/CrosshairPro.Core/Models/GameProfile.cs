@@ -35,6 +35,12 @@ public partial class GameProfile : ObservableObject
     private bool _isSelected;
 
     /// <summary>
+    /// 显示名称本地化键（非空时 UI 优先取 Strings 资源，空则直接显示 DisplayName）
+    /// </summary>
+    [ObservableProperty]
+    private string? _displayNameLocKey;
+
+    /// <summary>
     /// 检查是否匹配进程名
     /// </summary>
     public bool Matches(string processName)
@@ -63,6 +69,14 @@ public partial class GameProfile : ObservableObject
                     Id = "builtin-apex",
                     DisplayName = "Apex Legends",
                     ProcessName = "r5apex",
+                    Priority = 100
+                },
+                new GameProfile
+                {
+                    Id = "builtin-pcopt",
+                    DisplayName = "PC Optimization",
+                    DisplayNameLocKey = "Games.PcOptimize",
+                    ProcessName = "",
                     Priority = 100
                 }
             };
