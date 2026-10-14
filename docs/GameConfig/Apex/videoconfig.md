@@ -27,8 +27,10 @@
 | `setting.defaultresheight` | int | 1080 | 分辨率高度 |
 | `setting.last_display_width` | int | 1920 | 上次显示宽度 |
 | `setting.last_display_height` | int | 1080 | 上次显示高度 |
-| `setting.m_nRefreshRate` | int | 60 | 刷新率 (Hz) |
+| `setting.m_nRefreshRate` | int | 144 | 刷新率 (Hz, 60-360) |
 | `setting.m_nResolutionScale` | int | 100 | 分辨率缩放百分比 (50-100) |
+
+应用模型提供 13 档分辨率选项（`ApexVideoConfig.ResolutionOptions`）：3840x2160、2560x1600、2560x1440、2560x1080、1920x1200、1920x1080、1680x1050、1600x900、1440x900、1280x1024、1280x960、1280x800、1280x720；通过 `ResolutionIndex` 选择，索引变更时自动同步 `defaultres`/`defaultresheight`。
 
 #### 1.2 窗口模式
 
@@ -43,7 +45,7 @@
 | 键名 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `setting.gamma` | float | 1.0 | 伽马值 (0.5-2.5, 越高越亮) |
-| `setting.m_flMonitorGamma` | float | 2.2 | 显示器伽马 |
+| `setting.m_flMonitorGamma` | float | 2.2 | 显示器伽马 (1.8-2.6) |
 
 ---
 
@@ -195,7 +197,23 @@
 
 ---
 
+## 应用侧序列化范围（重要）
+
+`ApexConfigService` 保存时**整体重写**文件，但只输出以下 23 个键：
+
+- 显示：`defaultres`、`defaultresheight`、`m_nRefreshRate`、`fullscreen`、`m_nWindowMode`、`gamma`（`F6` 格式化）
+- 画质：`mat_picmip`、`mat_forceaniso`、`mat_mip_linear`、`shadow_enable`、`csm_enabled`、`csm_cascade_res`、`particle_cpu_level`、`ssao_quality`、`volumetric_lighting`、`volumetric_fog`
+- 性能：`mat_vsync_mode`、`mat_antialias_mode`、`dvs_enable`
+- 物理：`cl_gib_allow`、`cl_ragdoll_maxcount`、`cl_ragdoll_self_collision`
+- 系统：`configversion`
+
+读取（解析）只识别其中 19 个键——`mat_mip_linear`、`csm_cascade_res`、`dvs_enable`、`cl_ragdoll_self_collision` 只写不读；上表其余键（`last_display_*`、`stream_memory`、`m_f*` 系列等）既不读也不写。**加载→保存一个真实 videoconfig.txt 会丢失所有未建模字段**，详见 [pitfalls.md](pitfalls.md)。
+
+---
+
 ## 配置模板
+
+以下模板为游戏协议参考示例。注意：应用内预设（`GetCompetitivePreset` / `GetHighQualityPreset`）只显式设置部分字段，其余字段保持模型默认值，且保存时按上述"应用侧序列化范围"输出。
 
 ### 竞技优化配置
 
@@ -272,5 +290,4 @@
 4. **编码格式**：保存为 UTF-8 无 BOM 格式
 
 ---
-**创建时间**: 2026-07-31
-**协议版本**: 1.0
+**协议版本**: 1.1

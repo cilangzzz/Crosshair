@@ -1,6 +1,6 @@
 # CS2 与 CrosshairPro 集成指南
 
-> 本文档说明 CS2 外部配置协议如何映射到 CrosshairPro 的 `GameConfigStrategy`、`GameProfile` 和 `GameConfig` 数据模型，并解释配置读写链路。
+> 本文档说明 CS2 外部配置协议如何映射到 CrosshairPro 的 `GameConfigStrategy`、`GameProfile` 和 `GameConfig` 数据模型，并解释配置读写链路。模型本体定义见 [data-model.md](data-model.md)。
 
 ---
 
@@ -9,7 +9,9 @@
 ```
 ┌──────────────────────────────────────────────────────────┐
 │                    CrosshairPro UI                       │
-│  GamesPage → Cs2Page → Cs2ConfigViewModel                │
+│  GamesPage(GamesViewModel)                               │
+│    → GamePageSelector("builtin-cs2" → Cs2Page)           │
+│    → Cs2ConfigViewModel（DI 单例，注册于 App.xaml.cs）    │
 └───────────────────────┬──────────────────────────────────┘
                         │
                         ▼
@@ -29,26 +31,29 @@
                         ▼
 ┌──────────────────────────────────────────────────────────┐
 │        Core Models                                       │
-│  GameProfile(cs2.exe) ──→ GameConfig                     │
-│           │                                               │
-│           ▼                                               │
+│  GameProfile(BuiltIn, cs2) ──→ GameConfig                │
+│           │                                              │
+│           ▼                                              │
 │  GameConfigStrategy(builtin-cs2)                         │
 │  ├─ Sections[video, game]                                │
-│  └─ Items[fullscreen, resolution, fps_max, ...]          │
+│  └─ Items[fullscreen, resolution, aspect_ratio,          │
+│           refresh_rate, fps_max, cl_showfps]             │
 └───────────────────────┬──────────────────────────────────┘
                         │
                         ▼
 ┌──────────────────────────────────────────────────────────┐
 │        持久化 / 检测                                      │
 │  %APPDATA%/CrosshairPro/gameconfigs/builtin-cs2.json     │
-│  Steam\userdata\<id>\730\local\cfg\video.txt (应用前)     │
-│  Steam\userdata\<id>\730\local\cfg\config.cfg (应用前)   │
+│  Steam\userdata\<id>\730\local\cfg\video.txt (协议参考)   │
+│  Steam\userdata\<id>\730\local\cfg\config.cfg (协议参考)  │
 └──────────────────────────────────────────────────────────┘
 ```
 
+**DI 注册**：`IGameConfigService → GameConfigService` 注册于 `Application/DI/ServiceCollectionExtensions.cs`；`Cs2ConfigViewModel`（单例）注册于 `App/App.xaml.cs`。
+
 ---
 
-## 2. GameProfile 映射
+## 2. GameProfile 映射与实际加载流程
 
 CS2 在 `GameProfile.BuiltIn.GetAll()` 中的注册：
 
@@ -69,18 +74,25 @@ new GameProfile
 |------|-----|------|
 | `Id` | `builtin-cs2` | 与 `GameConfigStrategy.GameId` 一致 |
 | `ProcessName` | `cs2` | 进程名（CS2.exe → cs2） |
-| `Priority` | 100 | 高优先级，覆盖默认准心 |
+| `Priority` | 100 | 高优先级 |
 | `FullscreenOnly` | false（默认） | CS2 窗口化也支持准心叠加 |
 
-**自动切换流程**：
+**实际加载流程（当前实现）**：
 
 ```
-1. MainViewModel 启动后台 GameDetectionService
-2. 轮询 Process.GetProcessesByName("cs2")
-3. 匹配到 cs2.exe → GameProfile.Matches("cs2") = true
-4. 加载 PresetId 关联的准心预设 → OverlayWindow 显示
-5. 用户退出 CS2 → OverlayWindow 隐藏
+1. GamesViewModel 构造时加载 GameProfile.BuiltIn.GetAll()（默认选中 Apex）
+2. 用户点击 "Counter-Strike 2" → SelectedGame 变更 → CurrentGameId = "builtin-cs2"
+3. GamesPage 的 GamePageSelector 按 gameId 路由：builtin-cs2 → Cs2Page
+4. Cs2Page.Loaded → 从 DI 容器取 Cs2ConfigViewModel → DataContext 绑定
+5. Cs2ConfigViewModel.LoadAsync()：
+   a. GetStrategy("builtin-cs2") — 为 null 时状态栏显示 Path.NotFound
+   b. GetConfigAsync("builtin-cs2") — 读 JSON / 生成默认配置
+   c. 按 Strategy.Sections 包装为 Sections 集合（ConfigSectionWrapper）
+   d. LaunchOptions / LaunchOptionsLength 赋值
+   e. IsCs2Running = IsProcessRunning("cs2")（Process.GetProcessesByName）
 ```
+
+> **与旧文档的差异**：当前代码中**没有** `GameDetectionService`，也不存在"检测到 cs2.exe 自动切换 OverlayWindow 预设"的后台轮询。进程检测仅发生在 `Cs2ConfigViewModel` 内（加载时一次，及 `RefreshRunningStateCommand` 手动刷新），且 `IsCs2Running` / `RefreshRunningStateCommand` 目前**未在 Cs2Page.xaml 中绑定**，UI 不渲染该状态。按进程自动切换准心仍属未实现功能（`GameProfile.Matches`、`PresetId` 字段已就位，等待消费方）。
 
 ---
 
@@ -130,17 +142,17 @@ new GameConfigStrategy
 | `video.resolution` | Enum | `setting.defaultres` + `setting.defaultresheight` | `video.txt` | `1920x1080` |
 | `video.aspect_ratio` | Enum | （无直接对应，由分辨率推断） | `video.txt` | `16:9` |
 | `video.refresh_rate` | Int | `setting.refreshrate` | `video.txt` | 144 |
-| `game.fps_max` | Int | `fps_max` | `config.cfg` 或 `autoexec.cfg` | 0（无限制） |
-| `game.cl_showfps` | Bool | `cl_showfps` | `config.cfg` 或 `autoexec.cfg` | 0（false） |
+| `game.fps_max` | Int | `fps_max` | `autoexec.cfg`（推荐，避免 config.cfg 云同步冲突） | 0（无限制） |
+| `game.cl_showfps` | Bool | `cl_showfps` | `autoexec.cfg`（推荐） | 0（false） |
 
 ### 3.2 分区与文件对应
 
 ```
 Sections[video] ──→ 写入 video.txt
-Sections[game]  ──→ 写入 config.cfg 或 autoexec.cfg
+Sections[game]  ──→ 写入 autoexec.cfg（推荐）或 config.cfg
 ```
 
-> **注意**：`GameConfigService.ApplyConfigAsync` 目前是 stub，实际写入游戏配置文件需要按本协议实现。
+> **注意**：`GameConfigService.ApplyConfigAsync` 目前是空实现（`Task.CompletedTask` + TODO），CrosshairPro **不写入任何游戏配置文件**。上表的"写入位置"是协议目标，实际写入需按本节与 §4/§5 实现。
 
 ---
 
@@ -161,11 +173,11 @@ CS2 Strategy 中定义的视频项对应 `video.txt` 的实际键：
 "setting.defaultres"    "1920"
 "setting.defaultresheight" "1080"
 
-// "16:9" → 计算宽高比标记（CS2 通过分辨率自动推断）
+// "16:9" → 由分辨率自动推断
 // 当前 Strategy 不写入 aspect_ratio，仅作 UI 提示
 ```
 
-### 写入示例
+### 写入示例（未实现的协议参考代码）
 
 ```csharp
 private async Task WriteVideoConfigAsync(
@@ -175,7 +187,7 @@ private async Task WriteVideoConfigAsync(
     // 1. 备份原文件
     await BackupConfigFileAsync(videoTxtPath);
 
-    // 2. 读取现有内容
+    // 2. 逐行 patch（UTF-8 无 BOM），未命中的行原样保留
     var lines = await File.ReadAllLinesAsync(videoTxtPath, new UTF8Encoding(false));
     var newLines = new List<string>();
 
@@ -223,7 +235,7 @@ CS2 Strategy 的 `game` 分区对应游戏设置：
 | `fps_max` | `fps_max` | `autoexec.cfg`（推荐） |
 | `cl_showfps` | `cl_showfps` | `autoexec.cfg` |
 
-### autoexec.cfg 写入示例
+### autoexec.cfg 写入示例（未实现的协议参考代码）
 
 ```csharp
 private async Task WriteAutoExecAsync(
@@ -287,6 +299,8 @@ public string LaunchOptions { get; set; } = "";
 LaunchOptions = "-novid -high -threads 8 -freq 144 +exec autoexec.cfg";
 ```
 
+**CrosshairPro 当前行为**：`Cs2ConfigViewModel` 提供启动项编辑框（`LaunchOptions`，`UpdateSourceTrigger=PropertyChanged` 实时更新字符计数 `LaunchOptionsLength`，经本地化键 `Cs2.LaunchOptionsChars` 显示），以及"复制到剪贴板"按钮（`CopyLaunchOptionsCommand`，成功提示 `Cs2.SavedToClipboard`）。常量 `MaxLaunchOptionsLength = 1000` 已定义但保存时尚未据此校验（见 [pitfalls.md](pitfalls.md) 第 9 节）。
+
 ### 6.1 启动参数模板
 
 CrosshairPro UI 可以提供预设模板：
@@ -300,7 +314,7 @@ CrosshairPro UI 可以提供预设模板：
 
 ### 6.2 启动参数写入
 
-启动参数不属于游戏配置文件，而是 Steam UI 中的"启动选项"字段。CrosshairPro 写入位置：
+启动参数不属于游戏配置文件，而是 Steam UI 中的"启动选项"字段。Steam 存储位置：
 
 ```
 Steam 安装路径\userdata\<SteamID3>\config\localconfig.vdf
@@ -309,7 +323,7 @@ Steam 安装路径\userdata\<SteamID3>\config\localconfig.vdf
 
 **实现建议**：
 - 通过 Steamworks SDK 或 `ISteamApps` 接口写入
-- 或在 UI 中引导用户手动粘贴
+- 或在 UI 中引导用户手动粘贴（当前即此模式：复制到剪贴板）
 
 > 当前 `GameConfigService` **不**修改 Steam 启动参数，仅保存在 `GameConfig.LaunchOptions` 中供用户参考。
 
@@ -317,58 +331,69 @@ Steam 安装路径\userdata\<SteamID3>\config\localconfig.vdf
 
 ## 7. 数据流
 
-### 7.1 读取流程
+### 7.1 读取流程（Cs2ConfigViewModel.LoadAsync）
 
 ```
 1. 用户在 GamesPage 选择 "Counter-Strike 2"
    │
-2. Cs2ConfigViewModel 加载
+2. Cs2ConfigViewModel.LoadAsync()
    │ IGameConfigService.GetStrategy("builtin-cs2")
-   │ → GameConfigStrategy
+   │ → null 时 StatusMessage = Path.NotFound，直接返回
    │
 3. IGameConfigService.GetConfigAsync("builtin-cs2")
-   │ 优先读 %APPDATA%/CrosshairPro/gameconfigs/builtin-cs2.json
-   │ 不存在则根据 Strategy.DefaultValue 创建
+   │ 命中 _configCache 直接返回
+   │ 否则读 %APPDATA%/CrosshairPro/gameconfigs/builtin-cs2.json
+   │ 文件不存在 / 解析失败 → CreateDefaultConfig（按 Strategy.DefaultValue 填充）
    │
-4. UI 绑定 ConfigItemWrapper 显示配置项
+4. 按 Strategy.Sections 构建 ObservableCollection<ConfigSectionWrapper>
+   │ ConfigItemWrapper 从 settings 取值，未命中回退 DefaultValue
+   │
+5. LaunchOptions / LaunchOptionsLength / IsCs2Running 赋值，StatusMessage 清空
 ```
 
-### 7.2 保存流程
+### 7.2 保存流程（SaveCommand → SaveAsync）
 
 ```
-1. 用户在 UI 中修改 fullscreen / resolution / fps_max
-   │ ConfigItemWrapper 触发 INotifyPropertyChanged
+1. 用户在 UI 中修改 fullscreen / resolution / fps_max 等
+   │ ConfigItemWrapper.OnValueChanged 同步写入 settings 字典
    │
-2. Cs2ConfigViewModel 收集 Settings 字典
+2. SaveAsync 重新 GetConfigAsync（命中缓存取回同一实例）
+   │ config.LaunchOptions = LaunchOptions
+   │ 遍历 Sections，将非 null 的 item.Value 写入 config.Settings
    │
 3. IGameConfigService.SaveConfigAsync(GameConfig)
-   │ 序列化为 JSON
-   │ 写入 %APPDATA%/CrosshairPro/gameconfigs/builtin-cs2.json
+   │ 更新 _configCache → 序列化 JSON（WriteIndented）
+   │ → 写入 %APPDATA%/CrosshairPro/gameconfigs/builtin-cs2.json
    │
-4. （可选）IGameConfigService.ApplyConfigAsync("builtin-cs2")
-   │ 检查 cs2.exe 是否运行
-   │ 备份并 patch video.txt / config.cfg / autoexec.cfg
+4. 成功：StatusMessage + Toast（Cs2.SaveSuccess）
+   失败：StatusMessage + Toast（Cs2.SaveFailed，含异常消息）
 ```
 
-### 7.3 应用流程（写入游戏）
+### 7.3 重置流程（ResetCommand → ResetAsync）
 
 ```
-ApplyConfigAsync("builtin-cs2")
+ResetAsync
+   ├─ IGameConfigService.ResetToDefaultAsync("builtin-cs2")
+   │   └─ CreateDefaultConfig → SaveConfigAsync（覆盖 builtin-cs2.json）
+   ├─ LoadAsync()（重新加载默认值到 UI）
+   └─ Toast（Cs2.ResetSuccess）
+```
+
+### 7.4 应用流程（写入游戏，未实现）
+
+```
+ApplyConfigAsync("builtin-cs2")   ← 当前为 TODO stub，直接返回 CompletedTask
    │
-   ├─ 检测 cs2.exe
+   ├─ （计划）检测 cs2.exe
    │   ├─ 运行中：跳过写入，仅保存 CrosshairPro 配置
    │   └─ 未运行：继续
-   │
-   ├─ 备份 video.txt / autoexec.cfg
-   │
-   ├─ 写入 video.txt（patch 而非覆盖）
-   │
-   ├─ 写入/追加 autoexec.cfg
-   │
-   └─ 输出："已应用 CS2 配置"
+   ├─ （计划）备份 video.txt / autoexec.cfg
+   ├─ （计划）写入 video.txt（patch 而非覆盖）
+   ├─ （计划）写入/追加 autoexec.cfg
+   └─ （计划）输出："已应用 CS2 配置"
 ```
 
-> **当前状态**：`ApplyConfigAsync` 是 TODO stub，集成时需要按本节实现。
+> **当前状态**：CrosshairPro 仅保存配置到本地 JSON，不写游戏文件。实现时按 §4/§5 的参考代码与 [pitfalls.md](pitfalls.md) 的防御点进行。
 
 ---
 
@@ -388,15 +413,13 @@ GameProfile (cs2)
    │
    ├─ Preset (Crosshair) → OverlayWindow
    │
-   └─ GameConfig (video/game) → video.txt / config.cfg
+   └─ GameConfig (video/game) → builtin-cs2.json（暂不写游戏文件）
 ```
 
 ### 8.2 切换游戏
-1. 检测到 cs2.exe
-2. 加载该 `GameProfile.PresetId` 关联的 `Preset`
-3. 同时加载该 `GameProfile.Id` 关联的 `GameConfig`
-4. `OverlayWindow` 显示准心（Preset）
-5. 游戏应用配置（GameConfig → 写入游戏）
+1. 用户在 GamesPage 选择游戏（当前为手动选择，无进程自动切换）
+2. 加载该 `GameProfile.PresetId` 关联的 `Preset`（字段已定义，切换联动未实现）
+3. `GamePageSelector` 路由到对应游戏页，页面加载该 `GameProfile.Id` 关联的 `GameConfig`
 
 ---
 
@@ -426,7 +449,7 @@ GameProfile (cs2)
 | CrosshairPro 深度集成 | 仅 Strategy | 完整服务（`IApexConfigService`） | 仅 Strategy |
 
 **集成优先级**：
-- CS2: 通用 Strategy ✅
+- CS2: 通用 Strategy + 专用页面（Cs2Page/Cs2ConfigViewModel）✅
 - Apex: 专用服务（备份/恢复/导入导出）✅
 - CS:GO: 复用 CS2 Strategy ✅
 - 其他: 仅通用 Strategy
@@ -440,13 +463,15 @@ GameProfile (cs2)
 - [ ] `GameConfigService.GetStrategy("builtin-cs2")` 返回有效策略
 - [ ] `GameConfigService.GetConfigAsync("builtin-cs2")` 读取 `builtin-cs2.json`
 - [ ] 修改配置后 `SaveConfigAsync` 持久化
-- [ ] `ApplyConfigAsync` 检测 cs2.exe，未运行时写入
+- [ ] `ApplyConfigAsync` 从 stub 升级为真实实现：检测 cs2.exe，未运行时写入
 - [ ] video.txt 写入使用 UTF-8 无 BOM
 - [ ] autoexec.cfg 追加而非覆盖
 - [ ] 写入前备份原文件
-- [ ] LaunchOptions 不超过 1000 字符
+- [ ] 启动项长度校验落地：`Cs2ConfigViewModel.MaxLaunchOptionsLength = 1000` 常量已定义但 `SaveAsync` 尚未据此拒绝/警告
+- [ ] `IsCs2Running` / `RefreshRunningStateCommand` 目前未在 Cs2Page.xaml 绑定，如需显示运行状态需补 UI
 - [ ] VAC 白名单：仅写入本协议定义的字段
 - [ ] 检测 cs2.exe 与 csgo.exe 同存情况，分别路由
+- [ ] UI 绑定依赖 Sections/Items 顺序（见 [pitfalls.md](pitfalls.md) 第 18 节），调整策略定义顺序需同步修改 Cs2Page.xaml
 
 ---
 
@@ -457,8 +482,9 @@ GameProfile (cs2)
 - [launch-options.md](launch-options.md) - 启动参数说明
 - [data-model.md](data-model.md) - 数据结构定义
 - [pitfalls.md](pitfalls.md) - CS2 配置坑点
-- [Application/README.md](../Application/README.md) - 服务注册与 DI
-- [Core/data-model.md](../Core/data-model.md) - GameConfig/GameProfile 模型
+- [Application/README.md](../../Application/README.md) - 服务注册与 DI
+- [Core/data-model.md](../../Core/data-model.md) - GameConfig/GameProfile 模型
+- [App/README.md](../../App/README.md) - Cs2Page / ConfigItemWrapper / ToastNotification
 
 ---
 

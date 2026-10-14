@@ -1,62 +1,25 @@
-# CrosshairPro.Infrastructure 变更日志
+# Changelog - Infrastructure
 
-所有重要的变更都将记录在此文件中。
-
-格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)。
-
-## [Unreleased]
-
-### 新增
-- 待添加
-
-## [1.0.0] - 2024-06-XX
-
-### 新增
-- 初始版本发布
-- Win32 API 封装：
-  - 窗口操作 API（SetWindowPos, GetWindowRect 等）
-  - 热键操作 API（RegisterHotKey, UnregisterHotKey）
-  - 消息窗口 API（CreateWindowEx, DestroyWindow）
-  - 键盘操作 API（VkKeyScan, GetKeyState）
-  - DWM 操作 API（DwmExtendFrameIntoClientArea）
-- Win32 常量定义：
-  - 窗口样式常量（WS_EX_*, WS_*）
-  - 热键修饰符常量（MOD_*, WM_HOTKEY）
-  - SetWindowPos 标志（SWP_*）
-  - 窗口层级常量（HWND_*）
-- Win32 结构体：
-  - RECT, POINT, MARGINS
-  - WNDCLASS
-- HotkeyManager 实现：
-  - 全局热键注册和注销
-  - 热键触发事件通知
-  - 组合键解析（Ctrl+Shift+Key）
-  - 自动 ID 分配
-- 辅助方法：
-  - SetWindowTransparentClickable: 设置窗口透明点击穿透
-  - SetWindowInteractive: 设置窗口可交互
-  - GetVirtualKeyCode: 虚拟键码映射
-
-### 技术细节
-- 使用 P/Invoke 调用 Win32 API
-- 支持 `unsafe` 代码块（项目配置）
-- 实现 `IDisposable` 接口管理资源
-- 使用 `SetLastError = true` 支持 Win32 错误码获取
-- 支持特殊键和组合键映射
+> 模块变更历史。最新变更在最上方。
+> 排查问题时优先阅读本文件。
 
 ---
 
-## 版本说明
+## [2026-06-07] Initial commit
 
-### 版本号规则
-- **主版本号**: 重大架构变更或不兼容的 API 修改
-- **次版本号**: 新增功能，保持向后兼容
-- **修订号**: Bug 修复和小改进
+**类型**: feat
+**提交**: e649a4f
+**风险**: LOW
 
-### 变更类型
-- `新增`: 新增功能
-- `变更`: 现有功能的变更
-- `弃用`: 即将移除的功能
-- `移除`: 已移除的功能
-- `修复`: Bug 修复
-- `安全`: 安全相关的修复
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| CrosshairPro.Infrastructure.csproj | +16/-0 | 项目文件：net8.0、AllowUnsafeBlocks=true、项目引用 Core |
+| Hotkey/HotkeyManager.cs | +247/-0 | 热键管理器实现：WinHotkeyProvider 封装 RegisterHotKey/UnregisterHotKey，创建隐藏消息窗口并在 WndProc 中处理 WM_HOTKEY |
+| Win32/Win32Constants.cs | 未跟踪 | 文件存在于工作区（79 行）但从未提交——被根 .gitignore 第 26 行 `[Ww][Ii][Nn]32/` 规则误伤，不在 e649a4f 提交中 |
+| Win32/Win32Methods.cs | 未跟踪 | 同上（297 行）：P/Invoke 封装 RegisterHotKey/RegisterClass/CreateWindowEx 等；HotkeyManager 直接引用这两个类型，全新 clone 后模块无法编译 |
+
+### 影响范围
+- **基础功能**: 热键注册、Win32 消息窗口创建
+- **版本控制警告**: Win32/ 目录下两个源文件不在版本控制中，revert 或重新克隆会静默丢失它们；修复方式为在 .gitignore 追加 `!src/CrosshairPro.Infrastructure/Win32/`（或将目录改名避开该规则）后补交
+- **合并说明**: 同日的 31ecd78（Merge remote main: keep comprehensive .gitignore）将本提交内容并入主线，对模块无新增改动

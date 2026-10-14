@@ -271,6 +271,23 @@ host_writeconfig
 
 ---
 
+## CrosshairPro 中的启动项
+
+CrosshairPro 不写入 Steam 启动项，仅作为"草稿本"保存与传递：
+
+| 行为 | 实现 |
+|------|------|
+| 编辑 | `Cs2ConfigViewModel.LaunchOptions`（`ObservableProperty`，实时更新字符计数） |
+| 字符计数 | `LaunchOptionsLength` → 本地化键 `Cs2.LaunchOptionsChars` |
+| 复制到剪贴板 | `CopyLaunchOptionsCommand` → `Clipboard.SetText`，提示 `Cs2.SavedToClipboard` |
+| 持久化 | `GameConfig.LaunchOptions` → `%APPDATA%\CrosshairPro\gameconfigs\builtin-cs2.json` |
+| 长度上限 | 常量 `MaxLaunchOptionsLength = 1000` 已定义，保存时尚未强制校验（见 [pitfalls.md](pitfalls.md#9-启动参数长度限制)） |
+| 写入 Steam | 不支持；用户需手动粘贴到 Steam 启动选项（存储于 `localconfig.vdf`） |
+
+模板建议见 [integration.md](integration.md#61-启动参数模板)。
+
+---
+
 ## 数据模型
 
 ### LaunchOptions
@@ -381,6 +398,8 @@ type CommandParam =
 
 - [config.md](config.md) - 游戏配置详解
 - [video.md](video.md) - 视频配置详解
+- [integration.md](integration.md) - CrosshairPro 启动项集成
+- [pitfalls.md](pitfalls.md) - 启动参数长度限制等坑点
 - [Total CS2 Commands](https://totalcsgo.com/command)
 - [Valve Developer Wiki](https://developer.valvesoftware.com/wiki/Counter-Strike_2)
 

@@ -1,149 +1,98 @@
 # CrosshairPro.Core
 
-核心层模块，定义所有模型、接口和枚举。所有其他模块都依赖此模块。
+核心层（基础层）模块：定义全部数据模型、业务接口和枚举，本身不含业务实现，被其他所有模块依赖。
 
 ## 概述
 
-Core 模块是整个应用的基石，提供：
-- 数据模型（CrosshairConfig、Preset、EffectsConfig、AppPersistedState 等）
-- 业务接口（IConfigRepository、IAppStateRepository、ICrosshairRenderer、IHotkeyManager）
-- 枚举定义（CrosshairStyle、AppState）
+- 源码位置：`src/CrosshairPro.Core`，共 18 个源文件（枚举 2 / 接口文件 4 / 模型文件 12）
+- 依赖 NuGet 包：CommunityToolkit.Mvvm 8.3.2（`ObservableObject` / `[ObservableProperty]`）、System.Text.Json 8.0.5（csproj 声明，Core 代码当前未直接使用）
+- 被依赖：CrosshairPro.Infrastructure、CrosshairPro.Services、CrosshairPro.Application、CrosshairPro.App
 
 ## 目录结构
 
 ```
 CrosshairPro.Core/
 ├── Enums/
-│   ├── AppState.cs           # 应用状态枚举
-│   ├── ConfigItemType.cs     # 配置项类型枚举（新增）
-│   └── CrosshairStyle.cs     # 准心样式枚举
+│   ├── AppState.cs            # 应用状态枚举（Idle/GameMode/CrosshairVisible/CrosshairHidden）
+│   └── CrosshairStyle.cs      # 准心样式枚举（6 种样式）
 ├── Interfaces/
-│   ├── IConfigRepository.cs  # 配置仓库接口 + IAppStateRepository + IPresetRepository
-│   ├── ICrosshairRenderer.cs # 准心渲染器接口
-│   ├── IGameDetector.cs      # 游戏检测器接口
-│   └── IHotkeyManager.cs     # 热键管理器接口
+│   ├── IConfigRepository.cs   # 一文件三接口：IConfigRepository + IAppStateRepository + IPresetRepository
+│   ├── ICrosshairRenderer.cs  # 准心渲染器接口 + RenderCompletedEventArgs
+│   ├── IGameDetector.cs       # 游戏检测器接口（仓库内暂无实现，预留）
+│   └── IHotkeyManager.cs      # 热键管理器接口（IDisposable）+ HotkeyTriggeredEventArgs
 └── Models/
-    ├── AppPersistedState.cs  # 应用持久化状态
-    ├── CrosshairConfig.cs    # 准心配置（主模型）
-    ├── EffectsConfig.cs      # 效果配置（描边、阴影、发光）
-    ├── GameConfig.cs         # 游戏配置数据（新增）
-    ├── GameConfigStrategy.cs # 游戏配置策略定义（新增）
-    ├── GameInfo.cs           # 游戏信息
-    ├── GameProfile.cs        # 游戏配置文件
-    ├── HotkeyBinding.cs      # 热键绑定
-    └── Preset.cs             # 预设
+    ├── ApexLaunchOptions.cs   # Apex 启动项模型，GenerateOptionsString() 生成命令行
+    ├── ApexSettingsConfig.cs  # Apex settings.cfg 字段映射（鼠标/帧率/FOV/网络/语音等）
+    ├── ApexVideoConfig.cs     # Apex videoconfig.txt 字段映射（分辨率/画质/性能等）
+    ├── AppPersistedState.cs   # 应用持久化状态（当前预设ID/修改标记/界面语言）
+    ├── CrosshairConfig.cs     # 准心配置主模型（含 Clone/CopyFrom）+ DisplayConfig
+    ├── EffectsConfig.cs       # 效果配置（OutlineConfig/ShadowConfig/GlowConfig）
+    ├── GameConfig.cs          # 单个游戏的配置数据（GameId + LaunchOptions + Settings 字典）
+    ├── GameConfigStrategy.cs  # 游戏配置策略 + ConfigItemType/ConfigItemDefinition/ConfigSectionDefinition
+    ├── GameInfo.cs            # 游戏信息 record + GameDetectedEventArgs
+    ├── GameProfile.cs         # 游戏档案（进程匹配/优先级）+ BuiltIn 内置 8 款游戏
+    ├── HotkeyBinding.cs       # 热键绑定 + HotkeyAction 枚举 + KeyCombo 结构
+    └── Preset.cs              # 预设模型（配置快照 + 元数据）
 ```
 
-## 核心模型
+注意：旧文档提到的 `Enums/ConfigItemType.cs` 已不存在，`ConfigItemType` 枚举现定义在 `Models/GameConfigStrategy.cs` 内。
 
-### CrosshairConfig
+## 枚举一览
 
-准心配置主模型，包含所有可配置项：
+| 枚举 | 定义位置 | 取值 |
+|------|----------|------|
+| AppState | Enums/AppState.cs | Idle / GameMode / CrosshairVisible / CrosshairHidden |
+| CrosshairStyle | Enums/CrosshairStyle.cs | Cross / Dot / Circle / TShape / XShape / CustomImage |
+| HotkeyAction | Models/HotkeyBinding.cs | ToggleCrosshair / SwitchPreset / ResetPosition / LockPosition / IncreaseSize / DecreaseSize |
+| ConfigItemType | Models/GameConfigStrategy.cs | Bool / Int / Enum / String |
 
-| 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| Id | string | GUID | 配置唯一标识 |
-| Name | string | "默认配置" | 配置名称 |
-| Style | CrosshairStyle | Cross | 准心样式 |
-| Size | int | 20 | 准心大小 |
-| Gap | int | 4 | 中心间隙 |
-| Thickness | int | 2 | 线条粗细 |
-| Color | string | "#00FF00" | 颜色（十六进制） |
-| Opacity | int | 100 | 不透明度（0-100） |
-| Brightness | int | 100 | 亮度（0-200） |
-| CenterSize | int | 4 | 中心点大小 |
-| Rotation | int | 0 | 旋转角度 |
-| CustomImagePath | string? | null | 自定义图片路径 |
-| Effects | EffectsConfig | new() | 效果配置 |
-| Display | DisplayConfig | new() | 显示配置 |
+数值与完整说明见 [data-model.md](data-model.md)。
 
-### AppPersistedState（新增）
+## 接口一览
 
-应用持久化状态，记录应用运行时状态：
+| 接口 | 职责 | 当前实现 |
+|------|------|----------|
+| IConfigRepository | 主配置加载/保存/重置/导入导出 | Services 层 JsonConfigRepository |
+| IAppStateRepository | 应用持久化状态读写（与 IConfigRepository 同文件定义） | JsonConfigRepository 同类实现 |
+| IPresetRepository | 预设增删改查与导入导出 | Services 层 JsonPresetRepository |
+| ICrosshairRenderer | 准心渲染 + RenderCompleted 事件 | Services 层 CrosshairRenderer |
+| IGameDetector | 游戏进程监控、游戏档案注册 | 暂无实现（预留） |
+| IHotkeyManager | 全局热键注册/注销 + HotkeyTriggered 事件 | Infrastructure 层 HotkeyManager |
 
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| CurrentPresetId | string? | 当前使用的预设ID |
-| IsConfigModified | bool | 当前配置是否已修改 |
+成员签名见 [data-model.md](data-model.md)。
 
-### EffectsConfig
+## 模型一览
 
-效果配置，包含三种效果：Outline（描边）、Shadow（阴影）、Glow（发光）
+| 模型 | 说明 |
+|------|------|
+| CrosshairConfig | 准心配置主模型；`Clone()` 深拷贝（新 GUID），`CopyFrom()` 原地复制（保留 Id） |
+| DisplayConfig | CrosshairConfig 的显示部分：显示器/鼠标穿透/置顶/位置偏移（定义于 CrosshairConfig.cs） |
+| EffectsConfig | 效果容器：OutlineConfig（描边）、ShadowConfig（阴影）、GlowConfig（发光） |
+| Preset | 预设 = CrosshairConfig 快照 + 游戏关联 + 热键 + IsDefault 标记 |
+| AppPersistedState | 启动恢复数据：CurrentPresetId、IsConfigModified、Language |
+| HotkeyBinding | 热键绑定：Combo 字符串 + HotkeyAction 动作；配套 KeyCombo 解析结构 |
+| GameProfile | 游戏档案：进程名匹配、优先级、预设关联；`BuiltIn.GetAll()` 提供内置 8 款游戏 |
+| GameInfo | 已检测到的游戏进程（record：ProcessName/DisplayName/ProcessId/StartTime） |
+| GameConfig | 单个游戏的配置数据：启动项字符串 + `Dictionary<string, object>` 设置字典 |
+| GameConfigStrategy | 游戏配置元数据：分区、配置项定义、配置文件路径模板 |
+| ApexVideoConfig | Apex `videoconfig.txt` 全量字段映射（59 个属性，含分辨率索引联动） |
+| ApexSettingsConfig | Apex `settings.cfg` 全量字段映射（鼠标/倍镜灵敏度/帧率/网络/语音等） |
+| ApexLaunchOptions | Apex 启动项，`GenerateOptionsString()` 生成完整命令行 |
 
-### Preset
+字段级说明见 [data-model.md](data-model.md)。
 
-预设模型，包含 CrosshairConfig 和元数据
+## 依赖关系
 
-### GameConfig（新增）
-
-游戏配置数据模型，存储单个游戏的配置数据：
-
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| GameId | string | 游戏ID（对应 GameProfile.Id） |
-| LaunchOptions | string | 启动项参数 |
-| Settings | Dictionary<string, object> | 配置项字典 |
-
-### GameConfigStrategy（新增）
-
-游戏配置策略定义，描述每个游戏支持的配置项和操作方式：
-
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| GameId | string | 游戏ID |
-| SupportsLaunchOptions | bool | 是否支持启动项 |
-| LaunchOptionsDescription | string? | 启动项说明 |
-| Sections | List<ConfigSectionDefinition> | 配置分区列表 |
-| ConfigFilePath | string? | 配置文件路径模板 |
-
-包含配套类型：
-- **ConfigItemType 枚举**：Bool, Int, Enum, String
-- **ConfigItemDefinition 类**：配置项元数据（Key, DisplayName, Type, DefaultValue, MinValue, MaxValue, Options, Description, RequiresRestart）
-- **ConfigSectionDefinition 类**：配置分区定义（Name, DisplayName, Items）
-
-## 接口定义
-
-### IConfigRepository
-
-配置持久化接口：
-- `LoadConfigAsync()` / `SaveConfigAsync(config)` - 主配置管理
-- `ExportConfigAsync(path, config)` / `ImportConfigAsync(path)` - 导入导出
-
-### IAppStateRepository（新增）
-
-应用状态持久化接口：
-- `LoadStateAsync()` - 加载应用状态
-- `SaveStateAsync(state)` - 保存应用状态
-
-### IPresetRepository
-
-预设管理接口：
-- `LoadPresetsAsync()` / `SavePresetAsync(preset)` / `DeletePresetAsync(id)`
-- `ExportPresetAsync(id, path)` / `ImportPresetAsync(path)`
-
-## 枚举定义
-
-### CrosshairStyle
-
-| 值 | 名称 | 说明 |
-|----|------|------|
-| 0 | Cross | 十字准心 |
-| 1 | Dot | 点状准心 |
-| 2 | Circle | 圆形准心 |
-| 3 | TShape | T形准心（倒T） |
-| 4 | XShape | X形准心 |
-| 5 | CustomImage | 自定义图片 |
-
-### ConfigItemType（新增）
-
-| 值 | 名称 | 说明 |
-|----|------|------|
-| 0 | Bool | 布尔开关 |
-| 1 | Int | 整数数值 |
-| 2 | Enum | 枚举选择 |
-| 3 | String | 字符串 |
+```
+Core（无外部项目依赖）
+ ↑ Infrastructure（Win32/热键）
+ ↑ Services（配置持久化/渲染）
+ ↑ Application（业务服务）
+ ↑ App（WPF UI）
+```
 
 ## 详细文档
 
-- [数据模型](data-model.md) - 所有模型的详细字段说明
-- [坑点](pitfalls.md) - 已知问题和注意事项
+- [数据模型](data-model.md) — 全部模型/接口/枚举的字段级说明、关系图、数值范围
+- [坑点](pitfalls.md) — 已知问题与注意事项
+- [变更日志](CHANGELOG.md) — 模块变更历史

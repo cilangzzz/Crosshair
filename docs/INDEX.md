@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-CrosshairPro 是一款 Windows 桌面准心覆盖工具，为 FPS 游戏玩家提供可自定义的准心叠加层。
+CrosshairPro 是一款 Windows 桌面准心覆盖工具，为 FPS 游戏玩家提供可自定义的准心叠加层，支持游戏配置管理（Apex Legends / CS2）与中英文本地化。
 
 **快速链接**:
 - [项目主文档](README.md)
@@ -13,17 +13,17 @@ CrosshairPro 是一款 Windows 桌面准心覆盖工具，为 FPS 游戏玩家�
 ## 模块文档
 
 ### Core - 核心层
-核心模型、接口和枚举定义，作为架构基础被所有模块依赖。
+核心模型、接口和枚举定义，作为架构基础被所有模块依赖。（18 个源文件）
 
 | 文档 | 描述 |
 |------|------|
 | [README](Core/README.md) | 模块概述、核心接口、枚举类型 |
-| [数据模型](Core/data-model.md) | CrosshairConfig、Preset、EffectsConfig 等模型详解 |
+| [数据模型](Core/data-model.md) | CrosshairConfig、Preset、GameProfile、Apex 系列模型详解 |
 | [坑点](Core/pitfalls.md) | 深拷贝陷阱、ObservableProperty、颜色格式等 |
 | [变更日志](Core/CHANGELOG.md) | 模块变更历史 |
 
 ### Infrastructure - 基础层
-Windows API 封装、热键管理、Win32 P/Invoke 声明。
+Windows API 封装、热键管理、Win32 P/Invoke 声明。（3 个源文件）
 
 | 文档 | 描述 |
 |------|------|
@@ -33,37 +33,44 @@ Windows API 封装、热键管理、Win32 P/Invoke 声明。
 | [变更日志](Infrastructure/CHANGELOG.md) | 模块变更历史 |
 
 ### Services - 数据层
-配置持久化、准心渲染实现，提供数据访问和渲染能力。
+配置持久化、准心渲染实现，提供数据访问和渲染能力。（3 个源文件）
 
 | 文档 | 描述 |
 |------|------|
-| [README](Services/README.md) | JsonConfigRepository、CrosshairRenderer |
+| [README](Services/README.md) | JsonConfigRepository、JsonPresetRepository、CrosshairRenderer |
 | [数据模型](Services/data-model.md) | JSON 序列化配置、数据流、缓存策略 |
 | [坑点](Services/pitfalls.md) | 文件锁、JSON 序列化、渲染性能、自定义图片等 |
 | [变更日志](Services/CHANGELOG.md) | 模块变更历史 |
 
 ### Application - 应用层
-业务服务抽象、依赖注入配置，隔离 UI 和数据实现。
+业务服务抽象、依赖注入配置，隔离 UI 和数据实现。（9 个源文件）
 
 | 文档 | 描述 |
 |------|------|
 | [README](Application/README.md) | IConfigurationService、IPresetService、DI 注册 |
+| [API: 配置服务](Application/api-configuration.md) | IConfigurationService/ConfigurationService 方法详解 |
+| [API: 游戏配置](Application/api-gameconfig.md) | IGameConfigService/IApexConfigService 方法详解 |
+| [API: 预设服务](Application/api-preset.md) | IPresetService/PresetService 方法详解 |
 | [数据模型](Application/data-model.md) | 服务接口、内部状态、数据流图 |
 | [坑点](Application/pitfalls.md) | 配置引用、深拷贝、默认预设保护等 |
 | [变更日志](Application/CHANGELOG.md) | 模块变更历史 |
 
 ### App - 表现层
-WPF 应用入口、UI 层、窗口和控件实现。
+WPF 应用入口、UI 层、窗口和控件实现。（41 个源文件）
 
 | 文档 | 描述 |
 |------|------|
-| [README](App/README.md) | MainWindow、OverlayWindow、主题系统 |
-| [数据模型](App/data-model.md) | MainViewModel、自定义控件、Design Tokens |
+| [README](App/README.md) | MainWindow、OverlayWindow、页面导航、本地化、主题系统 |
+| [数据模型](App/data-model.md) | ViewModel、自定义控件、Design Tokens |
 | [坑点](App/pitfalls.md) | 透明窗口、Shape 渲染、配置深拷贝等 |
 | [变更日志](App/CHANGELOG.md) | 模块变更历史 |
 
-### GameConfig - 游戏配置层
-游戏配置文件协议、字段定义、解析规则。
+### GameConfig - 游戏配置层（配置文档模块，无独立源码目录）
+游戏配置文件协议、字段定义、解析规则与 CrosshairPro 游戏配置功能。
+
+| 文档 | 描述 |
+|------|------|
+| [总览](GameConfig/README.md) | 两种配置通道（Apex 专用 / 通用策略）、配置文件存放规则、内置游戏档案 |
 
 #### Apex Legends
 
@@ -74,6 +81,7 @@ WPF 应用入口、UI 层、窗口和控件实现。
 | [settings](GameConfig/Apex/settings.md) | 游戏设置详细选项 |
 | [launch-options](GameConfig/Apex/launch-options.md) | 启动参数详解 |
 | [数据模型](GameConfig/Apex/data-model.md) | 配置数据结构定义 |
+| [坑点](GameConfig/Apex/pitfalls.md) | Apex 配置坑点（文件格式、写入时机、备份等） |
 | [变更日志](GameConfig/Apex/CHANGELOG.md) | 配置协议变更历史 |
 
 #### Counter-Strike 2
@@ -86,46 +94,45 @@ WPF 应用入口、UI 层、窗口和控件实现。
 | [launch-options](GameConfig/CS2/launch-options.md) | 启动参数详解 |
 | [数据模型](GameConfig/CS2/data-model.md) | 配置数据结构定义 |
 | [integration](GameConfig/CS2/integration.md) | 与 CrosshairPro 集成指南（Strategy/Profile/Config 映射） |
-| [pitfalls](GameConfig/CS2/pitfalls.md) | CS2 配置坑点（VAC、云同步、编码、CS2 vs CS:GO 差异） |
+| [坑点](GameConfig/CS2/pitfalls.md) | CS2 配置坑点（VAC、云同步、编码、CS2 vs CS:GO 差异） |
 | [变更日志](GameConfig/CS2/CHANGELOG.md) | 配置协议变更历史 |
+
+### design - 设计文档
+
+| 文档 | 描述 |
+|------|------|
+| [tab-navigation-design](../.claude/docs/design/tab-navigation-design.md) | 标签页导航系统设计（权威位置 `.claude/docs/design/`） |
 
 ## 文档统计
 
-- **模块数**: 7
-- **文档文件**: 33+
-- **总行数**: 约 6500+ 行
-- **最后更新**: 2026-07-31
+- **模块目录**: 7（5 个代码模块 + GameConfig 配置层 + design 设计文档）
+- **文档文件**: 41（docs/ 树，含 README.md 与本索引；权威树 `.claude/docs/` 共 40 个 .md，design 仅存于权威树）
+- **最后更新**: 2026-10-13
 
 ## 最新变更
+
+### 2026-10-13 更新
+- 全文档体系增量更新：本地化（Localization）、Apex/CS2 配置页面、GameConfigService/ApexConfigService、JsonPresetRepository 等新内容入册
+- 新增 Application API 文档：[api-configuration](Application/api-configuration.md)、[api-gameconfig](Application/api-gameconfig.md)、[api-preset](Application/api-preset.md)
+- 新增 [GameConfig 总览](GameConfig/README.md)（两种配置通道、内置游戏档案）与 [Apex 坑点](GameConfig/Apex/pitfalls.md)
+- 主文档与索引对齐文件数口径（Core 18 / Infrastructure 3 / Services 3 / Application 9 / App 41 / GameConfig 16）
 
 ### 2026-09-01 更新
 - 完善 CS2 配置文档，新增集成指南与坑点文档
 - 新增 CS2 [integration.md](GameConfig/CS2/integration.md) - 与 CrosshairPro `GameConfigStrategy`/`GameProfile` 映射
 - 新增 CS2 [pitfalls.md](GameConfig/CS2/pitfalls.md) - VAC 边界、Steam 云同步冲突、CS2 vs CS:GO 命令差异、文件 patch 而非覆盖等
-- 更新 CS2 README/data-model/CHANGELOG 引用新文档
 
 ### 2026-07-31 更新
-- 新增 CS2 (Counter-Strike 2) 配置协议文档
-- 新增 CS2 视频配置详解 (video.md)
-- 新增 CS2 游戏配置详解 (config.md)
-- 新增 CS2 启动参数详解 (launch-options.md)
-- 新增 CS2 数据模型定义 (data-model.md)
-- 新增 Apex Legends 配置协议文档
-- 包含 videoconfig.txt 和 settings.cfg 完整字段定义
-- 提供数据模型、配置模板、优化建议
+- 新增 CS2 与 Apex Legends 配置协议文档（字段级 video/config/launch-options/data-model）
 - 新增游戏配置管理功能（GameConfig, GameConfigStrategy）
-- 新增 IGameConfigService 接口和 GameConfigService 实现
-- 支持 8 款主流 FPS 游戏配置
-- 新增页面导航系统（CrosshairPage, GamesPage）
-- 新增视图模型（CrosshairViewModel, GamesViewModel）
-- 新增自定义控件（TabNavItem, IconButton, PageTemplateSelector）
-- 新增主题辅助类和图标资源
+- 新增页面导航系统（CrosshairPage, GamesPage）与自定义控件（TabNavItem, IconButton, PageTemplateSelector）
 
 ## 文档导航
 
 ```
 docs/
 ├── README.md                 # 项目主文档
+├── INDEX.md                  # 本索引
 ├── Core/                     # 核心层
 │   ├── README.md
 │   ├── data-model.md
@@ -143,6 +150,9 @@ docs/
 │   └── CHANGELOG.md
 ├── Application/              # 应用层
 │   ├── README.md
+│   ├── api-configuration.md
+│   ├── api-gameconfig.md
+│   ├── api-preset.md
 │   ├── data-model.md
 │   ├── pitfalls.md
 │   └── CHANGELOG.md
@@ -151,13 +161,15 @@ docs/
 │   ├── data-model.md
 │   ├── pitfalls.md
 │   └── CHANGELOG.md
-└── GameConfig/               # 游戏配置层
+└── GameConfig/               # 游戏配置层（配置文档模块）
+    ├── README.md             # 总览：两种配置通道
     ├── Apex/                 # Apex Legends 配置
     │   ├── README.md
     │   ├── videoconfig.md
     │   ├── settings.md
     │   ├── launch-options.md
     │   ├── data-model.md
+    │   ├── pitfalls.md
     │   └── CHANGELOG.md
     └── CS2/                  # Counter-Strike 2 配置
         ├── README.md
@@ -168,6 +180,9 @@ docs/
         ├── integration.md
         ├── pitfalls.md
         └── CHANGELOG.md
+
+.claude/docs/design/          # 设计文档（权威位置，不在 docs/ 镜像内）
+└── tab-navigation-design.md
 ```
 
 ## 快速查找
@@ -191,25 +206,18 @@ docs/
 
 **预设管理**:
 - [Preset 模型](Core/data-model.md#preset)
-- [预设服务接口](Application/README.md#ipresetservice)
+- [预设服务 API](Application/api-preset.md)
 - [默认预设保护](Application/pitfalls.md#默认预设保护)
+
+**游戏配置**:
+- [两种配置通道总览](GameConfig/README.md)
+- [Apex 配置协议](GameConfig/Apex/README.md) · [Apex 配置服务 API](Application/api-gameconfig.md)
+- [CS2 配置协议](GameConfig/CS2/README.md) · [CS2 集成](GameConfig/CS2/integration.md) · [CS2 坑点](GameConfig/CS2/pitfalls.md)
 
 **WPF UI**:
 - [OverlayWindow](App/README.md#overlaywindow)
-- [MainViewModel](App/data-model.md#mainviewmodel)
+- [ViewModel 与控件](App/data-model.md)
 - [主题系统](App/README.md#主题系统)
-
-**游戏配置**:
-- [Apex 配置协议](GameConfig/Apex/README.md)
-- [Apex 视频配置](GameConfig/Apex/videoconfig.md)
-- [Apex 游戏设置](GameConfig/Apex/settings.md)
-- [Apex 启动参数](GameConfig/Apex/launch-options.md)
-- [CS2 配置协议](GameConfig/CS2/README.md)
-- [CS2 视频配置](GameConfig/CS2/video.md)
-- [CS2 游戏配置](GameConfig/CS2/config.md)
-- [CS2 启动参数](GameConfig/CS2/launch-options.md)
-- [CS2 与 CrosshairPro 集成](GameConfig/CS2/integration.md)
-- [CS2 配置坑点](GameConfig/CS2/pitfalls.md)
 
 ### 按问题查找
 
@@ -230,13 +238,17 @@ docs/
 → 查看 [Core/pitfalls.md](Core/pitfalls.md#深拷贝陷阱)
 → 查看 [Application/pitfalls.md](Application/pitfalls.md#配置引用问题)
 
+**问题: 写入游戏配置被拒/损坏？**
+→ 查看 [GameConfig/CS2/pitfalls.md](GameConfig/CS2/pitfalls.md) 与 [GameConfig/Apex/pitfalls.md](GameConfig/Apex/pitfalls.md)
+
 ## 贡献指南
 
 文档格式遵循:
-- Markdown 规范
-- 每个模块 4 个文件：README、data-model、pitfalls、CHANGELOG
-- README 控制在 200 行以内
-- 使用相对路径链接
+- Markdown 规范，中文书写
+- 代码模块文档：README（≤200 行）+ data-model + pitfalls + CHANGELOG；对外暴露服务的方法级详情拆入 api-{域}.md
+- GameConfig 按游戏分子目录：README + 字段级文档 + data-model + pitfalls + CHANGELOG
+- 同一事实只在一个模块文档中详述，其他模块用相对链接引用
+- 使用相对路径链接；权威文档树为 `.claude/docs/`，docs/ 为其同步镜像
 
 ## 许可证
 

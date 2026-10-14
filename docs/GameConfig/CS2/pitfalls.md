@@ -108,7 +108,7 @@ CS2 配置会随 Steam 云同步到其他机器。当用户：
 **缓解**：
 - 写入后延迟 5 秒再允许退出
 - 使用 `host_writeconfig` 命令确保 CS2 接管最终状态
-- CrosshairPro 配置保存到 `%APPDATA%/CrosshairPro/gameconfigs/builtin-cs2.json`，不直接覆盖游戏配置
+- CrosshairPro 配置保存到 `%APPDATA%/CrosshairPro/gameconfigs/builtin-cs2.json`，不直接覆盖游戏配置（当前实现即如此）
 
 ---
 
@@ -133,8 +133,8 @@ CS2 不会自动执行 `autoexec.cfg`，需要：
 在 CS2 控制台修改任何 cvar（如 `sensitivity 2`）会：
 
 1. 立即应用到当前会话
-3. 退出时自动写入 `config.cfg`
-4. 触发 Steam 云同步
+2. 退出时自动写入 `config.cfg`
+3. 触发 Steam 云同步
 
 **风险**：用户在控制台调试时不小心设置的临时值会被持久化，**覆盖** CrosshairPro 的修改。
 
@@ -161,7 +161,7 @@ cl_crosshairthickness: float, 0-5, step 0.1
 - `ConfigItemDefinition` 增加 `Step` 属性（`decimal`）
 - 或增加 `Float` 类型到 `ConfigItemType` 枚举
 
-**当前状态**：`Strategy` 中 `cl_crosshairsize` 等准心参数 **不在** CS2 策略中暴露（仅暴露 `fps_max`、`cl_showfps`、`fullscreen`、`resolution`），避开了精度问题。
+**当前状态**：`Strategy` 中 `cl_crosshairsize` 等准心参数 **不在** CS2 策略中暴露（仅暴露 `fullscreen`、`resolution`、`aspect_ratio`、`refresh_rate`、`fps_max`、`cl_showfps` 六项），避开了精度问题。
 
 ---
 
@@ -203,9 +203,10 @@ Steam 启动参数有长度限制（实测约 1023 字符）：
 - 用户配置复杂时（如多个 exec、自定义 cfg）可能超出限制
 - Steam UI 截断时无提示
 
-**CrosshairPro 处理**：
-- `GameConfig.LaunchOptions` 字段长度校验（< 1000 字符）
-- 超出时引导用户改用 `autoexec.cfg`
+**CrosshairPro 处理（当前实现）**：
+- `Cs2ConfigViewModel` 定义了常量 `MaxLaunchOptionsLength = 1000`，但 `SaveAsync` **尚未**据此做强制校验（既不拒绝保存也不弹警告）
+- UI 仅显示实时字符计数（`LaunchOptionsLength` → 本地化键 `Cs2.LaunchOptionsChars`），由用户自行判断
+- 超限时建议引导用户改用 `autoexec.cfg`（引导逻辑待实现）
 
 ---
 
@@ -260,7 +261,7 @@ video.txt 只读
 **建议**：
 - CrosshairPro 不应直接修改 `video.txt`
 - 而应通过 Steam 启动参数或 `autoexec.cfg` 间接影响游戏行为
-- 这是当前 `GameConfigService.ApplyConfigAsync` 仅保存而不写入游戏配置的设计原因
+- 这正是当前 `GameConfigService.ApplyConfigAsync` 仅保存而不写入游戏配置的设计原因
 
 ---
 
@@ -377,13 +378,59 @@ exec autoexec.cfg   ← 这行在 config.cfg 中
 
 用户复制了一段长配置（如 `-novid -high -threads 8 -freq 144 +exec autoexec.cfg +cl_cmdrate 128 ...`），超过 1023 字符时被截断。
 
-**CrosshairPro 处理**：
-- 检测 `LaunchOptions.Length > 950` 时警告用户
-- 建议改用 `autoexec.cfg` 存放长配置
+**CrosshairPro 处理（当前实现）**：
+- UI 实时显示字符计数（`LaunchOptionsSummary`），但**没有**实现"长度 > 950 自动警告"的逻辑
+- `MaxLaunchOptionsLength = 1000` 常量已定义，落地校验后应建议改用 `autoexec.cfg` 存放长配置
 
 ---
 
-## 18. 总结
+## 18. UI 绑定依赖分区/项顺序
+
+`Cs2Page.xaml` 通过**硬编码索引**绑定配置项，而非按键名查找：
+
+```xml
+<!-- video 分区 -->
+<CheckBox IsChecked="{Binding Sections[0].Items[0].Value, Mode=TwoWay}"/>   <!-- fullscreen -->
+<ComboBox SelectedItem="{Binding Sections[0].Items[1].Value, ...}"/>        <!-- resolution -->
+<ComboBox SelectedItem="{Binding Sections[0].Items[2].Value, ...}"/>        <!-- aspect_ratio -->
+<Slider Value="{Binding Sections[0].Items[3].Value, ...}"/>                 <!-- refresh_rate -->
+<!-- game 分区 -->
+<Slider Value="{Binding Sections[1].Items[0].Value, ...}"/>                 <!-- fps_max -->
+<CheckBox IsChecked="{Binding Sections[1].Items[1].Value, ...}"/>           <!-- cl_showfps -->
+```
+
+**坑点**：
+- 调整 `CreateCS2Strategy()` 中 Sections/Items 的定义顺序，或增删中间的配置项，会让页面**静默错绑**（类型不匹配时仅产生绑定错误，不抛异常）
+- 例如在 `video` 分区头部插入新项，`Items[1]` 不再是 `resolution`，分辨率下拉框会绑到别的键
+- 同理，`builtin-csgo` 克隆 CS2 策略，改 CS2 顺序会连带影响 csgo 页面（若未来为其建页）
+- **防御**：修改策略定义顺序时，必须同步检查 `Cs2Page.xaml` 的全部 `Sections[x].Items[y]` 绑定（UI 侧视角另见 [../../App/pitfalls.md](../../App/pitfalls.md) §17）
+
+**相关怪癖**：Cs2Page 底部"恢复默认/保存配置"按钮复用了 Apex 的本地化键（`Apex.ResetToDefault`、`Apex.SaveConfiguration`），文案可接受但语义上应改用独立的 `Cs2.*` 键。
+
+---
+
+## 19. JSON 反序列化后的类型还原
+
+`GameConfigService.GetConfigAsync` 用 `System.Text.Json` 反序列化 `GameConfig.Settings`（`Dictionary<string, object>`）。`object` 目标类型的值会被还原为 **`JsonElement`** 而非 CLR 原生类型：
+
+```
+builtin-cs2.json: "refresh_rate": 144
+  → GetConfigAsync: Settings["refresh_rate"] = JsonElement(144)
+  → ConfigItemWrapper.Value = JsonElement（非 int）
+```
+
+**影响**：
+- 首次使用（无 JSON 文件）时走 `CreateDefaultConfig`，值为 CLR 原生类型（`bool`/`int`/`string`），UI 绑定正常
+- 从 JSON 加载后，`ConfigItemWrapper.Value` 持有 `JsonElement`，WPF 绑定到 `bool?`（CheckBox）或 `double`（Slider）时可能转换失败，表现为绑定错误而非崩溃
+- 保存路径安全：`JsonElement` 可被 `JsonSerializer.Serialize` 正常写回，round-trip 无损
+
+**防御方向**（任选其一）：
+- 反序列化后立即将 `JsonElement` 归一化为原生类型（`GetBoolean()`/`GetInt32()`/`GetString()`）
+- 或 `ConfigItemWrapper` 在赋值 `Value` 前做类型转换
+
+---
+
+## 20. 总结
 
 CS2 配置协议实施时的关键防御点：
 
@@ -394,6 +441,7 @@ CS2 配置协议实施时的关键防御点：
 5. **备份**：修改前备份原文件
 6. **建议而非强写**：引导用户使用 autoexec.cfg，而非强行写入 config.cfg
 7. **准心分离**：CrosshairPro 的准心叠加独立于 CS2 的 `cl_crosshair*`
+8. **绑定顺序**：策略定义顺序与 Cs2Page.xaml 硬编码索引一一对应，改动需双向同步
 
 ---
 

@@ -1,6 +1,8 @@
 # CS2 配置数据模型
 
-## 数据结构定义
+> 分为两部分：CS2 游戏本身的配置协议数据模型（video.txt / config.cfg 字段），以及 CrosshairPro 侧的集成数据模型（`GameConfig` / `GameConfigStrategy` / `GameProfile`）。字段到 cvar 的写入映射见 [integration.md](integration.md)。
+
+## CS2 协议数据结构定义
 
 ### VideoConfig
 
@@ -406,81 +408,30 @@ enum TickRate {
 
 ## CrosshairPro 集成数据模型
 
-CS2 配置协议 → CrosshairPro `GameConfigStrategy(builtin-cs2)` 的字段映射。
+CS2 配置协议 → CrosshairPro 的字段映射与读写链路统一记录在 [integration.md](integration.md)。
 
-### GameProfile
+`GameProfile` / `GameConfig` / `GameConfigStrategy` / `ConfigItemDefinition` 的类结构、属性清单与默认值由 Core 模块权威定义，见 [../../Core/data-model.md](../../Core/data-model.md)（GameProfile / GameConfig / GameConfigStrategy 章节），此处不再重复罗列，仅保留 CS2 特有内容。
 
-```typescript
-interface GameProfile {
-  Id: "builtin-cs2";
-  DisplayName: "Counter-Strike 2";
-  ProcessName: "cs2";          // cs2.exe 主进程名
-  Priority: 100;
-  AutoSwitch: true;
-  FullscreenOnly: false;
-  PresetId?: string;            // 关联的准心预设
-}
-```
+### builtin-cs2 注册值（`GameProfile.BuiltIn.GetAll()`）
 
-### GameConfigStrategy
+`Id = "builtin-cs2"`、`DisplayName = "Counter-Strike 2"`、`ProcessName = "cs2"`、`Priority = 100`，其余字段取默认值。
 
-```typescript
-interface GameConfigStrategy {
-  GameId: "builtin-cs2";
-  SupportsLaunchOptions: true;
-  LaunchOptionsDescription: "CS2 启动项参数，如 -high -threads 12 -novid";
-  Sections: [
-    {
-      Name: "video",
-      DisplayName: "视频设置",
-      Items: [
-        { Key: "fullscreen",    Type: "Bool", DefaultValue: true },
-        { Key: "resolution",    Type: "Enum", DefaultValue: "1920x1080", Options: ["1920x1080","1680x1050","1600x900","1440x900","1280x1024","1280x960","1280x800","1280x720"] },
-        { Key: "aspect_ratio",  Type: "Enum", DefaultValue: "16:9", Options: ["16:9","16:10","4:3"] },
-        { Key: "refresh_rate",  Type: "Int",  DefaultValue: 144, MinValue: 60, MaxValue: 360 }
-      ]
-    },
-    {
-      Name: "game",
-      DisplayName: "游戏设置",
-      Items: [
-        { Key: "fps_max",    Type: "Int",  DefaultValue: 0,   MinValue: 0, MaxValue: 999, Description: "0 表示无限制" },
-        { Key: "cl_showfps", Type: "Bool", DefaultValue: false }
-      ]
-    }
-  ];
-}
-```
+### builtin-cs2 策略配置项（`GameConfigService.CreateCS2Strategy()`）
 
-### 字段映射表
+| 分区 | Key | Type | 默认值 | 约束 |
+|------|-----|------|--------|------|
+| video | `fullscreen` | Bool | `true` | — |
+| video | `resolution` | Enum | `"1920x1080"` | 1920x1080 / 1680x1050 / 1600x900 / 1440x900 / 1280x1024 / 1280x960 / 1280x800 / 1280x720 |
+| video | `aspect_ratio` | Enum | `"16:9"` | 16:9 / 16:10 / 4:3 |
+| video | `refresh_rate` | Int | `144` | Min 60，Max 360 |
+| game | `fps_max` | Int | `0` | Min 0，Max 999，"0 表示无限制" |
+| game | `cl_showfps` | Bool | `false` | — |
 
-| Strategy Key | Type | CS2 cvar / 配置键 | 写入文件 | 默认值 |
-|--------------|------|-------------------|----------|--------|
-| `video.fullscreen` | Bool | `setting.fullscreen` | `video.txt` | `1` |
-| `video.resolution` | Enum | `setting.defaultres` + `setting.defaultresheight` | `video.txt` | `1920x1080` |
-| `video.aspect_ratio` | Enum | （由分辨率推断，不直接写入） | — | `16:9` |
-| `video.refresh_rate` | Int | `setting.refreshrate` | `video.txt` | `144` |
-| `game.fps_max` | Int | `fps_max` | `autoexec.cfg` | `0`（无限制） |
-| `game.cl_showfps` | Bool | `cl_showfps` | `autoexec.cfg` | `0` |
+> `builtin-csgo` 策略由 `CreateCSGOStrategy()` 克隆 CS2 策略并改写 `GameId`，两者字段相同但配置互相独立。
 
-### GameConfig 持久化
+### GameConfig 持久化（CS2 实例）
 
-```typescript
-interface GameConfig {
-  GameId: "builtin-cs2";
-  LaunchOptions: string;        // Steam 启动参数，如 "-novid -high +exec autoexec.cfg"
-  Settings: {
-    "fullscreen": boolean;
-    "resolution": string;       // "1920x1080"
-    "aspect_ratio": string;     // "16:9"
-    "refresh_rate": number;     // 144
-    "fps_max": number;          // 0
-    "cl_showfps": boolean;
-  };
-}
-```
-
-**存储路径**：`%APPDATA%\CrosshairPro\gameconfigs\builtin-cs2.json`
+**存储路径**：`%APPDATA%\CrosshairPro\gameconfigs\builtin-cs2.json`（`System.Text.Json`，缩进格式）
 
 ```json
 {
@@ -497,7 +448,11 @@ interface GameConfig {
 }
 ```
 
-> 完整集成流程见 [integration.md](integration.md)，CS2 配置坑点见 [pitfalls.md](pitfalls.md)。
+**注意**：反序列化后 `Settings` 的值是 `JsonElement`（`System.Text.Json` 对 `object` 的默认行为），而非 CLR 原生类型；对 UI 绑定的影响见 [pitfalls.md](pitfalls.md#19-json-反序列化后的类型还原)。
+
+### UI 绑定包装类
+
+`Cs2ConfigViewModel` 通过 `ConfigSectionWrapper` / `ConfigItemWrapper`（`src/CrosshairPro.App/ViewModels/ConfigItemWrapper.cs`，App 模块）把 `ConfigSectionDefinition` / `ConfigItemDefinition` 包装为可绑定对象：`ConfigItemWrapper.Value` 变化时同步写回 settings 字典，未命中的键回退到 `DefaultValue`。包装类细节见 [../../App/README.md](../../App/README.md)。
 
 ---
 **创建时间**: 2026-07-31

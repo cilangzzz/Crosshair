@@ -1,187 +1,113 @@
-# CrosshairPro.Infrastructure 模块
+# CrosshairPro.Infrastructure
+
+基础层模块：Win32 API P/Invoke 封装与全局热键管理。所有与 Windows 系统交互的底层调用都收敛在本模块，上层只依赖 Core 的 `IHotkeyManager` 接口与本模块的封装方法。
 
 ## 概述
 
-基础层模块，封装 Windows API 和底层功能实现。提供 Win32 API P/Invoke 声明、热键管理、文件系统操作等基础能力。
+- **Win32 封装**：`Win32Methods`（P/Invoke 声明 + 窗口辅助方法 + 键码映射）、`Win32Constants`（常量与结构体）
+- **热键管理**：`HotkeyManager`（实现 Core 的 `IHotkeyManager`）+ `WinHotkeyProvider`（消息窗口 + `WM_HOTKEY` 分发）
+- **DI 注册**：`services.AddSingleton<IHotkeyManager, HotkeyManager>()`（位于 Application/DI/ServiceCollectionExtensions.cs）
 
-## 模块结构
+## 目录结构
 
 ```
 CrosshairPro.Infrastructure/
 ├── Hotkey/
-│   └── HotkeyManager.cs      # 热键管理器实现
+│   └── HotkeyManager.cs      # 热键管理：WinHotkeyProvider（消息窗口）+ HotkeyManager（绑定管理），同文件两个类
 ├── Win32/
-│   ├── Win32Constants.cs     # Win32 常量定义
-│   └── Win32Methods.cs       # Win32 API 方法封装
-└── IO/
-    └── (待扩展)
+│   ├── Win32Constants.cs     # Win32 常量（窗口样式/SWP/HWND/修饰键/消息/透明度）+ RECT/POINT/MARGINS 结构体
+│   └── Win32Methods.cs       # P/Invoke 声明（user32/dwmapi）+ 窗口辅助方法 + GetVirtualKeyCode + WNDCLASS 结构
+└── CrosshairPro.Infrastructure.csproj  # net8.0，AllowUnsafeBlocks=true，项目引用 Core
 ```
 
-## 核心组件
+（工作区中可见的 `IO/` 为空目录，未被 git 跟踪，属预留占位。）
 
-### 1. HotkeyManager - 热键管理器
+## 核心类
 
-**职责**: 实现 `IHotkeyManager` 接口，提供 Windows 系统热键注册和管理功能。
+### HotkeyManager — 对外热键管理器
 
-**实现类**:
-- `HotkeyManager`: 对外暴露的管理器，实现 `IHotkeyManager` 接口
-- `WinHotkeyProvider`: 内部实现，封装 Win32 热键 API
+实现 `Core.Interfaces.IHotkeyManager`，接口定义见 [../Core/README.md](../Core/README.md)。
 
-**主要功能**:
-- 注册全局热键
-- 注销热键
-- 热键触发事件通知
-- 支持组合键（Ctrl/Alt/Shift + Key）
+| 成员 | 说明 |
+|------|------|
+| `RegisterHotkey(HotkeyBinding)` | `KeyCombo.Parse` 解析 `binding.Combo` → `GetNextId()` 分配 ID → 注册到系统；成功才记录绑定 |
+| `UnregisterHotkey(string bindingId)` | 反查系统热键 ID（`FirstOrDefault`，O(n)）后注销 |
+| `UnregisterAll()` | 注销全部并清空两个映射字典 |
+| `HotkeyTriggered` 事件 | 热键触发，参数 `HotkeyTriggeredEventArgs`（携带原始 `HotkeyBinding`） |
+| `Dispose()` | 释放 `WinHotkeyProvider` 并清空绑定 |
 
-**使用示例**:
-```csharp
-var manager = new HotkeyManager();
-var binding = new HotkeyBinding
-{
-    Id = "toggle-crosshair",
-    Combo = "Ctrl+Shift+F1"
-};
+**行为要点**：
 
-// 注册热键
-manager.RegisterHotkey(binding);
+- 不检查 `binding.Enabled`——是否注册由调用方决定
+- 注册失败（键名无法解析或系统占用）返回 `false`，不写入任何映射字典、不占用系统热键（但 `GetNextId` 已消耗一个 ID，`_nextId` 计数器仍递增，注销后也不复用）
+- `HotkeyTriggered` 在消息窗口所在线程（UI 线程）同步触发
 
-// 监听热键触发
-manager.HotkeyTriggered += (sender, args) =>
-{
-    if (args.Binding.Id == "toggle-crosshair")
-    {
-        // 切换准心显示
-    }
-};
+### WinHotkeyProvider — Win32 热键底层
 
-// 注销热键
-manager.UnregisterHotkey("toggle-crosshair");
+与 `HotkeyManager` 同文件的公开类，封装系统热键 API（当前仅被 `HotkeyManager` 使用）：
 
-// 清理资源
-manager.Dispose();
-```
+| 成员 | 说明 |
+|------|------|
+| `Register(int id, KeyCombo combo)` | `GetVirtualKeyCode` 把键名转为虚拟键码后调用 `RegisterHotKey`；键码为 0 直接失败 |
+| `Unregister(int id)` | 注销单个热键并移除记录 |
+| `UnregisterAll()` | 遍历注销全部热键 |
+| `GetNextId()` | 分配热键 ID（从 1 递增，注销后不复用） |
+| `HotkeyPressed` 事件 | 消息窗口收到 `WM_HOTKEY` 时按 ID 触发 |
 
-### 2. Win32Constants - Win32 常量
+**消息窗口机制**：
 
-**职责**: 定义 Win32 API 使用的常量值。
+1. 构造时 `RegisterClass`（窗口类名 `CrosshairProHotkeyWindow`）+ `CreateWindowEx` 创建不可见消息窗口
+2. `WndProc` 委托保存在字段 `_wndProcDelegate`，防止被 GC 回收后非托管回调崩溃
+3. `WM_HOTKEY` 到达时从 `wParam` 取热键 ID 触发 `HotkeyPressed`，其余消息交给 `DefWindowProc`
+4. `Dispose` 中先 `UnregisterAll` 再 `DestroyWindow`
 
-**常量分类**:
+### Win32Methods — P/Invoke 与辅助方法
 
-| 分类 | 常量 | 说明 |
-|------|------|------|
-| 窗口扩展样式 | WS_EX_LAYERED | 分层窗口 |
-| | WS_EX_TRANSPARENT | 透明窗口（鼠标穿透） |
-| | WS_EX_TOPMOST | 置顶窗口 |
-| | WS_EX_TOOLWINDOW | 工具窗口（不显示在任务栏） |
-| 窗口样式 | WS_POPUP | 弹出窗口 |
-| | WS_VISIBLE | 可见窗口 |
-| 热键修饰符 | MOD_ALT | Alt 键 |
-| | MOD_CONTROL | Ctrl 键 |
-| | MOD_SHIFT | Shift 键 |
-| | MOD_WIN | Win 键 |
-| 消息 | WM_HOTKEY | 热键消息 |
-| 透明度 | LWA_ALPHA | Alpha 透明度标志 |
+`static partial class`，所有 DllImport 集中于此：
 
-**结构体**:
-- `RECT`: 矩形区域
-- `POINT`: 点坐标
-- `MARGINS`: 边距（用于 DWM）
+| 分组 | API |
+|------|-----|
+| 窗口操作 | `SetWindowPos`、`GetWindowRect`、`SetWindowLong`/`GetWindowLong`、`SetLayeredWindowAttributes`、`GetForegroundWindow`、`GetWindowThreadProcessId`、`GetWindowText`、`ShowWindow` |
+| 热键 | `RegisterHotKey`、`UnregisterHotKey` |
+| 消息窗口 | `CreateWindowEx`、`DestroyWindow`、`DefWindowProc`、`RegisterClass` |
+| 键盘 | `VkKeyScan`、`GetKeyState`、`GetAsyncKeyState` |
+| DWM | `DwmExtendFrameIntoClientArea`、`DwmSetWindowAttribute` |
 
-### 3. Win32Methods - Win32 API 方法
+**辅助方法**（非 P/Invoke，组合上述 API）：
 
-**职责**: 封装 Win32 API 的 P/Invoke 声明。
+| 方法 | 说明 |
+|------|------|
+| `SetWindowTransparentClickable(hWnd)` | 置 `WS_EX_LAYERED\|WS_EX_TRANSPARENT\|WS_EX_TOPMOST` + 置顶 + Alpha=255，即鼠标穿透置顶 |
+| `SetWindowInteractive(hWnd)` | 清除 `WS_EX_TRANSPARENT`，恢复鼠标交互 |
+| `GetVirtualKeyCode(key)` | 键名 → 虚拟键码，映射表见 [data-model.md](data-model.md)；单字符走 `VkKeyScan` 兜底，未知返回 0 |
 
-**API 分类**:
+### Win32Constants — 常量与结构体
 
-#### 窗口操作
-- `SetWindowPos`: 设置窗口位置和层级
-- `GetWindowRect`: 获取窗口矩形区域
-- `SetWindowLong`: 设置窗口扩展样式
-- `GetWindowLong`: 获取窗口扩展样式
-- `SetLayeredWindowAttributes`: 设置分层窗口属性
-- `GetForegroundWindow`: 获取前台窗口
-- `ShowWindow`: 显示窗口
+常量分组：窗口扩展样式（`WS_EX_*`）、窗口样式（`WS_POPUP`/`WS_VISIBLE`）、`SetWindowPos` 标志（`SWP_*`）、窗口层级（`HWND_TOPMOST` 等）、热键修饰键（`MOD_*`）、消息（`WM_HOTKEY` 等）、透明度（`LWA_*`）。完整取值表见 [data-model.md](data-model.md)。
 
-#### 热键操作
-- `RegisterHotKey`: 注册热键
-- `UnregisterHotKey`: 注销热键
-
-#### 消息窗口
-- `CreateWindowEx`: 创建窗口
-- `DestroyWindow`: 销毁窗口
-- `DefWindowProc`: 默认窗口过程
-- `RegisterClass`: 注册窗口类
-
-#### 键盘操作
-- `VkKeyScan`: 获取虚拟键码
-- `GetKeyState`: 获取键状态
-- `GetAsyncKeyState`: 获取异步键状态
-
-#### DWM 操作
-- `DwmExtendFrameIntoClientArea`: 扩展帧到客户区
-- `DwmSetWindowAttribute`: 设置窗口属性
-
-**辅助方法**:
-- `SetWindowTransparentClickable`: 设置窗口透明点击穿透
-- `SetWindowInteractive`: 设置窗口可交互
-- `GetVirtualKeyCode`: 获取虚拟键码（支持特殊键映射）
+结构体：`RECT`（含 `Width`/`Height` 计算属性）、`POINT`、`MARGINS`（DWM 扩展帧用）。
 
 ## 依赖关系
 
-**依赖**:
-- CrosshairPro.Core
+- **依赖**：仅 `CrosshairPro.Core`（`KeyCombo`、`HotkeyBinding`、`IHotkeyManager` 等类型定义在 Core）
+- **被项目引用**：Services、Application、App（均为 csproj 引用）
+- **实际代码消费**：Application/DI（注册单例）、App/MainWindow（注册并监听热键）；Win32 封装当前仅被模块内部热键管线使用
 
-**被依赖**:
-- CrosshairPro.Services
-- CrosshairPro.Application
-- CrosshairPro.App
+**热键数据流**（当前唯一注册的绑定：`"toggle-crosshair"`，`Ctrl+Shift+X`，`HotkeyAction.ToggleCrosshair`）：
 
-## 设计原则
-
-1. **P/Invoke 封装**: 所有 Win32 API 调用都封装在 `Win32Methods` 中
-2. **不安全代码**: 允许使用 `unsafe` 块（项目配置 `AllowUnsafeBlocks`）
-3. **资源管理**: 实现 `IDisposable` 接口，确保句柄正确释放
-4. **错误处理**: 使用 `SetLastError = true` 并检查返回值
-
-## 使用场景
-
-### 1. 创建透明点击穿透窗口
-
-```csharp
-// 获取窗口句柄
-var hwnd = new WindowInteropHelper(window).Handle;
-
-// 设置为透明点击穿透
-Win32Methods.SetWindowTransparentClickable(hwnd);
+```
+MainWindow.RegisterHotkeys()
+  → HotkeyManager.RegisterHotkey(binding)
+    → KeyCombo.Parse("Ctrl+Shift+X")
+    → WinHotkeyProvider.Register(id, combo)      # RegisterHotKey + 消息窗口
+用户按键 → WM_HOTKEY → WndProc → HotkeyPressed(id)
+  → HotkeyManager.OnHotkeyPressed → HotkeyTriggered(binding)
+  → MainWindow.OnHotkeyTriggered                 # 按 binding.Action 分发（Dispatcher.Invoke 回 UI 线程）
 ```
 
-### 2. 注册全局热键
+## 详细文档
 
-```csharp
-var manager = new HotkeyManager();
-manager.RegisterHotkey(new HotkeyBinding
-{
-    Id = "toggle",
-    Combo = "Ctrl+F1"
-});
-
-manager.HotkeyTriggered += (s, e) =>
-{
-    Console.WriteLine($"热键触发: {e.Binding.Id}");
-};
-```
-
-### 3. 获取前台窗口信息
-
-```csharp
-var hwnd = Win32Methods.GetForegroundWindow();
-Win32Methods.GetWindowThreadProcessId(hwnd, out var processId);
-var process = Process.GetProcessById(processId);
-Console.WriteLine($"前台窗口进程: {process.ProcessName}");
-```
-
-## 相关文档
-
-- [数据模型](data-model.md) - Win32 结构体和常量定义
-- [坑点](pitfalls.md) - P/Invoke 和资源管理陷阱
+- [数据模型](data-model.md) - Win32 结构体/常量表、虚拟键码映射、热键运行时数据
+- [坑点](pitfalls.md) - P/Invoke 与热键的已知陷阱
 - [变更日志](CHANGELOG.md) - 模块变更历史
+- 相关模型（`KeyCombo`/`HotkeyBinding`/`HotkeyAction`）定义在 Core：[../Core/data-model.md](../Core/data-model.md)

@@ -10,7 +10,7 @@
     <!-- ═══════════════════════════════════════════════════════════
          CONTROL STYLES — CrosshairPro
          Precision gaming UI, dark-mode, neon accent
-         All hover/focus transitions: 150ms CubicEase
+         Hover/focus transitions: mostly 150ms, ranging 100-250ms, CubicEase
          ═══════════════════════════════════════════════════════════ -->
 
     <!-- Shared easing for snappy gaming feel -->

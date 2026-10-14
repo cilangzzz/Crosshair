@@ -1,17 +1,20 @@
 # CrosshairPro.App - 数据模型
 
+本文档描述 App 层的 ViewModel、视图、控件、转换器、本地化与主题数据结构。
+共享模型（CrosshairConfig、GameProfile、GameConfig、ConfigItemDefinition 等）定义在 Core 模块，见 [../Core/data-model.md](../Core/data-model.md)；服务接口见 [../Application/data-model.md](../Application/data-model.md)。
+
 ## MainViewModel
 
-主视图模型，管理页面导航和全局状态。
+主 ViewModel，管理页面导航并转发子 ViewModel 的事件。
 
 ```csharp
 public partial class MainViewModel : ObservableObject
 {
     public CrosshairViewModel CrosshairViewModel { get; }
     public GamesViewModel GamesViewModel { get; }
-    
+
     [ObservableProperty] private PageType _currentPage = PageType.Crosshair;
-    
+
     public bool IsCrosshairPage => CurrentPage == PageType.Crosshair;
     public bool IsGamesPage => CurrentPage == PageType.Games;
 }
@@ -27,339 +30,377 @@ public enum PageType
 }
 ```
 
-### 属性说明
-
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| CrosshairViewModel | CrosshairViewModel | 准心配置页面 ViewModel |
-| GamesViewModel | GamesViewModel | 游戏配置页面 ViewModel |
-| CurrentPage | PageType | 当前页面 |
-| IsCrosshairPage | bool | 是否显示准心页面 |
-| IsGamesPage | bool | 是否显示游戏页面 |
-
 ### 事件
 
 | 事件 | 说明 |
 |------|------|
-| ConfigUpdated | 配置更新事件（转发自 CrosshairViewModel） |
+| ConfigUpdated | 配置更新（转发自 CrosshairViewModel） |
 | ToggleCrosshairRequested | 切换准心显示请求 |
 | SelectImageRequested | 选择自定义图片请求 |
 | SavePresetRequested | 保存预设请求 |
 | ImportPresetRequested | 导入预设请求 |
 | ExportPresetRequested | 导出预设请求 |
-| ToastRequested | Toast 通知请求 |
+| ToastRequested(string) | Toast 通知请求 |
 
-### 命令
+### 命令与业务方法
 
-| 命令 | 说明 |
+| 成员 | 说明 |
 |------|------|
-| NavigateToCrosshairCommand | 导航到准心配置页面 |
-| NavigateToGamesCommand | 导航到游戏配置页面 |
+| NavigateToCrosshairCommand | 导航到准心页面（更新 CurrentPage 并通知 Is*Page） |
+| NavigateToGamesCommand | 导航到游戏页面 |
+| SavePresetWithNameAsync(name) | 转发到 CrosshairViewModel |
+| ImportPresetFromFileAsync(filePath) | 转发到 CrosshairViewModel |
+| ExportPresetToFileAsync(filePath) | 转发到 CrosshairViewModel |
+
+构造函数中订阅 CrosshairViewModel 的全部事件并逐一转发给 MainWindow。
 
 ## CrosshairViewModel
 
-准心配置页面 ViewModel，管理准心配置、预设、预览渲染。
+准心配置页 ViewModel，管理准心配置、预设、状态持久化。
 
 ```csharp
 public partial class CrosshairViewModel : ObservableObject
 {
     [ObservableProperty] private CrosshairConfig _config;
     [ObservableProperty] private bool _isCrosshairVisible = true;
-    [ObservableProperty] private string _statusMessage = "准心已启用";
-    [ObservableProperty] private string _currentPresetName = "默认配置";
+    [ObservableProperty] private string _statusMessage;    // 初始值取 "Status.CrosshairEnabled"
+    [ObservableProperty] private string _currentPresetName; // 初始值取 "Preset.Default"
     [ObservableProperty] private int _selectedStyleIndex;
     [ObservableProperty] private List<Preset> _presets = new();
     [ObservableProperty] private Preset? _selectedPreset;
 }
 ```
 
-### 属性说明
+### 只读属性
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| Config | CrosshairConfig | 当前准心配置 |
-| IsCrosshairVisible | bool | 准心是否可见 |
-| StatusMessage | string | 状态栏消息 |
-| CurrentPresetName | string | 当前预设名称 |
-| SelectedStyleIndex | int | 选中的样式索引 |
-| Presets | List<Preset> | 预设列表 |
-| SelectedPreset | Preset? | 当前选中的预设 |
-| CrosshairStyleNames | string[] | 准心样式名称数组 |
-| PresetColors | string[] | 预设颜色数组 |
+| CrosshairStyleNames | string[] | 6 个样式名（Cross/Dot/Circle/TShape/XShape/CustomImage，构造时按当前语言取词） |
+| PresetColors | string[] | 8 个预设颜色（#00FF00、#00FFFF、#FFFF00、#FF0000、#FF00FF、#FFA500、#FFFFFF、#000000） |
+
+### 内部状态
+
+| 字段 | 说明 |
+|------|------|
+| _currentPresetId | 当前使用的预设 ID（持久化到 appstate） |
+| _isInitializing | 初始化标记，避免恢复预设时重复保存状态 |
 
 ### 事件
 
-| 事件 | 说明 |
-|------|------|
-| ConfigUpdated | 配置更新事件，通知 OverlayWindow 重绘 |
-| ToggleCrosshairRequested | 切换准心显示请求 |
-| SelectImageRequested | 选择自定义图片请求 |
-| SavePresetRequested | 保存预设请求 |
-| ImportPresetRequested | 导入预设请求 |
-| ExportPresetRequested | 导出预设请求 |
-| ToastRequested | Toast 通知请求 |
+ConfigUpdated、ToggleCrosshairRequested、SelectImageRequested、SavePresetRequested、ImportPresetRequested、ExportPresetRequested、ToastRequested（同 MainViewModel，见上表）。
 
 ### 命令
 
 | 命令 | 说明 |
 |------|------|
-| SetColorCommand | 设置准心颜色 |
-| SelectImageCommand | 选择自定义图片 |
-| ToggleCrosshairCommand | 切换准心显示 |
-| ResetConfigCommand | 重置配置为默认 |
-| SavePresetCommand | 保存当前配置为预设 |
-| ImportPresetCommand | 从文件导入预设 |
-| ExportPresetCommand | 导出当前配置到文件 |
-| DeletePresetCommand | 删除指定预设 |
+| SetColorCommand(color) | 设置准心颜色 |
+| SelectImageCommand | 触发 SelectImageRequested（MainWindow 弹文件对话框） |
+| ToggleCrosshairCommand | 切换 IsCrosshairVisible 并更新 StatusMessage |
+| ResetConfigCommand | 恢复默认配置（CreateDefaultConfig + CopyConfig），重置样式索引与预设 ID |
+| SavePresetCommand / ImportPresetCommand / ExportPresetCommand | 仅触发对应 Requested 事件，对话框由 MainWindow 处理 |
+| DeletePresetCommand(preset) | 删除预设（IsDefault = true 时直接返回） |
 
 ### 业务方法
 
 | 方法 | 说明 |
 |------|------|
-| SavePresetWithNameAsync(name) | 保存预设（由 MainWindow 调用） |
-| ImportPresetFromFileAsync(filePath) | 从文件导入预设 |
-| ExportPresetToFileAsync(filePath) | 导出当前配置到文件 |
+| SavePresetWithNameAsync(name) | 用 CloneConfig 深拷贝当前配置创建 Preset，保存并刷新列表，持久化当前预设 ID |
+| ImportPresetFromFileAsync(filePath) | ImportPresetAsync 导入后刷新列表并选中 |
+| ExportPresetToFileAsync(filePath) | 将当前配置（深拷贝）导出为预设文件 |
+| InitializeAsync（私有） | 恢复上次预设 ID → LoadPresets → 选中目标预设 → 触发 ConfigUpdated |
+| SubscribeConfigEvents（私有） | 递归订阅 Config / Effects / Outline / Shadow 的 PropertyChanged，触发 ConfigUpdated |
+
+`OnSelectedStyleIndexChanged` 将索引映射为 `CrosshairStyle` 枚举（带边界检查）；`OnSelectedPresetChanged` 复制预设配置、更新名称与 ID，非初始化状态下异步保存状态。
 
 ## GamesViewModel
 
-游戏配置页面 ViewModel，管理游戏特定配置。
+游戏配置页 ViewModel，仅负责内置游戏列表与选中管理（配置读写下沉到 Apex/Cs2 两个 ViewModel）。
 
 ```csharp
 public partial class GamesViewModel : ObservableObject
 {
     public ObservableCollection<GameProfile> Games { get; }
-    
+
+    [ObservableProperty] private string? _currentGameId;
     [ObservableProperty] private GameProfile? _selectedGame;
-    [ObservableProperty] private GameConfigStrategy? _currentStrategy;
-    [ObservableProperty] private GameConfig? _currentConfig;
-    [ObservableProperty] private bool _hasUnsavedChanges;
 }
 ```
 
-### 属性说明
+| 成员 | 说明 |
+|------|------|
+| Games | 来自 `GameProfile.BuiltIn.GetAll()` 的 8 个内置游戏（CS2、CS:GO、Valorant、Apex Legends、Overwatch 2、PUBG、Fortnite、Rainbow Six Siege），见 [../Core/data-model.md](../Core/data-model.md) |
+| CurrentGameId | 当前选中游戏 ID（GamesPage 的 ContentControl 绑定它驱动 GamePageSelector） |
+| SelectedGame | 当前选中的游戏，变更时同步 IsSelected 标记与 CurrentGameId |
+| SelectGameCommand(game) | 选择游戏（列表按钮绑定） |
+| SelectGameInternal(game) | 内部选中方法；构造时默认选中 `builtin-apex` |
+
+## ApexConfigViewModel
+
+Apex Legends 配置 ViewModel（单例），管理 videoconfig.txt、settings.cfg 与启动项，依赖 `IApexConfigService`（见 [../Application/README.md](../Application/README.md)）。videoconfig.txt / settings.cfg 的字段级协议与读写规则见 [../GameConfig/Apex/README.md](../GameConfig/Apex/README.md)。
+
+### 配置数据属性
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| Games | ObservableCollection<GameProfile> | 游戏列表 |
-| SelectedGame | GameProfile? | 当前选中的游戏 |
-| CurrentStrategy | GameConfigStrategy? | 当前游戏的配置策略 |
-| CurrentConfig | GameConfig? | 当前游戏的配置 |
-| HasUnsavedChanges | bool | 是否有未保存的更改 |
+| VideoConfig | ApexVideoConfig | 视频配置（分辨率/刷新率/Gamma/画质/垂直同步/抗锯齿等，模型在 Core） |
+| SettingsConfig | ApexSettingsConfig | 游戏设置（鼠标灵敏度/FOV/FPS/倍镜灵敏度等，模型在 Core） |
+| LaunchOptions | string | 启动项文本 |
+| CustomLaunchOptions | ApexLaunchOptions | 自定义启动项结构化选项（高性能/窗口/游戏/网络/调试分组） |
+| UseCustomLaunchOptions | bool | 是否使用自定义启动项（选择"自定义"预设时为 true） |
+| LaunchOptionsSummary | string | 汇总启动项显示（自定义模式下由 CustomLaunchOptions.GenerateOptionsString() 生成） |
+| IsApexInstalled | bool | Apex 是否检测到安装 |
+| VideoConfigPath / SettingsConfigPath | string | 配置文件路径（未找到时显示 "Path.NotFound" 文案） |
+| StatusMessage | string | 状态消息 |
 
-### 事件
+### 枚举选项集合（构造时按当前语言生成）
 
-| 事件 | 说明 |
+ResolutionOptions（13 档分辨率）、TextureQualityOptions（最高/-1～低/2）、WindowModeOptions（全屏/窗口/无边框）、ParticleLevelOptions、SsaoQualityOptions、VsyncOptions（关/开/三重缓冲）、AntialiasOptions（关/FXAA/TXAA/MSAA 2x/4x）、LaunchOptionPresets（竞技优化/高画质/调试模式/自定义）。
+
+### 备份历史
+
+| 属性 | 说明 |
 |------|------|
-| ToastRequested | Toast 通知请求 |
+| VideoConfigBackups / SettingsConfigBackups | ObservableCollection<BackupFileInfo>（BackupFileInfo 定义在 Application 的 IApexConfigService.cs） |
+| ShowVideoConfigHistory / ShowSettingsConfigHistory | 历史面板展开标记 |
 
 ### 命令
 
 | 命令 | 说明 |
 |------|------|
-| SaveConfigCommand | 保存配置 |
-| ResetConfigCommand | 重置为默认配置 |
-| ApplyConfigCommand | 应用配置到游戏 |
+| ReplaceVideoConfigCommand / ReplaceSettingsConfigCommand | OpenFileDialog 选择文件后替换目标配置 |
+| BackupVideoConfigCommand / BackupSettingsConfigCommand | 创建备份 |
+| ExportVideoConfigCommand / ExportSettingsConfigCommand | SaveFileDialog 导出 |
+| ToggleVideoConfigHistoryCommand / ToggleSettingsConfigHistoryCommand | 展开/收起历史并加载备份列表 |
+| RestoreVideoConfigBackupCommand / RestoreSettingsConfigBackupCommand(backup) | 从备份恢复并刷新 |
+| DeleteBackupCommand(backup) | 删除备份文件 |
+| CopyLaunchOptionsCommand | 复制当前生效的启动项到剪贴板 |
+| ApplyPresetCommand(name) | 应用竞技优化 / 高画质 / 默认预设（VideoConfig 整体替换） |
+| SaveCommand | 保存 VideoConfig + SettingsConfig + LaunchOptions（未安装时 Toast 提示） |
+| ResetCommand | 恢复默认并立即保存 |
 
-### 方法
+`OnSelectedLaunchPresetIndexChanged`：索引 0/1/2 分别填充竞技、高画质、调试启动项字符串；索引 3（自定义）置 UseCustomLaunchOptions = true。
 
-| 方法 | 说明 |
-|------|------|
-| GetSettingValue(key) | 获取配置项的值 |
-| SetSettingValue(key, value) | 设置配置项的值 |
+事件：`ToastRequested(string)`，由 ApexPage 订阅后用 ToastNotification.ShowIn 渲染。
 
-## OverlayWindow
+## Cs2ConfigViewModel
 
-准心叠加窗口，全屏透明置顶显示准心。
-
-### 关键属性
+Counter-Strike 2 配置 ViewModel（单例），基于 `IGameConfigService` 的 `builtin-cs2` 策略渲染可配置项。CrosshairPro 只保存配置到本地，不直接写入 video.txt / autoexec.cfg（避免与 VAC、Steam 云同步冲突）。CS2 配置协议与策略定义详见 [../GameConfig/CS2/README.md](../GameConfig/CS2/README.md)。
 
 ```csharp
-public sealed class OverlayWindow : Window
+public partial class Cs2ConfigViewModel : ObservableObject
 {
-    private readonly Canvas _canvas;           // 渲染画布
-    private readonly CrosshairConfig _config;  // 配置副本
-    private bool _isVisible = true;            // 可见性状态
-    private IntPtr _hwnd;                      // 窗口句柄
+    public ObservableCollection<ConfigSectionWrapper> Sections { get; } = new();
+
+    [ObservableProperty] private string _launchOptions = string.Empty;
+    [ObservableProperty] private int _launchOptionsLength;          // 联动 LaunchOptionsSummary
+    [ObservableProperty] private string _statusMessage = string.Empty;
+    [ObservableProperty] private bool _isCs2Running;                // 进程 "cs2" 检测
 }
 ```
 
-### Win32 扩展样式
+| 成员 | 说明 |
+|------|------|
+| LaunchOptionsSummary | 格式化字符数提示（"Cs2.LaunchOptionsChars"） |
+| LoadAsync() | 取策略 → 取配置 → 按 strategy.Sections 构建 Sections 包装 → 恢复启动项 → 检测进程 |
+| SaveCommand | 新建/取回配置，写回 LaunchOptions 与 Sections 内非 null 值，SaveConfigAsync 持久化 |
+| ResetCommand | ResetToDefaultAsync 后重新 LoadAsync |
+| CopyLaunchOptionsCommand | 启动项复制到剪贴板 |
+| RefreshRunningStateCommand | 重新检测 cs2 进程 |
+| ToastRequested | 事件，由 Cs2Page 订阅（Loaded 订阅 / Unloaded 退订） |
+
+`Sections[i].Items[j]` 的顺序由策略定义决定，Cs2Page.xaml 通过固定索引绑定（见坑点文档）。
+
+## ConfigItemWrapper / ConfigSectionWrapper
+
+配置项 UI 包装类（定义于 ViewModels/ConfigItemWrapper.cs），把 Core 的 `ConfigItemDefinition` / `ConfigSectionDefinition` 与实际设置字典连接起来供绑定。
 
 ```csharp
-private const int WS_EX_TRANSPARENT = 0x00000020;  // 鼠标穿透
-private const int WS_EX_TOOLWINDOW = 0x00000080;   // 工具窗口
+public partial class ConfigItemWrapper : ObservableObject
+{
+    public ConfigItemDefinition Definition { get; }  // 元数据（Key/DisplayName/Type/Min/Max/Options…）
+    [ObservableProperty] private object? _value;     // OnValueChanged 写回 _settings[Key]
+}
+
+public class ConfigSectionWrapper
+{
+    public string DisplayName { get; }
+    public List<ConfigItemWrapper> Items { get; }
+}
 ```
 
-### 渲染方法
+构造时从 `Dictionary<string, object?> settings` 取当前值，缺省用 `DefaultValue`；Value 变更即写回字典，Save 时统一收集。ConfigItemType 枚举见 [../Core/data-model.md](../Core/data-model.md)。
 
-| 方法 | 说明 |
+## OverlayWindow
+
+准心叠加窗口（`sealed class OverlayWindow : Window`），全屏透明置顶，WPF Shape 渲染。
+
+### 字段与事件
+
+```csharp
+private readonly Canvas _canvas;            // 渲染画布
+private readonly CrosshairConfig _config;   // 配置副本（独立实例）
+private bool _isVisible = true;             // 可见性状态
+private IntPtr _hwnd;                       // 窗口句柄
+
+public event EventHandler? CrosshairVisibilityChanged;
+public bool IsCrosshairVisible => _isVisible;
+```
+
+### 关键行为
+
+| 成员 | 说明 |
 |------|------|
-| UpdateConfig(config) | 更新准心配置 |
-| ToggleVisibility() | 切换显示/隐藏 |
-| RenderCrosshair() | 渲染准心到 Canvas |
-| AddLine/AddDot/AddCircle/AddImage | 添加不同形状 |
+| 构造 | WindowStyle.None、AllowsTransparency、Topmost、Focusable=false、尺寸=主屏；SourceInitialized 时加 `WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW`（不加 WS_EX_LAYERED） |
+| UpdateConfig(config) | `_config.CopyFrom(config)` 同步副本；内部订阅自身配置四级 PropertyChanged 自动重绘 |
+| ToggleVisibility() | 切换 Visibility 并触发 CrosshairVisibilityChanged |
+| RenderCrosshair() | 按样式绘制：Cross 四线 / Dot 圆点 / Circle 圆环 / TShape 倒 T（竖线朝下）/ XShape 四对角线 / CustomImage 加载图片（缺失或失败回退十字，加载失败另回退红色小十字） |
+| AddLine/AddDot/AddCircle/AddImage | 添加形状；描边通过先画黑色加粗底层实现；每个 Shape 单独设置 Opacity |
+| ApplyBrightness(color, brightness) | 亮度系数 100=原色、0=全黑、200=全白 |
+
+## 页面视图
+
+### CrosshairPage
+
+准心配置页（UserControl）：
+
+- 左侧 PreviewCard：`GridCanvas`（7x7 网格）+ `CrosshairCanvas`（准心），网格在下层
+- 右侧控制面板：样式 ComboBox（SelectedStyleIndex）、自定义图片按钮（SelectedStyleIndex==5 时可见）、大小/间隙/粗细/透明度/亮度/中心点滑块+数值框、预设颜色 RadioButton（GroupName="CrosshairColor"）+ 彩虹渐变自定义色按钮、效果 Expander（描边开关+粗细、阴影开关）
+- `SetViewModel(vm)` / `OnLoaded`：从 `Window.GetWindow(this).DataContext`（MainViewModel）取 CrosshairViewModel 并订阅 ConfigUpdated
+- `CustomColor_Click`：使用 `System.Windows.Forms.ColorDialog` 选色，直接写 `Config.Color`
+
+### GamesPage
+
+游戏配置页：顶部 ItemsControl 游戏按钮（IsSelected 高亮，绑定 SelectGameCommand）；内容区 ContentControl 绑定 `CurrentGameId`，由 GamePageSelector 切换模板。Loaded 时从主窗口 DataContext 取 GamesViewModel。
+
+### ApexPage / Cs2Page
+
+游戏子页面，均从 `App.Services` 解析各自 ViewModel（单例）：
+
+| 页面 | 加载行为 | Toast 处理 |
+|------|------|------|
+| ApexPage | OnLoaded 设置 DataContext 并订阅 ToastRequested（无退订） | ToastNotification.ShowIn(Panel) |
+| Cs2Page | OnLoaded 订阅 + await LoadAsync()；OnUnloaded 退订 | 同上 |
+
+### GamePageSelector / PageTemplateSelector
+
+两个 DataTemplateSelector：
+
+```csharp
+public class GamePageSelector : DataTemplateSelector
+{
+    public DataTemplate? ApexTemplate { get; set; }     // gameId == "builtin-apex"
+    public DataTemplate? Cs2Template { get; set; }      // gameId == "builtin-cs2"
+    public DataTemplate? DefaultTemplate { get; set; }  // 其他（"请选择游戏"提示）
+}
+
+public class PageTemplateSelector : DataTemplateSelector
+{
+    public DataTemplate? CrosshairTemplate { get; set; }  // PageType.Crosshair
+    public DataTemplate? GamesTemplate { get; set; }      // PageType.Games
+}
+```
 
 ## 自定义控件
 
 ### CrosshairPreview
 
-准心预览控件，在主窗口中显示准心预览。
-
-```csharp
-public class CrosshairPreview : Control
-{
-    public static readonly DependencyProperty ConfigProperty;
-    public CrosshairConfig? Config { get; set; }
-    
-    protected override void OnRender(DrawingContext dc);
-}
-```
+`Control` 子类，`Config` 依赖属性 + `OnRender` 绘制网格与各样式（预览尺寸放大 1.5 倍）。**注意：当前所有 XAML 均未引用该控件**——CrosshairPage 使用自己的双 Canvas 渲染预览。保留为可复用控件，但属于未接线代码。
 
 ### TabNavItem
 
-左侧导航栏图标项控件，支持选中态、悬停态、左侧指示条。
+左侧导航图标项（`Button` 子类）：
 
 ```csharp
-public class TabNavItem : Button
-{
-    public static readonly DependencyProperty IconGeometryProperty;
-    public static readonly DependencyProperty IsSelectedProperty;
-    
-    public string IconGeometry { get; set; }  // 图标几何资源键名
-    public bool IsSelected { get; set; }      // 是否选中
-}
+public string IconGeometry { get; set; }  // 图标资源键名（自动补 "IconGeometry" 后缀查找）
+public bool IsSelected { get; set; }      // 选中态
 ```
 
-### DialogBase
-
-对话框基类，提供统一的对话框样式。
-
-```csharp
-public class DialogBase : Window
-{
-    public static readonly DependencyProperty TitleTextProperty;
-    public static readonly DependencyProperty ShowCloseButtonProperty;
-    public static readonly DependencyProperty ShowButtonsProperty;
-    public static readonly DependencyProperty ConfirmButtonTextProperty;
-    public static readonly DependencyProperty CancelButtonTextProperty;
-    public static readonly DependencyProperty DialogContentProperty;
-    
-    public event RoutedEventHandler? Confirmed;
-    public event RoutedEventHandler? Cancelled;
-    
-    public static DialogBase CreateInputDialog(string title, string prompt, string defaultValue);
-    public string? GetInputResult();
-}
-```
-
-### ToastNotification
-
-Toast 通知控件，短暂显示后自动消失。
-
-```csharp
-public class ToastNotification : Control
-{
-    public static readonly DependencyProperty MessageProperty;
-    public static readonly DependencyProperty DurationProperty;
-    public static readonly DependencyProperty CornerRadiusProperty;
-    
-    public void Show(string message, int duration = 3);
-    public void Hide();
-    public static ToastNotification ShowIn(Panel container, string message, int duration = 3);
-}
-```
-
-### ToastManager
-
-Toast 通知管理器，创建独立的悬浮窗口显示通知。
-
-```csharp
-public static class ToastManager
-{
-    public static void Show(string message, int duration = 3, Window? owner = null);
-    public static void CloseAll();
-}
-```
+模板部件：`IconPath`（Path）、`Indicator`（左侧指示条 Border）、`BackgroundBorder`。选中时指示条用 AccentBrush、背景用 ControlBrush，图标填充 AccentBrush，否则 TextSecondaryBrush（指示条/背景透明）。
 
 ### IconButton
 
-图标按钮控件，支持内置图标和自定义 Path Geometry。
+图标按钮（`Button` 子类）依赖属性：`IconGeometry`（内置图标名，自动补 "IconGeometry" 后缀查找资源；传入原始 Path Data 字符串时资源查找必然失败、几何解析被跳过——该回退分支在当前 UpdateIconGeometry 实现中不可达）、`IconSize`（默认 16）、`IconColor`（Color?，默认绑定 Foreground）、`IconPosition`（IconPosition 枚举：Left/Right/Top/Bottom）、`IconSpacing`（默认 8）、`ShowIconOnly`。
+
+### DialogBase
+
+对话框基类（`Window` 子类），无边框透明、可拖动：
 
 ```csharp
-public class IconButton : Button
-{
-    public static readonly DependencyProperty IconGeometryProperty;
-    public static readonly DependencyProperty IconSizeProperty;
-    public static readonly DependencyProperty IconColorProperty;
-    public static readonly DependencyProperty IconPositionProperty;
-    public static readonly DependencyProperty IconSpacingProperty;
-    public static readonly DependencyProperty ShowIconOnlyProperty;
-}
+public string TitleText;        public bool ShowCloseButton;
+public bool ShowButtons;        public string ConfirmButtonText;
+public string CancelButtonText; public object DialogContent;
+
+public event RoutedEventHandler? Confirmed;
+public event RoutedEventHandler? Cancelled;
+public bool? ShowDialog(Window owner);
+public static DialogBase CreateInputDialog(string title, string prompt, string defaultValue = "");
+public string? GetInputResult();  // 从 Tag 中取输入框文本
 ```
 
-### PageTemplateSelector
+模板部件：`CloseButton`、`ConfirmButton`、`CancelButton`、`ButtonPanel`（ShowButtons=false 时隐藏）。Enter 确认 / Escape 取消。
 
-页面模板选择器，根据 PageType 选择对应的 DataTemplate。
+### ToastNotification / ToastManager
 
-```csharp
-public class PageTemplateSelector : DataTemplateSelector
-{
-    public DataTemplate? CrosshairTemplate { get; set; }
-    public DataTemplate? GamesTemplate { get; set; }
-    
-    public override DataTemplate? SelectTemplate(object item, DependencyObject container);
-}
+| 控件 | 形态 | 关键 API |
+|------|------|------|
+| ToastNotification | Control，加入指定 Panel 内 | `Show(message, duration=3)`、`Hide()`、`static ShowIn(Panel, message, duration=3)`；DispatcherTimer 定时后自动从容器移除 |
+| ToastManager | 独立置顶无边框悬浮窗口 | `static Show(message, duration=3, owner=null)`、`static CloseAll()`；200ms 淡入/淡出动画；定位优先取 owner 底部居中，否则屏幕底部居中，并做屏幕边界钳制 |
+
+### SmoothScrollViewer / ScrollViewerBehavior
+
+| 类型 | 说明 |
+|------|------|
+| SmoothScrollViewer | ScrollViewer 子类；依赖属性 `ScrollDuration`（250ms）、`ScrollStep`（32px）、`EasingMode`（EaseOut）、`IsSmoothScrollEnabled`；OnMouseWheel 拦截后用 CompositionTarget.Rendering + CubicEase 驱动平滑滚动 |
+| ScrollViewerBehavior | 附加属性 `VerticalOffset`，变更时调用 `ScrollToVerticalOffset`（供样式内动画驱动滚动位置） |
+
+## 值转换器
+
+均在 App 程序集根命名空间，注册于 App.xaml 资源：
+
+| 转换器 | 资源键 | 规则 |
+|------|------|------|
+| StringToVisibilityConverter | StringToVisibilityConverter | 非空字符串 → Visible，否则 Collapsed |
+| ConfigTypeToVisibilityConverter | ConfigTypeToVisibilityConverter | value 为 ConfigItemType 且 parameter（字符串）解析后相等 → Visible |
+| IntToBoolConverter | IntToBoolConverter | 0 → false，非 0 → true；ConvertBack：true → 1 |
+| InverseBooleanToVisibilityConverter | InverseBoolToVisibilityConverter | true → Collapsed，false → Visible |
+
+另使用 WPF 内置 `BooleanToVisibilityConverter`（键 BoolToVisibilityConverter）。
+
+## 本地化架构
+
+```
+{loc:Loc Key=App.Title}                        ← XAML 标记扩展
+  └─ LocExtension.ProvideValue()
+       └─ Binding("[App.Title]") → LocalizationProvider.Instance（索引器）
+             └─ Strings.ResourceManager.GetString(key, culture)
+                   └─ Strings.resx / Strings.en.resx / Strings.zh-CN.resx（各 192 键）
+语言切换
+  MainWindow.LanguageButton_Click → LocalizationProvider.SetCulture("en-US"/"zh-CN")
+    → CurrentCulture setter 触发 PropertyChanged("Item[]") → 所有索引器 Binding 自动刷新
+    → SaveLanguagePreferenceAsync 持久化 state.Language（IAppStateRepository）
+启动恢复
+  App.OnStartup Initialize()（默认 zh-CN）→ MainWindow.Loaded 后读取 state.Language 重新 Initialize
 ```
 
-## 辅助类
+| 类型 | 职责 |
+|------|------|
+| LocalizationProvider | 懒加载单例，INotifyPropertyChanged；索引器 `this[key]`、静态 `Get(key)`、`GetFormatted(key, args)`（string.Format，失败回退原文）、`SetCulture(name)`、`Initialize(savedLanguage)`、`SupportedCultures`（zh-CN、en-US） |
+| LocExtension | MarkupExtension，支持 `{loc:Loc Key=X}` 与 `{loc:Loc X}`；通过 Binding 索引器路径 `[{Key}]` 实现动态语言切换 |
+| Strings | `ResourceManager`（基名 `CrosshairPro.App.Localization.Strings`）包装：`Get(key)`、`Get(key, culture)`、`GetFormatted(key, args)` |
 
-### ThemeHelper
+## ThemeHelper
 
-主题资源访问助手，从 Application.Resources 获取主题颜色和样式。
+静态主题资源访问助手（Helpers/ThemeHelper.cs），从 Application.Resources 按键取值：
 
-```csharp
-public static class ThemeHelper
-{
-    // 颜色
-    public static Color BackgroundColor { get; }
-    public static Color SurfaceColor { get; }
-    public static Color ControlColor { get; }
-    public static Color BorderColor { get; }
-    public static Color AccentColor { get; }
-    public static Color ErrorColor { get; }
-    
-    // 画刷
-    public static SolidColorBrush BackgroundBrush { get; }
-    public static SolidColorBrush SurfaceBrush { get; }
-    public static SolidColorBrush ControlBrush { get; }
-    public static SolidColorBrush TextPrimaryBrush { get; }
-    public static SolidColorBrush TextSecondaryBrush { get; }
-    public static SolidColorBrush AccentBrush { get; }
-    
-    // 字体
-    public static FontFamily FontFamilyPrimary { get; }
-    public static FontFamily FontFamilyMono { get; }
-    
-    // 圆角
-    public static CornerRadius RadiusLg { get; }
-    public static CornerRadius RadiusMd { get; }
-    public static CornerRadius RadiusSm { get; }
-}
-```
+| 分类 | 成员 |
+|------|------|
+| 颜色 | BackgroundColor、SurfaceColor、ControlColor、BorderColor、AccentColor、ErrorColor、ShadowColor、GridLineColor、GridCenterLineColor（另有 GetColor(key)） |
+| 画刷 | BackgroundBrush、SurfaceBrush、ControlBrush、ControlHoverBrush、BorderBrush、TextPrimaryBrush、TextSecondaryBrush、AccentBrush、ErrorBrush、GridLineBrush、GridCenterLineBrush（另有 GetBrush(key)） |
+| 效果 | DialogShadowEffect、ToastShadowEffect |
+| 字体 | FontFamilyPrimary、FontFamilyMono、FontSizeHeading、FontSizeBody、FontSizeCaption |
+| 圆角 | RadiusLg、RadiusMd、RadiusSm |
 
-### StringToVisibilityConverter
-
-字符串到可见性转换器，非空字符串显示，空字符串或 null 隐藏。
-
-```csharp
-public class StringToVisibilityConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture);
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture);
-}
-```
-
-## 设计令牌
+## 设计令牌（Themes/DesignTokens.xaml）
 
 ### 颜色系统
 
@@ -369,37 +410,47 @@ public class StringToVisibilityConverter : IValueConverter
 | SurfaceColor | #161628 | 卡片背景 |
 | ControlColor | #1E1E36 | 控件背景 |
 | ControlHoverColor | #262645 | 控件悬停 |
+| ControlPressedColor | #1A1A30 | 控件按下 |
 | BorderColor | #2A2A4A | 边框 |
+| BorderFocusColor | #3D3D60 | 聚焦边框 |
 | TextPrimaryColor | #F0F0F5 | 主要文本 |
 | TextSecondaryColor | #9898B0 | 次要文本 |
+| TextDisabledColor | #5A5A78 | 禁用文本 |
 | AccentColor | #00FF00 | 强调色（霓虹绿） |
-| ErrorColor | #FF3366 | 错误色 |
+| AccentHoverColor / AccentDimColor / AccentGlowColor / AccentTintColor | #00CC00 / #009900 / #33FF33 / #0D260D | 强调色变体 |
+| SecondaryAccentColor | #7B61FF | 次强调色（紫，信息/装饰用） |
+| SuccessColor / WarningColor / ErrorColor | #00FF00 / #FFB800 / #FF3366 | 语义色 |
+| GridLineColor / GridCenterLineColor | #3C3C50 / #505064 | 预览网格线 |
 
-### 字体系统
+除 AccentGlowColor 外，以上颜色均有同名 SolidColorBrush（Brush 后缀）；AccentGlowColor 没有对应的 Brush 资源，仅被 AccentGlowEffect（DropShadowEffect）用作发光颜色。
 
-| 令牌 | 值 | 用途 |
+### 字体 / 间距 / 圆角 / 效果
+
+| 令牌 | 值 |
+|------|------|
+| FontFamilyPrimary | Microsoft YaHei UI, Segoe UI |
+| FontFamilyMono | Cascadia Code, Consolas, Courier New |
+| FontSizeDisplay / Heading / Body / Caption / Label | 24 / 16 / 14 / 12 / 11 |
+| SpaceXs / Sm / Md / Lg / Xl | 4 / 8 / 16 / 24 / 32 |
+| RadiusSm / Md / Lg | 4 / 6 / 8 |
+| AccentGlowEffect | 强调色发光（Blur 12） |
+| CardShadowEffect | 卡片阴影（Blur 8） |
+| DialogShadowEffect / ToastShadowEffect | 对话框 / Toast 阴影 |
+
+## ControlStyles.xaml 样式清单
+
+`ControlStyles.xaml` 合并 DesignTokens.xaml 与 IconGeometries.xaml（App.xaml 只需合并它一个）。样式键：
+
+SectionHeader、BodyText、PrimaryButton、SecondaryButton、AccentButton、CustomSlider、CustomTextBox、NumericTextBox、CustomComboBox、CompactComboBox、CustomCheckBox、CustomExpander、ColorSwatchRadio、CardBorder、PreviewCard、TitleBarButton、TitleBarCloseButton、CustomScrollBar、CustomScrollViewer、SmoothScrollViewer、PrimaryIconButton、TransparentIconButton、DangerIconButton，以及共享缓动资源 `SnappyEase`（CubicEase, EaseOut）。悬停/聚焦过渡以 150ms 为主（约 29/47 处），实际 100–250ms 不等（如 CustomTextBox 聚焦 200ms、CustomCheckBox 悬停 120ms、ColorSwatchRadio 悬停 100ms、PreviewCard 悬停 250ms；CardBorder 无悬停动画）。
+
+App.xaml 另定义 Window/TextBlock/Button/TextBox/ComboBox/CheckBox/Expander 的隐式全局样式（均基于上述键）。
+
+## 遗留 / 未接线代码
+
+以下代码存在于源码但当前没有调用方，清理或恢复引用前不要依赖：
+
+| 位置 | 内容 | 说明 |
 |------|------|------|
-| FontFamilyPrimary | Microsoft YaHei UI, Segoe UI | 主字体 |
-| FontFamilyMono | Cascadia Code, Consolas | 等宽字体 |
-| FontSizeDisplay | 24 | 显示文本 |
-| FontSizeHeading | 16 | 标题 |
-| FontSizeBody | 14 | 正文 |
-| FontSizeCaption | 12 | 说明文本 |
-
-### 间距系统
-
-| 令牌 | 值 | 用途 |
-|------|------|------|
-| SpaceXs | 4 | 极小间距 |
-| SpaceSm | 8 | 小间距 |
-| SpaceMd | 16 | 中间距 |
-| SpaceLg | 24 | 大间距 |
-| SpaceXl | 32 | 极大间距 |
-
-### 圆角系统
-
-| 令牌 | 值 | 用途 |
-|------|------|------|
-| RadiusSm | 4 | 小圆角（按钮、输入框） |
-| RadiusMd | 6 | 中圆角（卡片内部） |
-| RadiusLg | 8 | 大圆角（卡片、对话框） |
+| MainWindow.xaml.cs | `CustomColor_Click` / `ShowColorPickerDialog` / `AddColorSlider` | 自绘 RGB 选色对话框；实际自定义颜色入口在 CrosshairPage（WinForms ColorDialog） |
+| Controls/CrosshairPreview.cs | 准心预览控件 | 未被任何 XAML 引用，CrosshairPage 用双 Canvas 自绘预览 |
+| Cs2ConfigViewModel | `MaxLaunchOptionsLength` 常量（1000） | 仅声明未使用 |

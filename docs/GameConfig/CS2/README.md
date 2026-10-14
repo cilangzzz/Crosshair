@@ -1,15 +1,22 @@
 # Counter-Strike 2 配置文件协议
 
+> 文档型模块：描述 CS2（Source 2 引擎）的外部配置协议，以及 CrosshairPro 对该协议的集成方式。本模块无独立源码目录，相关源码：
+> - `src/CrosshairPro.Core/Models/GameConfig.cs`、`GameConfigStrategy.cs`、`GameProfile.cs`
+> - `src/CrosshairPro.Application/Services/GameConfigService.cs`（`builtin-cs2` 策略）
+> - `src/CrosshairPro.App/ViewModels/Cs2ConfigViewModel.cs`、`src/CrosshairPro.App/Views/GamePages/Cs2Page.xaml(.cs)`
+
 ## 概述
 
-Counter-Strike 2 (CS2) 使用 Source 2 引擎，配置系统沿袭 CS:GO 但有所变化。主要配置文件包括：
+CS2 配置系统沿袭 CS:GO 但有所变化。主要配置文件：
 
 | 文件 | 用途 | 格式 |
 |------|------|------|
 | `video.txt` | 视频图形配置 | KeyValues |
 | `config.cfg` | 游戏设置、键位 | Valve CFG |
-| `autoexec.cfg` | 自定义启动脚本 | Valve CFG |
+| `autoexec.cfg` | 自定义启动脚本（需手动创建） | Valve CFG |
 | `cs2_machine_convars.vcfg` | 机器配置 | KeyValues |
+
+**CrosshairPro 的集成边界**：仅将配置保存到本地 `%APPDATA%\CrosshairPro\gameconfigs\builtin-cs2.json`，不直接写入 `video.txt` / `autoexec.cfg`，避免与 VAC、Steam 云同步冲突（详见 [integration.md](integration.md) 与 [pitfalls.md](pitfalls.md)）。
 
 ---
 
@@ -35,7 +42,7 @@ C:\Program Files (x86)\Steam\userdata\12345678\730\local\cfg\config.cfg
 ```
 Steam\steamapps\common\Counter-Strike 2\game\cfg\
 ├── config_default.cfg      # 默认配置
-└── valve.rc               # 启动脚本
+└── valve.rc                # 启动脚本
 ```
 
 ### SteamID3 说明
@@ -43,20 +50,6 @@ Steam\steamapps\common\Counter-Strike 2\game\cfg\
 - SteamID3 是 32 位整数 ID
 - 可通过 `steamrep.com` 或 Steam 个人资料 URL 查找
 - 格式：`U:1:<SteamID64 的后 32 位>`
-
----
-
-## 文档索引
-
-| 文档 | 说明 |
-|------|------|
-| [video.txt](video.md) | 视频配置详细选项 |
-| [config.cfg](config.md) | 游戏设置详细选项 |
-| [launch-options.md](launch-options.md) | 启动参数详解 |
-| [data-model.md](data-model.md) | 数据结构与字段定义 |
-| [integration.md](integration.md) | 与 CrosshairPro 集成的映射指南 |
-| [pitfalls.md](pitfalls.md) | CS2 配置常见坑点（VAC、Steam 云同步、编码等） |
-| [CHANGELOG.md](CHANGELOG.md) | 变更日志 |
 
 ---
 
@@ -73,10 +66,7 @@ Steam\steamapps\common\Counter-Strike 2\game\cfg\
 }
 ```
 
-**特点**：
-- KeyValues 文本格式
-- 键名以 `setting.` 前缀
-- 值用双引号包裹
+**特点**：KeyValues 文本格式；键名以 `setting.` 前缀；值用双引号包裹。字段详解见 [video.md](video.md)。
 
 ### config.cfg 格式
 
@@ -85,8 +75,6 @@ Steam\steamapps\common\Counter-Strike 2\game\cfg\
 bind "KEY" "COMMAND"
 
 // 游戏设置
-cl_cmdrate "64"
-cl_updaterate "64"
 fps_max "400"
 
 // 准心设置
@@ -94,11 +82,7 @@ cl_crosshairsize "2"
 cl_crosshaircolor "1"
 ```
 
-**特点**：
-- Valve CFG 格式
-- 每行一个命令
-- 支持 `//` 注释
-- 使用 `bind` 命令绑定键位
+**特点**：Valve CFG 格式；每行一个命令；支持 `//` 注释；`bind` 绑定键位。字段详解见 [config.md](config.md)。
 
 ### autoexec.cfg 格式
 
@@ -112,16 +96,11 @@ cl_updaterate "128"
 cl_interp "0"
 cl_interp_ratio "1"
 
-// 准心设置
-cl_crosshairsize "2"
-cl_crosshaircolor "1"
-
-// 买枪绑定
-bind "kp_ins" "buy ak47"
-
 // 执行完毕提示
 echo "autoexec.cfg loaded"
 ```
+
+CS2 **不会**自动执行 `autoexec.cfg`，需启动参数 `+exec autoexec.cfg` 或在 `config.cfg` 末尾追加 `exec autoexec.cfg`。
 
 ---
 
@@ -135,8 +114,6 @@ echo "autoexec.cfg loaded"
 5. config_default.cfg
 6. 引擎默认值
 ```
-
----
 
 ## 读写协议
 
@@ -157,81 +134,45 @@ echo "autoexec.cfg loaded"
 | 控制台命令 | 自动写入 `config.cfg` |
 | 退出游戏 | 写入所有配置 |
 
-### autoexec.cfg 执行
-
-**方法 1**：启动参数
-```
-+exec autoexec.cfg
-```
-
-**方法 2**：在 `config.cfg` 添加
-```cfg
-host_writeconfig
-exec autoexec.cfg
-```
-
 ---
 
-## 配置分类
+## CrosshairPro 集成要点
 
-### 按功能分类
+| 概念 | 值 / 位置 |
+|------|-----------|
+| GameProfile | `builtin-cs2`，进程名 `cs2`，Priority 100（`GameProfile.BuiltIn.GetAll()`） |
+| 配置策略 | `GameConfigService.CreateCS2Strategy()`：video 分区（fullscreen / resolution / aspect_ratio / refresh_rate）+ game 分区（fps_max / cl_showfps） |
+| 启动项 | `SupportsLaunchOptions = true`，保存在 `GameConfig.LaunchOptions`，不写 Steam |
+| 持久化 | `%APPDATA%\CrosshairPro\gameconfigs\builtin-cs2.json` |
+| UI 入口 | GamesPage → GamePageSelector → Cs2Page → Cs2ConfigViewModel（DI 单例，注册于 `App.xaml.cs`） |
 
-| 类别 | 文件 | 说明 |
-|------|------|------|
-| 显示设置 | video.txt | 分辨率、窗口模式 |
-| 画质设置 | video.txt | 纹理、阴影、特效 |
-| 性能设置 | config.cfg | 帧率、网络、插值 |
-| 准心设置 | config.cfg | 样式、颜色、大小 |
-| 键位绑定 | config.cfg | 所有按键映射 |
-| 鼠标设置 | config.cfg | 灵敏度、加速 |
-| 音频设置 | config.cfg | 音量、设备 |
-| 皮肤设置 | config.cfg | 武器皮肤、贴纸 |
-
----
-
-## 版本兼容性
-
-### CS2 vs CS:GO
-
-| 特性 | CS:GO | CS2 |
-|------|-------|-----|
-| 引擎 | Source 1 | Source 2 |
-| 配置文件 | config.cfg | config.cfg |
-| 视频配置 | video.txt | video.txt |
-| 启动参数 | 相同 | 相同 |
-| 大部分命令 | 兼容 | 兼容 |
-| 部分命令 | 已移除 | 已替换 |
-
-### 已移除/更改的命令
-
-| CS:GO 命令 | CS2 状态 |
-|------------|----------|
-| `mat_queue_mode` | 已移除 |
-| `cl_cmdrate` | 保留，默认 64/128 |
-| `cl_updaterate` | 保留，默认 64/128 |
-| `fps_max_menu` | 已移除 |
-| `r_drawtracers_firstperson` | 保留 |
+数据流与字段映射详见 [integration.md](integration.md)；持久化模型详见 [data-model.md](data-model.md)。
 
 ---
 
 ## 安全警告
 
-⚠️ **注意事项**：
-
-1. **VAC 兼容**：CS2 使用 VAC 反作弊，禁止使用作弊命令
+1. **VAC 兼容**：CS2 使用 VAC 反作弊，禁止写入作弊命令（白名单见 [pitfalls.md](pitfalls.md)）
 2. **配置重置**：游戏更新可能重置配置
 3. **云同步**：配置会同步到 Steam 云
-4. **只读保护**：可将 `video.txt` 设为只读防止重置
+4. **只读保护**：可将 `video.txt` 设为只读防止重置，但 CrosshairPro 写入也会失败
 
 ---
 
+## 详细文档
+
+| 文档 | 说明 |
+|------|------|
+| [video.md](video.md) | video.txt 字段定义与配置模板 |
+| [config.md](config.md) | config.cfg 字段定义（键位、准心、网络、音频、HUD、雷达、视角） |
+| [launch-options.md](launch-options.md) | 启动参数详解与推荐配置 |
+| [data-model.md](data-model.md) | 数据结构与字段定义（协议 + CrosshairPro 模型） |
+| [integration.md](integration.md) | 与 CrosshairPro 集成的映射指南与数据流 |
+| [pitfalls.md](pitfalls.md) | CS2 配置常见坑点（VAC、Steam 云同步、编码等） |
+| [CHANGELOG.md](CHANGELOG.md) | 变更日志 |
+
 ## 相关资源
 
-- [video.md](video.md) - 视频配置详解
-- [config.md](config.md) - 游戏设置详解
-- [launch-options.md](launch-options.md) - 启动参数详解
-- [integration.md](integration.md) - 与 CrosshairPro 集成指南
-- [pitfalls.md](pitfalls.md) - CS2 配置坑点
 - [Total CS2 配置指南](https://totalcsgo.com/command)
 - [CS2 控制台命令](https://cs2console.com)
 

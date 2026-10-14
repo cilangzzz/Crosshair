@@ -1,218 +1,107 @@
 # Apex Legends 配置数据模型
 
-## 数据结构定义
-
-### VideoConfig
-
-视频配置根对象。
-
-```typescript
-interface VideoConfig {
-  "VideoConfig": {
-    [key: string]: string | number;
-  };
-}
-```
+本文档分两部分：**文件协议**（game 侧 videoconfig.txt / settings.cfg 的字段定义）与 **C# 数据模型**（CrosshairPro 应用侧建模）。两者的覆盖范围不同，差异是坑点，见 [pitfalls.md](pitfalls.md)。
 
 ---
 
-## 字段定义
+## 第一部分：文件协议（videoconfig.txt）
 
 ### 一、显示设置 (Display)
 
-#### ResolutionConfig
-
 ```typescript
-interface ResolutionConfig {
+interface DisplayConfig {
   "setting.defaultres": number;          // 分辨率宽度 (640-3840)
   "setting.defaultresheight": number;    // 分辨率高度 (480-2160)
   "setting.last_display_width": number;  // 上次显示宽度
   "setting.last_display_height": number; // 上次显示高度
-  "setting.m_nRefreshRate": number;      // 刷新率 Hz (60-240)
+  "setting.m_nRefreshRate": number;      // 刷新率 Hz (60-360)
   "setting.m_nResolutionScale": number;  // 分辨率缩放 (50-100)
-}
-```
-
-#### WindowConfig
-
-```typescript
-interface WindowConfig {
-  "setting.fullscreen": 0 | 1;           // 全屏模式
+  "setting.fullscreen": 0 | 1;           // 全屏模式 (0=窗口, 1=全屏)
   "setting.nowindowborder": 0 | 1;       // 无边框窗口
-  "setting.m_nWindowMode": 0 | 1 | 2;    // 窗口模式
-  // 0 = 全屏
-  // 1 = 窗口化
-  // 2 = 无边框窗口
-}
-```
-
-#### BrightnessConfig
-
-```typescript
-interface BrightnessConfig {
+  "setting.m_nWindowMode": 0 | 1 | 2;    // 0=全屏, 1=窗口, 2=无边框
   "setting.gamma": number;               // 伽马值 (0.5-2.5)
   "setting.m_flMonitorGamma": number;    // 显示器伽马 (1.8-2.6)
 }
 ```
 
----
-
 ### 二、画质设置 (Quality)
 
-#### TextureConfig
-
 ```typescript
-interface TextureConfig {
-  "setting.mat_picmip": -1 | 0 | 1 | 2;  // 纹理质量
-  // -1 = 最高
-  //  0 = 高
-  //  1 = 中
-  //  2 = 低
-
+interface QualityConfig {
+  // 纹理
+  "setting.mat_picmip": -1 | 0 | 1 | 2;  // -1=最高, 0=高, 1=中, 2=低
   "setting.mat_forceaniso": number;      // 各向异性过滤 (0-16)
   "setting.mat_mip_linear": 0 | 1;       // Mipmap 线性过滤
   "setting.stream_memory": number;       // 流式内存 KB
-}
-```
 
-#### ShadowConfig
-
-```typescript
-interface ShadowConfig {
-  "setting.shadow_enable": 0 | 1;        // 阴影总开关
-  "setting.shadow_maxdynamic": number;   // 最大动态阴影数 (0-8)
+  // 阴影
+  "setting.shadow_enable": 0 | 1;
+  "setting.shadow_maxdynamic": number;   // (0-8)
   "setting.shadow_depth_dimen_min": number;
   "setting.shadow_depth_upres_factor_max": number;
-
-  "setting.csm_enabled": 0 | 1;          // 级联阴影映射
-  "setting.csm_coverage": 0 | 1;         // CSM 覆盖范围
-  "setting.csm_cascade_res": 256 | 512 | 1024; // CSM 分辨率
+  "setting.csm_enabled": 0 | 1;
+  "setting.csm_coverage": 0 | 1;
+  "setting.csm_cascade_res": 256 | 512 | 1024;
   "setting.new_shadow_settings": 0 | 1;
-}
-```
 
-#### ParticleConfig
-
-```typescript
-interface ParticleConfig {
-  "setting.particle_cpu_level": 0 | 1 | 2; // 粒子CPU等级
+  // 粒子
+  "setting.particle_cpu_level": 0 | 1 | 2;
   "setting.cl_particle_fallback_base": 0 | 1 | 2 | 3;
   "setting.cl_particle_fallback_multiplier": 0 | 1 | 2;
-}
-```
 
-#### PhysicsConfig
-
-```typescript
-interface PhysicsConfig {
-  "setting.cl_gib_allow": 0 | 1;         // 碎片效果
-  "setting.cl_ragdoll_maxcount": number; // 布娃娃数量 (0-16)
+  // 物理
+  "setting.cl_gib_allow": 0 | 1;
+  "setting.cl_ragdoll_maxcount": number; // (0-16)
   "setting.cl_ragdoll_self_collision": 0 | 1;
+
+  // 贴花
+  "setting.r_decals": number;            // (0-256)
+  "setting.r_createmodeldecals": 0 | 1;
+
+  // LOD 与细节
+  "setting.r_lod_switch_scale": number;  // (0.35-1.0)
+  "setting.fadeDistScale": number;       // (0.5-2.0)
+  "setting.map_detail_level": 0 | 1 | 2;
+
+  // 体积效果 / SSAO
+  "setting.volumetric_lighting": 0 | 1;
+  "setting.volumetric_fog": 0 | 1;
+  "setting.ssao_quality": 0 | 1 | 2;     // 0=关, 1=低, 2=高
 }
 ```
-
-#### DecalConfig
-
-```typescript
-interface DecalConfig {
-  "setting.r_decals": number;            // 贴花数量 (0-256)
-  "setting.r_createmodeldecals": 0 | 1;  // 模型贴花
-}
-```
-
-#### LODConfig
-
-```typescript
-interface LODConfig {
-  "setting.r_lod_switch_scale": number;  // LOD 距离 (0.35-1.0)
-  "setting.fadeDistScale": number;       // 消失距离缩放 (0.5-2.0)
-  "setting.map_detail_level": 0 | 1 | 2; // 地图细节等级
-}
-```
-
-#### VolumetricConfig
-
-```typescript
-interface VolumetricConfig {
-  "setting.volumetric_lighting": 0 | 1;  // 体积光
-  "setting.volumetric_fog": 0 | 1;       // 体积雾
-}
-```
-
-#### SSAOConfig
-
-```typescript
-interface SSAOConfig {
-  "setting.ssao_quality": 0 | 1 | 2;     // SSAO 质量
-  // 0 = 关闭
-  // 1 = 低
-  // 2 = 高
-}
-```
-
----
 
 ### 三、性能设置 (Performance)
 
-#### VSyncConfig
-
 ```typescript
-interface VSyncConfig {
-  "setting.mat_vsync_mode": 0 | 1 | 2;   // 垂直同步
-  // 0 = 关闭
-  // 1 = 开启
-  // 2 = 三重缓冲
-
-  "setting.mat_backbuffer_count": 1 | 2; // 后缓冲区数量
-}
-```
-
-#### AntiAliasingConfig
-
-```typescript
-interface AntiAliasingConfig {
-  "setting.mat_antialias_mode": 0 | 1 | 2 | 3 | 4;
-  // 0 = 关闭
-  // 1 = FXAA
-  // 2 = TXAA
-  // 3 = MSAA 2x
-  // 4 = MSAA 4x
-}
-```
-
-#### DVSConfig
-
-```typescript
-interface DVSConfig {
-  "setting.dvs_enable": 0 | 1;           // 动态分辨率
+interface PerformanceConfig {
+  "setting.mat_vsync_mode": 0 | 1 | 2;   // 0=关, 1=开, 2=三重缓冲
+  "setting.mat_backbuffer_count": 1 | 2;
+  "setting.mat_antialias_mode": 0 | 1 | 2 | 3 | 4; // 0=关, 1=FXAA, 2=TXAA, 3=MSAA2x, 4=MSAA4x
+  "setting.dvs_enable": 0 | 1;
   "setting.dvs_gpuframetime_min": number; // 最小帧时间 μs
   "setting.dvs_gpuframetime_max": number; // 最大帧时间 μs
   "setting.dynamic_streaming_budget": number;
 }
 ```
 
----
-
 ### 四、高级画质 (Advanced)
 
 ```typescript
 interface AdvancedQualityConfig {
   "setting.m_fSpecularHighlight": number;     // 高光强度 (0.0-1.0)
-  "setting.m_fDynamicDecals": number;         // 动态贴花 (0.0-1.0)
-  "setting.m_fDynamicLights": number;         // 动态光照 (0.0-1.0)
-  "setting.m_fShadows": number;               // 阴影质量 (0.0-1.0)
-  "setting.m_fDecals": number;                // 贴花质量 (0.0-1.0)
-  "setting.m_fSSAO": number;                  // SSAO 强度 (0.0-1.0)
+  "setting.m_fDynamicDecals": number;         // 动态贴花
+  "setting.m_fDynamicLights": number;         // 动态光照
+  "setting.m_fShadows": number;               // 阴影质量
+  "setting.m_fDecals": number;                // 贴花质量
+  "setting.m_fSSAO": number;                  // SSAO 强度
   "setting.m_fSunShadowFilter": number;       // 阳光阴影过滤
   "setting.m_fSunShadowResolution": number;   // 阳光阴影分辨率
   "setting.m_fSpotShadowResolution": number;  // 聚光阴影分辨率
   "setting.m_fVignetteEnable": 0 | 1;         // 暗角效果
-  "setting.m_fDepthOfField": number;          // 景深 (0.0-1.0)
-  "setting.m_fMotionBlur": number;            // 动态模糊 (0.0-1.0)
+  "setting.m_fDepthOfField": number;          // 景深
+  "setting.m_fMotionBlur": number;            // 动态模糊
 }
 ```
-
----
 
 ### 五、系统字段 (System)
 
@@ -225,9 +114,7 @@ interface SystemConfig {
 
 ---
 
-## Settings.cfg 数据模型
-
-### 鼠标设置
+## 第二部分：文件协议（settings.cfg）
 
 ```typescript
 interface MouseSettings {
@@ -235,11 +122,7 @@ interface MouseSettings {
   m_acceleration: 0 | 1;                 // 加速
   m_clamp_to_window: 0 | 1;              // 限制窗口
 }
-```
 
-### 瞄准镜灵敏度
-
-```typescript
 interface ScopeSensitivitySettings {
   mouse_use_per_scope_sensitivity_scalars: 0 | 1;
   mouse_zoomed_sensitivity_scalar_0: number; // 1倍镜
@@ -251,23 +134,27 @@ interface ScopeSensitivitySettings {
   mouse_zoomed_sensitivity_scalar_6: number; // 10倍镜
   mouse_zoomed_sensitivity_scalar_7: number; // 变焦镜
 }
-```
 
-### 音频设置
+interface FrameFovNetworkSettings {
+  fps_max: number;                       // 0=无限制
+  fps_max_menu: number;                  // 菜单帧率
+  cl_showfps: 0 | 1 | 2;
+  cl_showpos: 0 | 1;
+  cl_fovScale: number;                   // (1.0-1.35)
+  cl_viewpitchscale: number;
+  cl_interp: number;                     // 0.015
+  cl_interp_ratio: number;               // 1
+  cl_cmdrate: number;                    // 60
+  cl_updaterate: number;                 // 60
+}
 
-```typescript
 interface AudioSettings {
-  sound_num_speakers: 2 | 6 | 8;         // 扬声器数量
-  sound_volume_voice: number;            // 语音音量 (0.0-1.0)
+  sound_num_speakers: 2 | 6 | 8;
+  sound_volume_voice: number;
   miles_channels: number;
   miles_output_device: string;
-  miles_dumpuploadtime: number;
 }
-```
 
-### 语音设置
-
-```typescript
 interface VoiceSettings {
   VoiceChatMode: number;
   voice_forcemicrecord: 0 | 1;
@@ -279,22 +166,14 @@ interface VoiceSettings {
   voice_scale: number;
   voice_vox: 0 | 1;
 }
-```
 
-### 图形设置
-
-```typescript
 interface GraphicsSettings {
   gfx_amdUseLowLatency: 0 | 1;
   gfx_nvnUseLowLatency: 0 | 1;
   gfx_nvnUseLowLatencyBoost: 0 | 1;
   chroma_enable: 0 | 1;
 }
-```
 
-### 绑定数据模型
-
-```typescript
 interface KeyBind {
   layout: "US_standard";
   type: "bind" | "bind_held";
@@ -304,136 +183,91 @@ interface KeyBind {
 }
 ```
 
----
-
-## 配置预设
-
-### 竞技预设
-
-```json
-{
-  "videoconfig": {
-    "setting.cl_gib_allow": "0",
-    "setting.cl_ragdoll_maxcount": "0",
-    "setting.particle_cpu_level": "0",
-    "setting.shadow_enable": "0",
-    "setting.csm_enabled": "0",
-    "setting.ssao_quality": "0",
-    "setting.volumetric_lighting": "0",
-    "setting.volumetric_fog": "0",
-    "setting.mat_vsync_mode": "0",
-    "setting.mat_antialias_mode": "0"
-  },
-  "settings": {
-    "m_acceleration": "0",
-    "fps_max": "0",
-    "cl_fovScale": "1.27",
-    "cl_interp": "0.015",
-    "cl_interp_ratio": "1"
-  }
-}
-```
-
-### 高画质预设
-
-```json
-{
-  "videoconfig": {
-    "setting.mat_picmip": "-1",
-    "setting.mat_forceaniso": "16",
-    "setting.shadow_enable": "1",
-    "setting.csm_enabled": "1",
-    "setting.csm_cascade_res": "1024",
-    "setting.ssao_quality": "2",
-    "setting.volumetric_lighting": "1",
-    "setting.volumetric_fog": "1",
-    "setting.mat_antialias_mode": "4"
-  }
-}
-```
+其余散项（`name`、`ui_layout_mode`、`sv_*`、`cc_*`、`func_break_max_pieces`、`lookspring`、`lookstrafe`、`hdr_screenshot_directory` 等）见 [settings.md](settings.md)。
 
 ---
 
-## 枚举定义
+## 第三部分：C# 数据模型（应用侧权威定义）
 
-### WindowMode
+源码位置：`src/CrosshairPro.Core/Models/`，全部为 CommunityToolkit `ObservableObject`（`[ObservableProperty]` 生成属性）。
 
-```typescript
-enum WindowMode {
-  Fullscreen = 0,
-  Windowed = 1,
-  BorderlessWindowed = 2
-}
-```
+### ApexVideoConfig（`ApexVideoConfig.cs`）
 
-### TextureQuality
+按分区建模上述 videoconfig.txt 字段，默认值即模型默认值（如 `RefreshRate=144`、`CsmCascadeRes=512`、`SsaoQuality=1`、`ConfigVersion=10`）。附加辅助成员：
 
-```typescript
-enum TextureQuality {
-  Highest = -1,
-  High = 0,
-  Medium = 1,
-  Low = 2
-}
-```
+- `ResolutionOptions`：13 档静态分辨率表（3840x2160 → 1280x720）
+- `ResolutionIndex`：当前分辨率索引（默认 5 = 1920x1080）；`OnResolutionIndexChanged` 自动同步 `DefaultRes`/`DefaultResHeight`
+- `UpdateResolutionIndex()`：按 `DefaultRes`/`DefaultResHeight` 反查索引，未匹配时回退到 5
 
-### ParticleLevel
+### ApexSettingsConfig（`ApexSettingsConfig.cs`）
 
-```typescript
-enum ParticleLevel {
-  Low = 0,
-  Medium = 1,
-  High = 2
-}
-```
+建模 settings.cfg 的设置项（鼠标、瞄准镜、帧率、FOV、网络、音频、语音、图形、其他），**不含键位绑定**。
 
-### SSAOQuality
+### ApexLaunchOptions（`ApexLaunchOptions.cs`）
 
-```typescript
-enum SSAOQuality {
-  Off = 0,
-  Low = 1,
-  High = 2
-}
-```
+结构化启动项模型，`GenerateOptionsString()` 的输出条件规则详见 [launch-options.md](launch-options.md)。
 
-### VSyncMode
+### BackupFileInfo 与解析/序列化覆盖范围
 
-```typescript
-enum VSyncMode {
-  Off = 0,
-  On = 1,
-  TripleBuffered = 2
-}
-```
+`BackupFileInfo`（定义于 `IApexConfigService.cs`）的成员表，以及 `ApexConfigService` 对 videoconfig.txt / settings.cfg 的解析与序列化键覆盖范围（videoconfig 23 写 / 19 读、settings 17 项对称、4 键只写不读）属于服务实现细节，权威描述见 [../../Application/api-gameconfig.md](../../Application/api-gameconfig.md) 的「解析 / 序列化要点」与「BackupFileInfo」小节，此处不重复。
 
-### AntiAliasingMode
+---
 
-```typescript
-enum AntiAliasingMode {
-  Off = 0,
-  FXAA = 1,
-  TXAA = 2,
-  MSAA_2x = 3,
-  MSAA_4x = 4
-}
+## 内置视频预设（应用侧）
+
+`ApexConfigService` 提供三个预设，预设只显式设置以下字段，其余字段保持模型默认值：
+
+| 字段 | 竞技 `GetCompetitivePreset` | 高画质 `GetHighQualityPreset` |
+|------|------|------|
+| `DefaultRes` / `DefaultResHeight` | 1920 / 1080 | 1920 / 1080 |
+| `RefreshRate` | 144 | 144 |
+| `Fullscreen` / `WindowMode` / `Gamma` | 1 / 0 / 1.0 | 1 / 0 / 1.0 |
+| `MatPicmip` | 0 | -1 |
+| `MatForceaniso` | 1 | 16 |
+| `MatMipLinear` | （默认 1） | 1 |
+| `ShadowEnable` / `CsmEnabled` | 0 / 0 | 1 / 1 |
+| `CsmCascadeRes` | （默认 512） | 1024 |
+| `ParticleCpuLevel` | 0 | 2 |
+| `SsaoQuality` | 0 | 2 |
+| `VolumetricLighting` / `VolumetricFog` | 0 / 0 | 1 / 1 |
+| `MatVsyncMode` / `MatAntialiasMode` / `DvsEnable` | 0 / 0 / 0 | 0 / 4 / 0 |
+| `ClGibAllow` / `ClRagdollMaxcount` / `ClRagdollSelfCollision` | 0 / 0 / 0 | 1 / 8 / 1 |
+
+`GetDefaultPreset()` 返回全新 `ApexVideoConfig()`（全部字段取模型默认值）。
+
+---
+
+## 取值域约定（伪代码，非 C# 枚举）
+
+> **注意**：`ApexVideoConfig` / `ApexSettingsConfig` 的相关字段均为 `int`，源码中**不存在**与下述名称对应的 C# 枚举类型（`src/CrosshairPro.Core/Enums/` 仅有 `AppState`、`CrosshairStyle`）。取值域由 UI 侧选项集合承载，见 `ApexConfigViewModel` 的 `WindowModeOptions` / `TextureQualityOptions` / `ParticleLevelOptions` / `SsaoQualityOptions` / `VsyncOptions` / `AntialiasOptions` 等字典。以下仅为伪代码速查：
+
+```text
+WindowMode          0=Fullscreen  1=Windowed  2=BorderlessWindowed
+TextureQuality     -1=Highest     0=High      1=Medium    2=Low
+ParticleLevel       0=Low         1=Medium    2=High
+SSAOQuality         0=Off         1=Low       2=High
+VSyncMode           0=Off         1=On        2=TripleBuffered
+AntiAliasingMode    0=Off         1=FXAA      2=TXAA      3=MSAA 2x  4=MSAA 4x
 ```
 
 ---
 
 ## 验证规则
 
-### 数值范围验证
+### 数值范围（模型注释约定）
 
 | 字段 | 最小值 | 最大值 | 步进 |
 |------|--------|--------|------|
 | `defaultres` | 640 | 3840 | 1 |
 | `defaultresheight` | 480 | 2160 | 1 |
+| `m_nRefreshRate` | 60 | 360 | 1 |
 | `gamma` | 0.5 | 2.5 | 0.1 |
-| `mouse_sensitivity` | 0.1 | 10.0 | 0.01 |
+| `mouse_sensitivity` | 0.1 | 10.0 | 0.1 |
 | `cl_fovScale` | 1.0 | 1.35 | 0.01 |
 
-### 枚举值验证
+注意：范围来自源码注释约定，服务层保存时**不做范围校验**，UI 控件负责约束输入。模型注释仅定义范围、不含步进；步进列对应 `ApexPage.xaml` 中各 Slider 的 `SmallChange`（如 mouse_sensitivity 滑块 `SmallChange="0.1"`，`{0:F2}` 仅是 TextBox 显示格式）。
+
+### 取值域验证
 
 | 字段 | 有效值 |
 |------|--------|
@@ -457,5 +291,4 @@ enum AntiAliasingMode {
 | 6 | 添加体积光/雾 |
 
 ---
-**创建时间**: 2026-07-31
-**协议版本**: 1.0
+**协议版本**: 1.1
