@@ -779,7 +779,7 @@ public partial class MainWindow : Window
         listBox.SetBinding(ItemsControl.ItemsSourceProperty,
             new Binding(nameof(CrosshairViewModel.Presets)) { Source = _viewModel.CrosshairViewModel });
         listBox.SetBinding(ListBox.SelectedItemProperty,
-            new Binding(nameof(CrosshairViewModel.SelectedPreset)) { Source = _viewModel.CrosshairViewModel, Mode = BindingMode.TwoWay });
+            new Binding(nameof(CrosshairViewModel.SelectedPreset)) { Source = _viewModel.CrosshairViewModel, Mode = BindingMode.OneWay });
 
         // DataTemplate: [Name / 创建时间] ............ [×]
         var itemTemplate = new DataTemplate();

@@ -68,6 +68,9 @@
   <data name="App.Version" xml:space="preserve">
     <value> v1.0</value>
   </data>
+  <data name="App.AlreadyRunning" xml:space="preserve">
+    <value>CrosshairPro 已在运行中，请勿重复启动。</value>
+  </data>
 
   <!-- ═══════════════════════════════════════════════════ -->
   <!-- 导航 -->
@@ -178,6 +181,9 @@
   <data name="Crosshair.CenterSize" xml:space="preserve">
     <value>中心大小</value>
   </data>
+  <data name="Crosshair.Rotation" xml:space="preserve">
+    <value>旋转</value>
+  </data>
   <data name="Crosshair.Color" xml:space="preserve">
     <value>颜色</value>
   </data>
@@ -230,6 +236,14 @@
   <!-- ═══════════════════════════════════════════════════ -->
   <data name="Games.SelectPrompt" xml:space="preserve">
     <value>选择一款游戏进行配置</value>
+  </data>
+
+  <data name="Games.PcOptimize" xml:space="preserve">
+    <value>电脑优化</value>
+  </data>
+
+  <data name="Games.PcOptimizeDesc" xml:space="preserve">
+    <value>功能开发中，敬请期待</value>
   </data>
 
   <!-- ═══════════════════════════════════════════════════ -->

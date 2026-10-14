@@ -12,6 +12,7 @@ public class GamePageSelector : DataTemplateSelector
 {
     public DataTemplate? ApexTemplate { get; set; }
     public DataTemplate? Cs2Template { get; set; }
+    public DataTemplate? PcOptimizeTemplate { get; set; }
     public DataTemplate? DefaultTemplate { get; set; }
 
     public override DataTemplate? SelectTemplate(object? item, DependencyObject container)
@@ -22,6 +23,7 @@ public class GamePageSelector : DataTemplateSelector
             {
                 "builtin-apex" => ApexTemplate,
                 "builtin-cs2" => Cs2Template,
+                "builtin-pcopt" => PcOptimizeTemplate,
                 _ => DefaultTemplate
             };
         }

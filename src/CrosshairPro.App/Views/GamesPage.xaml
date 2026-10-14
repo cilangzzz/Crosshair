@@ -24,11 +24,18 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Button Content="{Binding DisplayName}"
+                        <Button
                                 Command="{Binding DataContext.SelectGameCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}"
                                 Margin="0,0,8,0"
                                 Padding="12,6">
+                            <Button.Content>
+                                <MultiBinding Converter="{StaticResource GameProfileTitleConverter}">
+                                    <Binding Path="DisplayName"/>
+                                    <Binding Path="DisplayNameLocKey"/>
+                                    <Binding Path="CurrentCulture" Source="{x:Static loc:LocalizationProvider.Instance}"/>
+                                </MultiBinding>
+                            </Button.Content>
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
                                     <Setter Property="Background" Value="Transparent"/>
@@ -60,6 +67,11 @@
                             <local:Cs2Page/>
                         </DataTemplate>
                     </local:GamePageSelector.Cs2Template>
+                    <local:GamePageSelector.PcOptimizeTemplate>
+                        <DataTemplate>
+                            <local:PcOptimizePage/>
+                        </DataTemplate>
+                    </local:GamePageSelector.PcOptimizeTemplate>
                     <local:GamePageSelector.DefaultTemplate>
                         <DataTemplate>
                             <TextBlock Text="{loc:Loc Key=Games.SelectPrompt}"

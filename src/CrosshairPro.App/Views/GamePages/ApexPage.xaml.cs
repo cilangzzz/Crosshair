@@ -45,4 +45,24 @@ public partial class ApexPage : UserControl
             ToastNotification.ShowIn(windowPanel, message);
         }
     }
+
+    // 父子联动之值联动：父开关经 UI 点击关闭时，子开关值同步置为关闭。
+    // 用 Click 而非 Checked/Unchecked：仅用户点击时触发，加载配置/应用预设经绑定更新 IsChecked 不会误触发级联
+    private void OnEnableShadowsClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is CheckBox { IsChecked: false } &&
+            DataContext is ApexConfigViewModel { VideoConfig: { } video })
+        {
+            video.CsmEnabled = 0;
+        }
+    }
+
+    private void OnVolumetricLightingClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is CheckBox { IsChecked: false } &&
+            DataContext is ApexConfigViewModel { VideoConfig: { } video })
+        {
+            video.VolumetricFog = 0;
+        }
+    }
 }

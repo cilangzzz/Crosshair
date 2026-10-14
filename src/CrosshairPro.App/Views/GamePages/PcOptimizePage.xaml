@@ -1,0 +1,25 @@
+<UserControl x:Class="CrosshairPro.App.Views.GamePages.PcOptimizePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:loc="clr-namespace:CrosshairPro.App.Localization"
+      mc:Ignorable="d"
+      d:DesignHeight="500" d:DesignWidth="800">
+
+    <!-- 电脑优化占位页：仅空状态，无功能、无 ViewModel（边距由 GamesPage 统一控制） -->
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Path Data="{StaticResource SettingsIconGeometry}"
+              Width="48" Height="48" Stretch="Uniform"
+              Fill="{DynamicResource TextSecondaryBrush}"
+              HorizontalAlignment="Center"/>
+        <TextBlock Text="{loc:Loc Key=Games.PcOptimize}"
+                   FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextPrimaryBrush}"
+                   HorizontalAlignment="Center" Margin="0,16,0,4"/>
+        <TextBlock Text="{loc:Loc Key=Games.PcOptimizeDesc}"
+                   FontSize="12"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   HorizontalAlignment="Center"/>
+    </StackPanel>
+</UserControl>

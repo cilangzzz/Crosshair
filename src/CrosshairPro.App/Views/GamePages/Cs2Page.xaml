@@ -84,7 +84,7 @@
         </game:ConfigItemTemplateSelector>
     </UserControl.Resources>
 
-    <Grid Margin="20,12,20,0">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -230,7 +230,7 @@
 
         <!-- 底部按钮 -->
         <StackPanel Grid.Row="2" Orientation="Horizontal"
-                    HorizontalAlignment="Right" Margin="0,16,0,0">
+                    HorizontalAlignment="Right" Margin="0,16,0,16">
             <Button Content="{loc:Loc Key=Cs2.ResetToDefault}"
                     Command="{Binding ResetCommand}"
                     Style="{StaticResource SecondaryButton}"

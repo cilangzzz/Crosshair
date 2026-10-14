@@ -94,6 +94,13 @@
                         <TextBox Grid.Column="1" Text="{Binding Config.Brightness, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
                     </Grid>
 
+                    <TextBlock Text="{loc:Loc Key=Crosshair.Rotation}" Style="{StaticResource SectionHeader}"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                        <Slider Grid.Column="0" Value="{Binding Config.Rotation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="360" Style="{StaticResource CustomSlider}"/>
+                        <TextBox Grid.Column="1" Text="{Binding Config.Rotation, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
+                    </Grid>
+
                     <TextBlock Text="{loc:Loc Key=Crosshair.CenterSize}" Style="{StaticResource SectionHeader}"/>
                     <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
@@ -139,17 +146,17 @@
                     </WrapPanel>
 
                     <TextBlock Text="{loc:Loc Key=Effects.Header}" Style="{StaticResource SectionHeader}"/>
-                    <!-- 开关行：标签居左，药丸开关居右 -->
+                    <!-- 开关行：标签居左，矩形微圆角开关居右 -->
                     <Grid Margin="0,0,0,8">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="{loc:Loc Key=Effects.EnableOutline}" Style="{StaticResource BodyText}" VerticalAlignment="Center"/>
                         <CheckBox Grid.Column="1" IsChecked="{Binding Config.Effects.Outline.Enabled, Mode=TwoWay}" Style="{StaticResource ToggleSwitch}"/>
                     </Grid>
-                    <!-- 描边粗细（描边子选项，缩进） -->
-                    <Grid Margin="24,0,0,12">
+                    <!-- 描边粗细（描边子选项，与开关行同缩进，数值框与其他滑杆行同规格） -->
+                    <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="{loc:Loc Key=Effects.OutlineThickness}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="1" Text="{Binding Config.Effects.Outline.Thickness, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
+                        <TextBox Grid.Column="1" Text="{Binding Config.Effects.Outline.Thickness, Mode=TwoWay}" Style="{StaticResource NumericTextBox}" Margin="8,0,0,0"/>
                     </Grid>
                     <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>

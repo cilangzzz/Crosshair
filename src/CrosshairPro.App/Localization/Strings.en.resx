@@ -66,6 +66,9 @@
   <data name="App.Version" xml:space="preserve">
     <value> v1.0</value>
   </data>
+  <data name="App.AlreadyRunning" xml:space="preserve">
+    <value>CrosshairPro is already running. Please do not start it again.</value>
+  </data>
 
   <!-- Navigation -->
   <data name="Nav.Crosshair" xml:space="preserve">
@@ -166,6 +169,9 @@
   <data name="Crosshair.CenterSize" xml:space="preserve">
     <value>CENTER SIZE</value>
   </data>
+  <data name="Crosshair.Rotation" xml:space="preserve">
+    <value>ROTATION</value>
+  </data>
   <data name="Crosshair.Color" xml:space="preserve">
     <value>COLOR</value>
   </data>
@@ -216,6 +222,14 @@
   <!-- Games Page -->
   <data name="Games.SelectPrompt" xml:space="preserve">
     <value>Select a game to configure</value>
+  </data>
+
+  <data name="Games.PcOptimize" xml:space="preserve">
+    <value>PC Optimization</value>
+  </data>
+
+  <data name="Games.PcOptimizeDesc" xml:space="preserve">
+    <value>Coming soon</value>
   </data>
 
   <!-- Apex Legends -->

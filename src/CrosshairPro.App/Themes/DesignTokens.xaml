@@ -1,9 +1,13 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:presentationoptions="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options">
 
     <!-- ═══════════════════════════════════════════════════════════
          DESIGN TOKENS — CrosshairPro
          Gaming-precision dark UI: deep space purple + neon accent
+         画笔全部冻结（PresentationOptions:Freeze）：主题令牌运行时不可变；
+         冻结后模板内属性路径动画（如 ToggleSwitch/按钮悬停的 ColorAnimation）
+         会在元素实例上自动克隆画笔，避免原地改写全局共享资源污染全应用颜色
          ═══════════════════════════════════════════════════════════ -->
 
     <!-- ── COLOR SYSTEM ── -->
@@ -41,33 +45,33 @@
     <Color x:Key="WarningColor">#FFB800</Color>
     <Color x:Key="ErrorColor">#FF3366</Color>
 
-    <!-- ── SOLID BRUSHES ── -->
+    <!-- ── SOLID BRUSHES（全部冻结） ── -->
 
-    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
-    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
-    <SolidColorBrush x:Key="ControlBrush" Color="{StaticResource ControlColor}"/>
-    <SolidColorBrush x:Key="ControlHoverBrush" Color="{StaticResource ControlHoverColor}"/>
-    <SolidColorBrush x:Key="ControlPressedBrush" Color="{StaticResource ControlPressedColor}"/>
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="ControlBrush" Color="{StaticResource ControlColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="ControlHoverBrush" Color="{StaticResource ControlHoverColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="ControlPressedBrush" Color="{StaticResource ControlPressedColor}" presentationoptions:Freeze="True"/>
 
-    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
-    <SolidColorBrush x:Key="BorderFocusBrush" Color="{StaticResource BorderFocusColor}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="BorderFocusBrush" Color="{StaticResource BorderFocusColor}" presentationoptions:Freeze="True"/>
 
-    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
-    <SolidColorBrush x:Key="TextDisabledBrush" Color="{StaticResource TextDisabledColor}"/>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="{StaticResource TextDisabledColor}" presentationoptions:Freeze="True"/>
 
-    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
-    <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}"/>
-    <SolidColorBrush x:Key="AccentDimBrush" Color="{StaticResource AccentDimColor}"/>
-    <SolidColorBrush x:Key="AccentTintBrush" Color="{StaticResource AccentTintColor}"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="AccentDimBrush" Color="{StaticResource AccentDimColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="AccentTintBrush" Color="{StaticResource AccentTintColor}" presentationoptions:Freeze="True"/>
 
-    <SolidColorBrush x:Key="SecondaryAccentBrush" Color="{StaticResource SecondaryAccentColor}"/>
-    <SolidColorBrush x:Key="SecondaryAccentHoverBrush" Color="{StaticResource SecondaryAccentHoverColor}"/>
-    <SolidColorBrush x:Key="SecondaryAccentTintBrush" Color="{StaticResource SecondaryAccentTintColor}"/>
+    <SolidColorBrush x:Key="SecondaryAccentBrush" Color="{StaticResource SecondaryAccentColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="SecondaryAccentHoverBrush" Color="{StaticResource SecondaryAccentHoverColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="SecondaryAccentTintBrush" Color="{StaticResource SecondaryAccentTintColor}" presentationoptions:Freeze="True"/>
 
-    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
-    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
-    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}" presentationoptions:Freeze="True"/>
 
     <!-- ── TYPOGRAPHY ── -->
     <!-- Font: Microsoft YaHei UI / Segoe UI (system default, loaded in App.xaml) -->
@@ -125,9 +129,9 @@
     <!-- Toast Colors -->
     <Color x:Key="ToastShadowColor">#000000</Color>
 
-    <!-- Grid Brushes -->
-    <SolidColorBrush x:Key="GridLineBrush" Color="{StaticResource GridLineColor}"/>
-    <SolidColorBrush x:Key="GridCenterLineBrush" Color="{StaticResource GridCenterLineColor}"/>
+    <!-- Grid Brushes（冻结） -->
+    <SolidColorBrush x:Key="GridLineBrush" Color="{StaticResource GridLineColor}" presentationoptions:Freeze="True"/>
+    <SolidColorBrush x:Key="GridCenterLineBrush" Color="{StaticResource GridCenterLineColor}" presentationoptions:Freeze="True"/>
 
     <!-- Dialog shadow effect -->
     <DropShadowEffect x:Key="DialogShadowEffect"

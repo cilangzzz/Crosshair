@@ -800,7 +800,7 @@
                                 VerticalAlignment="Center"
                                 Margin="3,0,0,0"
                                 Background="{StaticResource TextSecondaryBrush}"
-                                CornerRadius="8">
+                                CornerRadius="{StaticResource RadiusSm}">
                             <Border.RenderTransform>
                                 <TranslateTransform x:Name="thumbShift" X="0"/>
                             </Border.RenderTransform>

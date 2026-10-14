@@ -34,6 +34,10 @@ public partial class CrosshairViewModel : ObservableObject
     private readonly IConfigurationService _configService;
     private string? _currentPresetId;
     private bool _isInitializing = true;
+    private bool _updatingPresets;
+    // 最近一次非抑制选中的预设 Id：列表整体替换或瞬时加载失败清空选中后，重载时据此无副作用恢复，
+    // 避免把"选中实例被换掉"误判为"预设已删除"而回退默认、静默重置当前配置
+    private string? _lastSelectedPresetId;
 
     public CrosshairViewModel(
         IPresetService presetService,
@@ -151,7 +155,8 @@ public partial class CrosshairViewModel : ObservableObject
 
     partial void OnSelectedPresetChanged(Preset? value)
     {
-        if (value == null) return;
+        if (value == null || _updatingPresets) return;
+        _lastSelectedPresetId = value.Id;
         _configService.CopyConfig(value.Config, Config);
         CurrentPresetName = value.Name;
         _currentPresetId = value.Id;
@@ -278,10 +283,10 @@ public partial class CrosshairViewModel : ObservableObject
         var baseName = name;
         var next = 1;
         var match = Regex.Match(name, @"^(.*) \((\d+)\)$");
-        if (match.Success)
+        if (match.Success && int.TryParse(match.Groups[2].Value, out var parsed))
         {
             baseName = match.Groups[1].Value;
-            next = int.Parse(match.Groups[2].Value) + 1;
+            next = parsed + 1;
         }
 
         var candidate = $"{baseName} ({next})";
@@ -302,7 +307,8 @@ public partial class CrosshairViewModel : ObservableObject
         {
             var preset = await _presetService.ImportPresetAsync(filePath);
             await LoadPresets();
-            SelectedPreset = preset;
+            // ImportPresetAsync 返回的是保存前实例；列表已重载，按 Id 选中列表内实例保证绑定一致
+            SelectedPreset = Presets.FirstOrDefault(p => p.Id == preset.Id) ?? preset;
             _currentPresetId = preset.Id;
             await SaveCurrentStateAsync();
             ShowToast(LocalizationProvider.GetFormatted("Toast.PresetImported", preset.Name));
@@ -342,25 +348,84 @@ public partial class CrosshairViewModel : ObservableObject
         try
         {
             var presets = await _presetService.LoadAllPresetsAsync();
-            Presets = presets.ToList();
+
+            // 合成默认预设名称随界面语言本地化（PresetService 无本地化资源，固定为中文）
+            var defaultName = LocalizationProvider.Get("Preset.Default");
+            foreach (var p in presets)
+            {
+                if (p.IsDefault && p.Name != defaultName)
+                    p.Name = defaultName;
+            }
+
+            // 列表每次整体替换（JSON 反序列化新实例 + 重新合成默认预设），旧选中实例必然不在
+            // 新列表中；ComboBox/弹窗列表的 SelectedItem 绑定会因此清空并 null 回推，若不按 Id
+            // 保全，下方"回退到默认"分支会把当前配置静默重置为默认预设。重解析在
+            // _updatingPresets 抑制下进行（同 Id 语义不变，不触发 CopyConfig/持久化）
+            var selectedId = SelectedPreset?.Id;
+            _updatingPresets = true;
+            try
+            {
+                Presets = presets.ToList();
+
+                if (selectedId != null)
+                    SelectedPreset = Presets.FirstOrDefault(p => p.Id == selectedId);
+            }
+            finally
+            {
+                _updatingPresets = false;
+            }
 
             if (!_isInitializing && (SelectedPreset == null || !Presets.Any(p => p.Id == SelectedPreset.Id)))
             {
-                SelectedPreset = Presets.FirstOrDefault();
+                // 选中丢失先按最近选中 Id 无副作用恢复（如上次加载瞬时失败清空过选中）：该预设并未真被
+                // 删除，不能走 CopyConfig 重置配置；Id 确实不存在（如删除了当前选中预设）才回退默认
+                var restored = _lastSelectedPresetId == null
+                    ? null
+                    : Presets.FirstOrDefault(p => p.Id == _lastSelectedPresetId);
+                if (restored != null)
+                {
+                    _updatingPresets = true;
+                    try
+                    {
+                        SelectedPreset = restored;
+                    }
+                    finally
+                    {
+                        _updatingPresets = false;
+                    }
+                }
+                else
+                {
+                    SelectedPreset = Presets.FirstOrDefault();
+                }
             }
         }
         catch
         {
-            Presets = new List<Preset>
+            // 降级列表同样整体替换，纳入抑制块：按最近选中 Id 尽力恢复（如正在使用默认预设时 UI 选中
+            // 不丢）；恢复失败留 null 即可，后续成功重载经 _lastSelectedPresetId 恢复（见上方回退分支），
+            // 异常路径本身不得重置当前配置
+            _updatingPresets = true;
+            try
             {
-                new()
+                Presets = new List<Preset>
                 {
-                    Id = "default",
-                    Name = LocalizationProvider.Get("Preset.Default"),
-                    Config = new CrosshairConfig(),
-                    IsDefault = true
-                }
-            };
+                    new()
+                    {
+                        Id = "default",
+                        Name = LocalizationProvider.Get("Preset.Default"),
+                        Config = new CrosshairConfig(),
+                        IsDefault = true
+                    }
+                };
+
+                if (_lastSelectedPresetId != null)
+                    SelectedPreset = Presets.FirstOrDefault(p => p.Id == _lastSelectedPresetId);
+            }
+            finally
+            {
+                _updatingPresets = false;
+            }
         }
     }
 

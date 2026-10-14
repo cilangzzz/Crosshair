@@ -10,12 +10,12 @@
 
     <!--
       行排版规格（与 Cs2Page 统一）：
-      - 开关行：* / Auto 双列，标签居左，ToggleSwitch 药丸开关居右；子选项标签缩进 24
+      - 开关行：* / Auto 双列，标签居左，ToggleSwitch 矩形微圆角开关居右（滑块同为方圆）；子选项与父项同列缩进
       - 下拉行：* / Auto 双列，ComboBox 宽 160
       - 滑杆行：* / 160 / 64 三列（标签 / CustomSlider / NumericTextBox）
       - 分组小标题：FontSize 11 次要色，Margin 0,14,0,4
     -->
-    <Grid Margin="20,12,20,0">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -231,6 +231,85 @@
 
                         <Button Content="{loc:Loc Key=Action.CopyToClipboard}" Command="{Binding CopyLaunchOptionsCommand}"
                                 Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" Padding="12,4" FontSize="12" Margin="0,10,0,0"/>
+
+                        <!-- 游戏设置（settings.cfg；与启动参数同卡分区，与视频/画质等其他配置分开） -->
+                        <Separator Background="{DynamicResource BorderBrush}" Margin="0,14"/>
+                        <TextBlock Text="{loc:Loc Key=Apex.GameSettings}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" Margin="0,0,0,4"/>
+
+                        <!-- 鼠标灵敏度 -->
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="64"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.MouseSensitivity}" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1" Value="{Binding SettingsConfig.MouseSensitivity, Mode=TwoWay}"
+                                    Minimum="0.1" Maximum="10.0" SmallChange="0.1" LargeChange="0.5"
+                                    Style="{StaticResource CustomSlider}" Margin="8,0"/>
+                            <TextBox Grid.Column="2" Text="{Binding SettingsConfig.MouseSensitivity, StringFormat={}{0:F2}, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+
+                        <!-- 鼠标加速 -->
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.MouseAcceleration}" VerticalAlignment="Center"/>
+                            <CheckBox Grid.Column="1"
+                                      IsChecked="{Binding SettingsConfig.MAcceleration, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
+                                      Style="{StaticResource ToggleSwitch}"/>
+                        </Grid>
+
+                        <!-- FOV -->
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="64"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.FieldOfView}" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1" Value="{Binding SettingsConfig.ClFovScale, Mode=TwoWay}"
+                                    Minimum="1.0" Maximum="1.35" SmallChange="0.01" LargeChange="0.05"
+                                    Style="{StaticResource CustomSlider}" Margin="8,0"/>
+                            <TextBox Grid.Column="2" Text="{Binding SettingsConfig.ClFovScale, StringFormat={}{0:F2}, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+
+                        <!-- FPS -->
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="64"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.MaxFPS}" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1" Value="{Binding SettingsConfig.FpsMax, Mode=TwoWay}"
+                                    Minimum="0" Maximum="300" Style="{StaticResource CustomSlider}" Margin="8,0"/>
+                            <TextBox Grid.Column="2" Text="{Binding SettingsConfig.FpsMax, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
+                        </Grid>
+
+                        <!-- 显示选项 -->
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.ShowFPS}" VerticalAlignment="Center"/>
+                            <CheckBox Grid.Column="1"
+                                      IsChecked="{Binding SettingsConfig.ClShowfps, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
+                                      Style="{StaticResource ToggleSwitch}"/>
+                        </Grid>
+                        <Grid Margin="0,6,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.ShowPosition}" VerticalAlignment="Center"/>
+                            <CheckBox Grid.Column="1"
+                                      IsChecked="{Binding SettingsConfig.ClShowpos, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
+                                      Style="{StaticResource ToggleSwitch}"/>
+                        </Grid>
                     </StackPanel>
                 </Border>
 
@@ -336,16 +415,16 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.EnableShadows}" VerticalAlignment="Center"/>
-                            <CheckBox Grid.Column="1"
+                            <CheckBox x:Name="EnableShadowsToggle" Grid.Column="1" Click="OnEnableShadowsClick"
                                       IsChecked="{Binding VideoConfig.ShadowEnable, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                       Style="{StaticResource ToggleSwitch}"/>
                         </Grid>
-                        <Grid Margin="0,6,0,0">
+                        <Grid Margin="0,6,0,0" IsEnabled="{Binding IsChecked, ElementName=EnableShadowsToggle}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.CascadeShadowMaps}" VerticalAlignment="Center" Margin="24,0,0,0"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.CascadeShadowMaps}" VerticalAlignment="Center"/>
                             <CheckBox Grid.Column="1"
                                       IsChecked="{Binding VideoConfig.CsmEnabled, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                       Style="{StaticResource ToggleSwitch}"/>
@@ -390,16 +469,16 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.VolumetricLighting}" VerticalAlignment="Center"/>
-                            <CheckBox Grid.Column="1"
+                            <CheckBox x:Name="VolumetricLightingToggle" Grid.Column="1" Click="OnVolumetricLightingClick"
                                       IsChecked="{Binding VideoConfig.VolumetricLighting, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                       Style="{StaticResource ToggleSwitch}"/>
                         </Grid>
-                        <Grid Margin="0,6,0,0">
+                        <Grid Margin="0,6,0,0" IsEnabled="{Binding IsChecked, ElementName=VolumetricLightingToggle}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.VolumetricFog}" VerticalAlignment="Center" Margin="24,0,0,0"/>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.VolumetricFog}" VerticalAlignment="Center"/>
                             <CheckBox Grid.Column="1"
                                       IsChecked="{Binding VideoConfig.VolumetricFog, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                       Style="{StaticResource ToggleSwitch}"/>
@@ -472,88 +551,6 @@
                     </StackPanel>
                 </Border>
 
-                <!-- ══════════ 游戏设置 ══════════ -->
-                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                    <StackPanel>
-                        <TextBlock Text="{loc:Loc Key=Apex.GameSettings}" Style="{StaticResource SectionHeader}"/>
-
-                        <!-- 鼠标灵敏度 -->
-                        <Grid Margin="0,10,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="160"/>
-                                <ColumnDefinition Width="64"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.MouseSensitivity}" VerticalAlignment="Center"/>
-                            <Slider Grid.Column="1" Value="{Binding SettingsConfig.MouseSensitivity, Mode=TwoWay}"
-                                    Minimum="0.1" Maximum="10.0" SmallChange="0.1" LargeChange="0.5"
-                                    Style="{StaticResource CustomSlider}" Margin="8,0"/>
-                            <TextBox Grid.Column="2" Text="{Binding SettingsConfig.MouseSensitivity, StringFormat={}{0:F2}, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
-                        </Grid>
-
-                        <!-- 鼠标加速 -->
-                        <Grid Margin="0,10,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.MouseAcceleration}" VerticalAlignment="Center"/>
-                            <CheckBox Grid.Column="1"
-                                      IsChecked="{Binding SettingsConfig.MAcceleration, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
-                                      Style="{StaticResource ToggleSwitch}"/>
-                        </Grid>
-
-                        <!-- FOV -->
-                        <Grid Margin="0,10,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="160"/>
-                                <ColumnDefinition Width="64"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.FieldOfView}" VerticalAlignment="Center"/>
-                            <Slider Grid.Column="1" Value="{Binding SettingsConfig.ClFovScale, Mode=TwoWay}"
-                                    Minimum="1.0" Maximum="1.35" SmallChange="0.01" LargeChange="0.05"
-                                    Style="{StaticResource CustomSlider}" Margin="8,0"/>
-                            <TextBox Grid.Column="2" Text="{Binding SettingsConfig.ClFovScale, StringFormat={}{0:F2}, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
-                        </Grid>
-
-                        <!-- FPS -->
-                        <Grid Margin="0,10,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="160"/>
-                                <ColumnDefinition Width="64"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.MaxFPS}" VerticalAlignment="Center"/>
-                            <Slider Grid.Column="1" Value="{Binding SettingsConfig.FpsMax, Mode=TwoWay}"
-                                    Minimum="0" Maximum="300" Style="{StaticResource CustomSlider}" Margin="8,0"/>
-                            <TextBox Grid.Column="2" Text="{Binding SettingsConfig.FpsMax, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
-                        </Grid>
-
-                        <!-- 显示选项 -->
-                        <Grid Margin="0,10,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.ShowFPS}" VerticalAlignment="Center"/>
-                            <CheckBox Grid.Column="1"
-                                      IsChecked="{Binding SettingsConfig.ClShowfps, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
-                                      Style="{StaticResource ToggleSwitch}"/>
-                        </Grid>
-                        <Grid Margin="0,6,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.ShowPosition}" VerticalAlignment="Center"/>
-                            <CheckBox Grid.Column="1"
-                                      IsChecked="{Binding SettingsConfig.ClShowpos, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
-                                      Style="{StaticResource ToggleSwitch}"/>
-                        </Grid>
-                    </StackPanel>
-                </Border>
-
                 <!-- ══════════ 瞄准镜灵敏度 ══════════ -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
@@ -564,13 +561,13 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.PerScopeSensitivity}" VerticalAlignment="Center"/>
-                            <CheckBox Grid.Column="1"
+                            <CheckBox x:Name="PerScopeSensitivityToggle" Grid.Column="1"
                                       IsChecked="{Binding SettingsConfig.MouseUsePerScopeSensitivityScalars, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
                                       Style="{StaticResource ToggleSwitch}"/>
                         </Grid>
 
                         <!-- 1x -->
-                        <Grid Margin="0,10,0,0">
+                        <Grid Margin="0,10,0,0" IsEnabled="{Binding IsChecked, ElementName=PerScopeSensitivityToggle}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="160"/>
@@ -584,7 +581,7 @@
                         </Grid>
 
                         <!-- 2x -->
-                        <Grid Margin="0,10,0,0">
+                        <Grid Margin="0,10,0,0" IsEnabled="{Binding IsChecked, ElementName=PerScopeSensitivityToggle}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="160"/>
@@ -598,7 +595,7 @@
                         </Grid>
 
                         <!-- 3x -->
-                        <Grid Margin="0,10,0,0">
+                        <Grid Margin="0,10,0,0" IsEnabled="{Binding IsChecked, ElementName=PerScopeSensitivityToggle}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="160"/>
@@ -612,7 +609,7 @@
                         </Grid>
 
                         <!-- 4x -->
-                        <Grid Margin="0,10,0,0">
+                        <Grid Margin="0,10,0,0" IsEnabled="{Binding IsChecked, ElementName=PerScopeSensitivityToggle}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="160"/>
@@ -626,7 +623,7 @@
                         </Grid>
 
                         <!-- 6x -->
-                        <Grid Margin="0,10,0,0">
+                        <Grid Margin="0,10,0,0" IsEnabled="{Binding IsChecked, ElementName=PerScopeSensitivityToggle}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="160"/>
@@ -640,7 +637,7 @@
                         </Grid>
 
                         <!-- 8x/10x -->
-                        <Grid Margin="0,10,0,0">
+                        <Grid Margin="0,10,0,0" IsEnabled="{Binding IsChecked, ElementName=PerScopeSensitivityToggle}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="160"/>
@@ -867,7 +864,7 @@
         </controls:SmoothScrollViewer>
 
         <!-- 底部按钮 -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,16">
             <Button Content="{loc:Loc Key=Apex.ResetToDefault}" Command="{Binding ResetCommand}"
                     Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
             <Button Content="{loc:Loc Key=Apex.SaveConfiguration}" Command="{Binding SaveCommand}"

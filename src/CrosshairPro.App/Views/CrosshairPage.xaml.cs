@@ -200,6 +200,12 @@ public partial class CrosshairPage : UserControl
 
         var config = _viewModel.Config;
 
+        // 预览侧应用旋转（与 OverlayWindow 覆盖层的画布 RenderTransform 行为一致；
+        // 0° 清除变换避免残留上次角度）
+        canvas.RenderTransform = config.Rotation == 0
+            ? null
+            : new RotateTransform(config.Rotation, cx, cy);
+
         // 解析颜色
         Color baseColor;
         try

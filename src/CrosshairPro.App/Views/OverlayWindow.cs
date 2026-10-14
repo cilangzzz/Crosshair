@@ -115,6 +115,11 @@ public sealed class OverlayWindow : Window
         double cx = Width / 2;
         double cy = Height / 2;
 
+        // 旋转：对画布整体施加 RenderTransform（与预览 CrosshairCanvas 行为一致；0° 清除变换避免残留）
+        _canvas.RenderTransform = _config.Rotation == 0
+            ? null
+            : new RotateTransform(_config.Rotation, cx, cy);
+
         // 亮度：调整颜色明暗（100=原色，0=黑色，200=白色）
         var baseColor = (Color)ColorConverter.ConvertFromString(_config.Color);
         var color = ApplyBrightness(baseColor, _config.Brightness);

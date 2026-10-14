@@ -27,6 +27,9 @@
             <!-- UTC time to local time string (preset creation time) -->
             <local:UtcToLocalTimeConverter x:Key="UtcToLocalTimeConverter"/>
 
+            <!-- Game tab title: prefer DisplayNameLocKey, fallback to DisplayName -->
+            <local:GameProfileTitleConverter x:Key="GameProfileTitleConverter"/>
+
             <!-- Global implicit styles (reference design tokens) -->
             <Style TargetType="Window">
                 <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
