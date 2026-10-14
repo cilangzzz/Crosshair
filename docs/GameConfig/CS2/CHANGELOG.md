@@ -5,6 +5,60 @@
 
 ---
 
+## [2026-10-14] style: 布尔行改用药丸开关（ToggleSwitch）
+
+**类型**: style
+**提交**: 未提交
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| src/CrosshairPro.App/Views/GamePages/Cs2Page.xaml | +7/-0 | Bool 行模板改为「标签居左 + `ToggleSwitch` 开关居右」双列行，与 Apex 页开关行规格一致 |
+
+### 影响范围
+- **样式**: `ToggleSwitch` 定义见 ControlStyles.xaml（详见 [App/CHANGELOG](../../../App/CHANGELOG.md) 同日条目）；fullscreen 等布尔项的绑定与数值语义不变
+
+---
+
+## [2026-10-14] feat: CS2 页支持生成配置文件，UI 绑定改模板选择器
+
+**类型**: feat
+**提交**: 未提交
+**风险**: MEDIUM
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| src/CrosshairPro.App/Views/GamePages/Cs2Page.xaml | +125/-83 | 配置项经 `ConfigItemTemplateSelector` 按 `ConfigItemType` 渲染统一行模板（含 String 行模板）；新增底部"配置管理"卡 |
+| src/CrosshairPro.App/ViewModels/Cs2ConfigViewModel.cs | +111/-0 | `GenerateConfigFileCommand` 生成 exec 用 `crosshairpro_cs2.cfg`（fps_max/cl_showfps 白名单 cvar，bool 渲染为 1/0；启动项/视频设置以注释输出，UTF-8 无 BOM）；`OpenConfigFolderCommand` 定位本地配置 |
+| src/CrosshairPro.App/ViewModels/ConfigItemWrapper.cs | +22/-1 | `DisplayName` 项 Key→本地化键映射，修复英文界面显示策略层硬编码中文的回归 |
+| docs/GameConfig/CS2/pitfalls.md | ~2 处 | §18 索引绑定坑点标记已解决（改模板选择器渲染）；"复用 Apex 本地化键"怪癖已修复（改用 Cs2.* 键） |
+
+### 影响范围
+- **VAC 边界不变**：生成的 .cfg 仅含 fps_max/cl_showfps 安全 cvar，且由用户手动放置，应用仍不直接写 video.txt / config.cfg / autoexec.cfg
+- **策略顺序耦合下降**：条目级绑定改按类型模板渲染，调整 `CreateCS2Strategy()` 条目顺序不再导致页面错绑；条目 Key 仍被生成命令按名引用（fps_max/cl_showfps/fullscreen/resolution/aspect_ratio/refresh_rate），改 Key 前需同步 `BuildConfigFileContent()`
+
+---
+
+## [2026-10-14] docs: 内置游戏收缩为 CS2/Apex，同步 CS2 协议文档
+
+**类型**: docs
+**提交**: 未提交
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| docs/GameConfig/CS2/pitfalls.md | ~6 处 | 移除对已删除的 `CreateCSGOStrategy()`/`builtin-csgo` 注册的引用；§10 改写为"内置仅注册 CS2，CS:GO 不在档案列表"；§18 删除 builtin-csgo 克隆绑定坑点 |
+| docs/GameConfig/CS2/integration.md | ~2 处 | §10 差异表移除 Valorant 列与 CS:GO 集成行；Priority 注释去掉 Overwatch2 对照 |
+| docs/GameConfig/CS2/data-model.md | -1 | 删除 builtin-csgo 策略克隆说明 |
+
+### 影响范围
+- **背景**: `GameProfile.BuiltIn` 与 `GameConfigService` 已收缩为 CS2/Apex 两款（见 Core/Application CHANGELOG 同日条目）；CS2 vs CS:GO 命令差异等协议知识保留（仍适用于配置迁移场景）
+
+---
+
 ## [2026-09-01] feat: add CS2 config support and update docs
 
 **类型**: feat

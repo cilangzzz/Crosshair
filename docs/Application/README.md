@@ -20,7 +20,7 @@ CrosshairPro.Application/
 ├── Interfaces/
 │   ├── IConfigurationService.cs         # 准心配置服务接口
 │   ├── IPresetService.cs                # 预设服务接口
-│   ├── IGameConfigService.cs            # 游戏配置服务接口（内置 8 款游戏策略）
+│   ├── IGameConfigService.cs            # 游戏配置服务接口（内置 CS2/Apex 两款游戏策略）
 │   └── IApexConfigService.cs            # Apex Legends 配置服务接口（含 BackupFileInfo 模型）
 ├── Services/
 │   ├── ConfigurationService.cs          # 准心配置服务实现
@@ -40,25 +40,19 @@ CrosshairPro.Application/
 |----------|--------|------|----------|
 | `IConfigurationService` | `ConfigurationService` | 当前准心配置的加载/保存/重置/深拷贝 | [api-configuration.md](api-configuration.md) |
 | `IPresetService` | `PresetService` | 预设增删改查、导入导出、当前预设持久化 | [api-preset.md](api-preset.md) |
-| `IGameConfigService` | `GameConfigService` | 8 款内置游戏的配置策略定义与配置存取 | [api-gameconfig.md](api-gameconfig.md) |
+| `IGameConfigService` | `GameConfigService` | 内置游戏（CS2/Apex）的配置策略定义与配置存取 | [api-gameconfig.md](api-gameconfig.md) |
 | `IApexConfigService` | `ApexConfigService` | Apex 的 videoconfig.txt / settings.cfg 读写、备份恢复、启动选项 | [api-gameconfig.md](api-gameconfig.md) |
 
 四个服务接口均不定义事件；配置变更通知依赖数据模型自身的 `PropertyChanged`（见 [../Core/README.md](../Core/README.md)）。
 
 ## 内置游戏配置策略
 
-`GameConfigService` 在构造时注册 8 款游戏的配置策略，配置持久化到 `%APPDATA%/CrosshairPro/gameconfigs/{gameId}.json`（详见 [api-gameconfig.md](api-gameconfig.md)）：
+`GameConfigService` 在构造时注册 2 款游戏的配置策略，配置持久化到 `%APPDATA%/CrosshairPro/gameconfigs/{gameId}.json`（详见 [api-gameconfig.md](api-gameconfig.md)）：
 
 | 游戏 | GameId | 支持启动项 |
 |------|--------|------------|
 | CS2 | `builtin-cs2` | 是 |
-| Valorant | `builtin-valorant` | 否 |
 | Apex Legends | `builtin-apex` | 是 |
-| Overwatch 2 | `builtin-overwatch2` | 否 |
-| PUBG | `builtin-pubg` | 是 |
-| Fortnite | `builtin-fortnite` | 否 |
-| Rainbow Six | `builtin-r6` | 是 |
-| CS:GO | `builtin-csgo` | 是（复用 CS2 策略定义） |
 
 ## 模块依赖
 

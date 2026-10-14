@@ -5,6 +5,24 @@
 
 ---
 
+## [2026-10-14] feat: 内置游戏档案仅保留 CS2 与 Apex
+
+**类型**: feat
+**提交**: 未提交
+**风险**: MEDIUM
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| src/CrosshairPro.Core/Models/GameProfile.cs | +0/-43 | `BuiltIn.GetAll()` 仅保留 `builtin-cs2`（Counter-Strike 2）与 `builtin-apex`（Apex Legends），移除 CS:GO/Valorant/Overwatch 2/PUBG/Fortnite/Rainbow Six Siege 六款档案 |
+
+### 影响范围
+- **API**: `GameProfile.BuiltIn.GetAll()` 返回数量 8 → 2；`Matches()` 全等匹配与 `Priority` 语义不变
+- **跨模块**: Application 层 `GameConfigService` 同步移除 6 款游戏策略（见本模块同日 Application CHANGELOG）；App 层 `GamesViewModel` 游戏选择器随数据源自动缩减为两款，无需改动（`GamePageSelector` 本就只映射 builtin-apex/builtin-cs2）
+- **兼容性**: 旧版写入的 `%APPDATA%/CrosshairPro/gameconfigs/builtin-{csgo,valorant,overwatch2,pubg,fortnite,r6}.json` 残留文件不再被读取（无对应策略），也不会被删除
+
+---
+
 ## [2026-08-10] feat: add localization support and improve UI components
 
 **类型**: feat

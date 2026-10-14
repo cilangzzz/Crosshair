@@ -104,7 +104,7 @@ ConfigUpdated、ToggleCrosshairRequested、SelectImageRequested、SavePresetRequ
 
 | 方法 | 说明 |
 |------|------|
-| SavePresetWithNameAsync(name) | 用 CloneConfig 深拷贝当前配置创建 Preset，保存并刷新列表，持久化当前预设 ID |
+| SavePresetWithNameAsync(name) | 用 CloneConfig 深拷贝当前配置创建 Preset，重名时自动在末尾追加数字序号（`x`→`x (1)`→`x (2)`，自带序号则续起），保存并刷新列表，持久化当前预设 ID |
 | ImportPresetFromFileAsync(filePath) | ImportPresetAsync 导入后刷新列表并选中 |
 | ExportPresetToFileAsync(filePath) | 将当前配置（深拷贝）导出为预设文件 |
 | InitializeAsync（私有） | 恢复上次预设 ID → LoadPresets → 选中目标预设 → 触发 ConfigUpdated |
@@ -128,7 +128,7 @@ public partial class GamesViewModel : ObservableObject
 
 | 成员 | 说明 |
 |------|------|
-| Games | 来自 `GameProfile.BuiltIn.GetAll()` 的 8 个内置游戏（CS2、CS:GO、Valorant、Apex Legends、Overwatch 2、PUBG、Fortnite、Rainbow Six Siege），见 [../Core/data-model.md](../Core/data-model.md) |
+| Games | 来自 `GameProfile.BuiltIn.GetAll()` 的 2 个内置游戏（Counter-Strike 2、Apex Legends），见 [../Core/data-model.md](../Core/data-model.md) |
 | CurrentGameId | 当前选中游戏 ID（GamesPage 的 ContentControl 绑定它驱动 GamePageSelector） |
 | SelectedGame | 当前选中的游戏，变更时同步 IsSelected 标记与 CurrentGameId |
 | SelectGameCommand(game) | 选择游戏（列表按钮绑定） |
@@ -174,6 +174,7 @@ ResolutionOptions（13 档分辨率）、TextureQualityOptions（最高/-1～低
 | RestoreVideoConfigBackupCommand / RestoreSettingsConfigBackupCommand(backup) | 从备份恢复并刷新 |
 | DeleteBackupCommand(backup) | 删除备份文件 |
 | CopyLaunchOptionsCommand | 复制当前生效的启动项到剪贴板 |
+| GenerateLaunchOptionsFileCommand | SaveFileDialog 将当前启动项导出为文本文件（"配置管理"卡内） |
 | ApplyPresetCommand(name) | 应用竞技优化 / 高画质 / 默认预设（VideoConfig 整体替换） |
 | SaveCommand | 保存 VideoConfig + SettingsConfig + LaunchOptions（未安装时 Toast 提示） |
 | ResetCommand | 恢复默认并立即保存 |
@@ -195,6 +196,7 @@ public partial class Cs2ConfigViewModel : ObservableObject
     [ObservableProperty] private int _launchOptionsLength;          // 联动 LaunchOptionsSummary
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private bool _isCs2Running;                // 进程 "cs2" 检测
+    [ObservableProperty] private string _configFilePath;            // 本地配置 builtin-cs2.json 路径
 }
 ```
 
@@ -205,10 +207,12 @@ public partial class Cs2ConfigViewModel : ObservableObject
 | SaveCommand | 新建/取回配置，写回 LaunchOptions 与 Sections 内非 null 值，SaveConfigAsync 持久化 |
 | ResetCommand | ResetToDefaultAsync 后重新 LoadAsync |
 | CopyLaunchOptionsCommand | 启动项复制到剪贴板 |
+| OpenConfigFolderCommand | explorer /select 定位本地配置文件 |
+| GenerateConfigFileCommand | SaveFileDialog 生成 exec 用的 .cfg（fps_max/cl_showfps cvar + 启动项/视频设置注释），UTF-8 无 BOM；值取自当前 Sections（含未保存修改） |
 | RefreshRunningStateCommand | 重新检测 cs2 进程 |
 | ToastRequested | 事件，由 Cs2Page 订阅（Loaded 订阅 / Unloaded 退订） |
 
-`Sections[i].Items[j]` 的顺序由策略定义决定，Cs2Page.xaml 通过固定索引绑定（见坑点文档）。
+Cs2Page.xaml 通过 `ConfigItemTemplateSelector`（按 `ConfigItemType` 选 开关/滑杆/下拉 统一行模板）渲染 `Sections[x].Items`，不再使用 `Items[j]` 固定索引绑定（坑点 §17 已消除）；分区标题仍为固定本地化键。
 
 ## ConfigItemWrapper / ConfigSectionWrapper
 
@@ -219,6 +223,8 @@ public partial class ConfigItemWrapper : ObservableObject
 {
     public ConfigItemDefinition Definition { get; }  // 元数据（Key/DisplayName/Type/Min/Max/Options…）
     [ObservableProperty] private object? _value;     // OnValueChanged 写回 _settings[Key]
+    // DisplayName：项 Key 命中 LocKeyByItemKey 映射（fullscreen/resolution/aspect_ratio/
+    // refresh_rate/fps_max/cl_showfps → Cs2.* 键）时取本地化文本，否则回退策略 DisplayName
 }
 
 public class ConfigSectionWrapper
@@ -228,7 +234,7 @@ public class ConfigSectionWrapper
 }
 ```
 
-构造时从 `Dictionary<string, object?> settings` 取当前值，缺省用 `DefaultValue`；Value 变更即写回字典，Save 时统一收集。ConfigItemType 枚举见 [../Core/data-model.md](../Core/data-model.md)。
+构造时从 `Dictionary<string, object?> settings` 取当前值，缺省用 `DefaultValue`；Value 变更即写回字典，Save 时统一收集。`DisplayName` 走本地化映射的原因：策略层 `DisplayName` 为硬编码中文，直接绑定会使英文界面回退中文。ConfigItemType 枚举见 [../Core/data-model.md](../Core/data-model.md)。
 
 ## OverlayWindow
 
@@ -264,7 +270,7 @@ public bool IsCrosshairVisible => _isVisible;
 准心配置页（UserControl）：
 
 - 左侧 PreviewCard：`GridCanvas`（7x7 网格）+ `CrosshairCanvas`（准心），网格在下层
-- 右侧控制面板：样式 ComboBox（SelectedStyleIndex）、自定义图片按钮（SelectedStyleIndex==5 时可见）、大小/间隙/粗细/透明度/亮度/中心点滑块+数值框、预设颜色 RadioButton（GroupName="CrosshairColor"）+ 彩虹渐变自定义色按钮、效果 Expander（描边开关+粗细、阴影开关）
+- 右侧控制面板：样式 ComboBox（SelectedStyleIndex）、自定义图片按钮（SelectedStyleIndex==5 时可见）、大小/间隙/粗细/透明度/亮度/中心点滑块+数值框、预设颜色 RadioButton（GroupName="CrosshairColor"）+ 彩虹渐变自定义色按钮、效果区平铺三行（启用描边/启用阴影为标签居左 + `ToggleSwitch` 药丸开关居右，描边粗细为缩进 24 的标签+NumericTextBox 行，无 Expander）
 - `SetViewModel(vm)` / `OnLoaded`：从 `Window.GetWindow(this).DataContext`（MainViewModel）取 CrosshairViewModel 并订阅 ConfigUpdated
 - `CustomColor_Click`：使用 `System.Windows.Forms.ColorDialog` 选色，直接写 `Config.Color`
 
@@ -281,9 +287,9 @@ public bool IsCrosshairVisible => _isVisible;
 | ApexPage | OnLoaded 设置 DataContext 并订阅 ToastRequested（无退订） | ToastNotification.ShowIn(Panel) |
 | Cs2Page | OnLoaded 订阅 + await LoadAsync()；OnUnloaded 退订 | 同上 |
 
-### GamePageSelector / PageTemplateSelector
+### 模板选择器（GamePageSelector / PageTemplateSelector / ConfigItemTemplateSelector）
 
-两个 DataTemplateSelector：
+三个 DataTemplateSelector：
 
 ```csharp
 public class GamePageSelector : DataTemplateSelector
@@ -298,7 +304,17 @@ public class PageTemplateSelector : DataTemplateSelector
     public DataTemplate? CrosshairTemplate { get; set; }  // PageType.Crosshair
     public DataTemplate? GamesTemplate { get; set; }      // PageType.Games
 }
+
+public class ConfigItemTemplateSelector : DataTemplateSelector  // Views/GamePages/
+{
+    public DataTemplate? BoolTemplate { get; set; }     // ConfigItemType.Bool → 开关行
+    public DataTemplate? IntTemplate { get; set; }      // ConfigItemType.Int → 滑杆+数值框行
+    public DataTemplate? EnumTemplate { get; set; }     // ConfigItemType.Enum → 下拉行
+    public DataTemplate? StringTemplate { get; set; }   // ConfigItemType.String → 文本行
+}
 ```
+
+Cs2Page 资源中声明 `ConfigItemTemplateSelector` 并为三/四类模板提供统一行规格（开关行「标签居左 + `ToggleSwitch` 药丸开关居右」、滑杆行 `*/160/64` 三列、下拉行 ComboBox 宽 160），ApexPage 手写行遵循同一规格。
 
 ## 自定义控件
 
@@ -350,7 +366,7 @@ public string? GetInputResult();  // 从 Tag 中取输入框文本
 
 | 类型 | 说明 |
 |------|------|
-| SmoothScrollViewer | ScrollViewer 子类；依赖属性 `ScrollDuration`（250ms）、`ScrollStep`（32px）、`EasingMode`（EaseOut）、`IsSmoothScrollEnabled`；OnMouseWheel 拦截后用 CompositionTarget.Rendering + CubicEase 驱动平滑滚动 |
+| SmoothScrollViewer | ScrollViewer 子类；依赖属性 `ScrollDuration`（250ms）、`ScrollStep`（120px）、`EasingMode`（EaseOut）、`IsSmoothScrollEnabled`；OnMouseWheel 拦截后用 CompositionTarget.Rendering + CubicEase 驱动平滑滚动，动画期间新滚轮事件在原目标偏移上累加（连续滚动速度叠加） |
 | ScrollViewerBehavior | 附加属性 `VerticalOffset`，变更时调用 `ScrollToVerticalOffset`（供样式内动画驱动滚动位置） |
 
 ## 值转换器
@@ -441,7 +457,7 @@ public string? GetInputResult();  // 从 Tag 中取输入框文本
 
 `ControlStyles.xaml` 合并 DesignTokens.xaml 与 IconGeometries.xaml（App.xaml 只需合并它一个）。样式键：
 
-SectionHeader、BodyText、PrimaryButton、SecondaryButton、AccentButton、CustomSlider、CustomTextBox、NumericTextBox、CustomComboBox、CompactComboBox、CustomCheckBox、CustomExpander、ColorSwatchRadio、CardBorder、PreviewCard、TitleBarButton、TitleBarCloseButton、CustomScrollBar、CustomScrollViewer、SmoothScrollViewer、PrimaryIconButton、TransparentIconButton、DangerIconButton，以及共享缓动资源 `SnappyEase`（CubicEase, EaseOut）。悬停/聚焦过渡以 150ms 为主（约 29/47 处），实际 100–250ms 不等（如 CustomTextBox 聚焦 200ms、CustomCheckBox 悬停 120ms、ColorSwatchRadio 悬停 100ms、PreviewCard 悬停 250ms；CardBorder 无悬停动画）。
+SectionHeader、BodyText、PrimaryButton、SecondaryButton、AccentButton、CustomSlider、CustomTextBox、NumericTextBox、CustomComboBox、CompactComboBox、CustomCheckBox、ToggleSwitch、CustomExpander、ColorSwatchRadio、CardBorder、PreviewCard、TitleBarButton、TitleBarCloseButton、CustomScrollBar、CustomScrollViewer、SmoothScrollViewer、PrimaryIconButton、TransparentIconButton、DangerIconButton，以及共享缓动资源 `SnappyEase`（CubicEase, EaseOut）。悬停/聚焦过渡以 150ms 为主（约 29/47 处），实际 100–250ms 不等（如 CustomTextBox 聚焦 200ms、CustomCheckBox 悬停 120ms、ColorSwatchRadio 悬停 100ms、PreviewCard 悬停 250ms；CardBorder 无悬停动画）。
 
 App.xaml 另定义 Window/TextBlock/Button/TextBox/ComboBox/CheckBox/Expander 的隐式全局样式（均基于上述键）。
 

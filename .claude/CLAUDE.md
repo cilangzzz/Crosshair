@@ -40,7 +40,7 @@ src/
     └── Views/                    # OverlayWindow, CrosshairPage, GamesPage, GamePages/(ApexPage, Cs2Page, GamePageSelector)
 ```
 
-（App 根目录另有 App.xaml(.cs)、MainWindow.xaml(.cs) 和 4 个值转换器）
+（App 根目录另有 App.xaml(.cs)、MainWindow.xaml(.cs) 和 5 个值转换器）
 
 ## 模块索引
 
@@ -68,7 +68,7 @@ src/
 ┌─────────────────────────────────────────────────────────────┐
 │              Application（业务服务，全部 Singleton）           │
 │  ConfigurationService   PresetService                        │
-│  GameConfigService（8 款内置游戏策略）                          │
+│  GameConfigService（2 款内置游戏策略）                          │
 │  ApexConfigService（Apex 专用：读写游戏真实配置 + 备份）        │
 └──────┬───────────────────┬──────────────────┬───────────────┘
        ▼                   ▼                  ▼

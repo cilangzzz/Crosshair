@@ -5,6 +5,85 @@
 
 ---
 
+## [2026-10-14] feat: 预设管理优化（创建时间/重名序号）与效果区平铺药丸开关
+
+**类型**: feat
+**提交**: 未提交（工作区）
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Views/CrosshairPage.xaml | +18/-12 | 效果区去掉 Expander 展开收起，平铺三行：启用描边/启用阴影改为「标签居左 + `ToggleSwitch` 药丸开关居右」（复用 ControlStyles 既有样式），描边粗细为缩进 24 的标签+NumericTextBox 行；区块标题由 `Crosshair.Advanced`（高级）改为 `Effects.Header`（效果） |
+| MainWindow.xaml.cs | +33/-10 | 预设管理弹窗列表项改为「名称 + 创建时间（11px 次级色，`IsDefault` 时经 DataTrigger 隐藏）+ 删除×」两行布局，创建时间 Tooltip 用新键 `Preset.CreatedAt`；列表 ItemsSource/SelectedItem 由一次性赋值改为对 CrosshairViewModel 的属性绑定（`LoadPresets()` 会替换整个列表实例，原写法弹窗内删除后不刷新） |
+| ViewModels/CrosshairViewModel.cs | +34/-3 | `SavePresetWithNameAsync` 重名处理：已存在同名预设时末尾追加数字序号（`x`→`x (1)`→`x (2)`；名称自带 ` (n)` 序号时从下一号续起），Toast/`CurrentPresetName` 使用最终名称 |
+| UtcToLocalTimeConverter.cs | +27/-0 | 新增 UTC DateTime → 本地时间字符串转换器（`yyyy-MM-dd HH:mm`），供创建时间绑定 |
+| App.xaml | +3/-0 | 注册 `UtcToLocalTimeConverter` 资源（代码构建的模板内亦直接实例化） |
+| Localization/Strings{,.zh-CN,.en}.resx | +3/each | 新增键 `Preset.CreatedAt`（创建时间 / Created at） |
+
+### 影响范围
+- **行为**: 效果开关绑定路径不变（`Config.Effects.Outline.Enabled` / `Config.Effects.Shadow.Enabled`），仅布局与视觉变化；保存同名预设不再静默产生重名而是自动追加序号去重
+- **排序**: 预设列表（工具栏 ComboBox + 管理弹窗）默认按创建时间降序，由 Application 层 `LoadAllPresetsAsync()` 实现（见 Application CHANGELOG 同日条目）；默认预设仍固定置顶
+- **样式**: `CustomExpander` 样式及 App.xaml 隐式 Expander 样式保留于 ControlStyles（当前无使用方，留作主题资源）
+- **跨模块**: Application 层 PresetService；文档同步 docs/App/*、docs/Application/api-preset.md（双树）
+
+---
+
+## [2026-10-14] style: 布尔选项行改为药丸开关（标签居左、开关居右）
+
+**类型**: style
+**提交**: 未提交（工作区）
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Themes/ControlStyles.xaml | +95/-0 | 新增 `ToggleSwitch` 样式：CheckBox 重模板为 40×22 药丸轨道 + 16px 圆形滑块；选中 `#0D260D` 底/`#00FF00` 强调色，滑块 150ms CubicEase 平移；悬停仅在未选中时静态提亮（MultiTrigger 带 IsChecked=False 条件，避免与 Checked 动画冲突）；禁用 Opacity 0.4 |
+| Views/GamePages/ApexPage.xaml | +165/-39 | 18 处 `CustomCheckBox` 勾选行改为 `*/Auto` 双列行（标签居左 + `ToggleSwitch` 居右）：自定义启动项面板 8 处（HighPriority/SkipIntro/DisableJoystick/WindowedMode/BorderlessWindow/ShowPositionInfo/DevMode/EnableConsole）+ 画质/性能/游戏/倍镜设置 10 处（EnableShadows/CascadeShadowMaps/VolumetricLighting/VolumetricFog/RagdollPhysics/DynamicResolution/MouseAcceleration/ShowFPS/ShowPosition/PerScopeSensitivity）；子选项改为标签缩进 24（开关仍右对齐）；文件头行排版规格注释同步 |
+| Views/GamePages/Cs2Page.xaml | +7/-0 | `ConfigItemTemplateSelector.BoolTemplate` 同步改为「标签居左 + ToggleSwitch 居右」双列行 |
+
+### 影响范围
+- **行为**: 布尔选项视觉由勾选框变为药丸开关，绑定与数值语义不变（仍为 CheckBox IsChecked；Apex 整型配置项继续经 IntToBoolConverter）
+- **样式**: `CustomCheckBox` 样式保留（CrosshairPage 等仍在使用），仅游戏配置页换用 `ToggleSwitch`；ControlStyles.xaml 工作区累计 diff 另含已记录的 SmoothScrollViewer ScrollStep +1/-1（见上文同日条目）
+- **跨模块**: 无；文档同步 docs/App/data-model.md、docs/GameConfig/CS2/CHANGELOG.md（双树）
+
+---
+
+## [2026-10-14] fix: 游戏配置导航图标改为设置样式
+
+**类型**: fix
+**提交**: 未提交（工作区）
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| MainWindow.xaml | +1/-1 | 左侧导航"游戏配置"TabNavItem 的 IconGeometry 由 `Gamepad` 改为 `Settings`（复用 IconGeometries.xaml 已有 `SettingsIconGeometry` ⚙ 齿轮图标，与准心图标同为线条风格） |
+
+### 影响范围
+- **行为**: 仅导航栏游戏配置入口图标变化；Tooltip/本地化/命令绑定不变
+- **跨模块**: 无；`GamepadIconGeometry` 资源保留（其他位置可复用），文档同步 docs/App/CHANGELOG.md（双树）
+
+---
+
+## [2026-10-14] fix: 加快 SmoothScrollViewer 滚轮滚动速度
+
+**类型**: fix
+**提交**: 未提交（工作区）
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Controls/SmoothScrollViewer.cs | ~3 处 | ScrollStep 默认值 32→120px；步长按实际 Delta 等比缩放（`-(e.Delta/120)*ScrollStep`，触控板小 Delta 不过跳）；动画期间新滚轮事件改为在 `_targetOffset` 上累加（连续滚动速度叠加），且动画中跳过目标相同早退守卫（避免误吞反向滚轮事件） |
+| Themes/ControlStyles.xaml | +1/-1 | `SmoothScrollViewer` 样式 ScrollStep setter 32→120 |
+
+### 影响范围
+- **行为**: CrosshairPage / ApexPage / Cs2Page 三处使用该样式的滚动区域每格滚轮滚动距离约为原来的 3.75 倍，快速连续滚动可叠加
+- **跨模块**: 无；文档同步 docs/App/data-model.md（双树）
+
+---
+
 ## [2026-09-01] feat: add CS2 config support and update docs
 
 **类型**: feat
@@ -80,6 +159,30 @@
 - **跨模块**: 无
 - **数据模型**: 无
 - **配置**: appstate.json 的 Language 改为窗口加载后异步读取
+
+---
+
+## [2026-10-14] feat: 统一 Apex/CS2 配置页排版，配置管理移至底部并支持生成配置文件
+
+**类型**: feat
+**提交**: 未提交
+**风险**: MEDIUM
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Views/GamePages/ConfigItemTemplateSelector.cs | +35/-0 | 新增：按 `ConfigItemType` 选择配置项统一行模板（Bool→开关 / Int→滑杆+数值框 / Enum→下拉 / String→文本） |
+| Views/GamePages/Cs2Page.xaml | +125/-83 | 配置项改经模板选择器渲染（含 String 行模板），消除 `Sections[x].Items[y]` 项级索引绑定；新增底部"配置管理"卡（本地配置路径 + 打开目录 + 生成配置文件）；底部按钮改用 `Cs2.*` 本地化键 |
+| Views/GamePages/ApexPage.xaml | +341/-301 | 行规格统一（开关 `CustomCheckBox`、滑杆行 `*/160/64` 三列、下拉行宽 160、子选项缩进 24）；"配置文件管理"卡自顶部移至最下方并更名"配置管理"，新增启动项文件生成行；修复历史空提示 int 绑定 Bool 转换器永不显示的问题；修复注释乱码 |
+| ViewModels/Cs2ConfigViewModel.cs | +111/-0 | 新增 `ConfigFilePath`、`OpenConfigFolderCommand`、`GenerateConfigFileCommand`（生成 exec 用 .cfg：fps_max/cl_showfps cvar + 启动项/视频设置注释；bool 渲染为 1/0；UTF-8 无 BOM；值取自当前 Sections 含未保存修改） |
+| ViewModels/ConfigItemWrapper.cs | +22/-1 | `DisplayName` 增加项 Key→本地化键映射（英文界面不再显示策略层硬编码中文），未映射项回退策略定义 |
+| ViewModels/ApexConfigViewModel.cs | +30/-0 | 新增 `GenerateLaunchOptionsFileCommand`（SaveFileDialog 导出当前启动项为文本文件） |
+| Localization/Strings.resx / Strings.zh-CN.resx / Strings.en.resx | 各 +54/-0 | 新增 18 键：Game.ConfigManagement/GenerateConfig/OpenConfigFolder 系列、Cs2.ResetToDefault/SaveConfiguration/LocalConfigFile/GenerateConfigDesc、Apex.ScopeSection/LaunchOptionsFile/GenerateLaunchOptionsDesc、Dialog.GenerateCs2Config/GenerateApexLaunchOptions、Filter.CfgFiles/TextFiles |
+
+### 影响范围
+- **UI**: 两页卡片顺序统一——Apex：启动选项→视频→画质→性能→游戏→瞄准镜→预设→**配置管理（底部）**；CS2：视频→游戏→启动项→**配置管理（底部）**
+- **CS2 生成文件**: `crosshairpro_cs2.cfg` 仅含安全白名单 cvar 与注释，不写游戏目录，用户自行放入 cfg 目录（编码 UTF-8 无 BOM，见 GameConfig/CS2/pitfalls.md §11）；坑点 App §17 / CS2 §18（索引绑定）标记已解决，CS2 底部按钮复用 Apex 本地化键的怪癖已修复
+- **兼容性**: 无持久化结构变更，无 DI 变更，本地化仅新增键
 
 ---
 

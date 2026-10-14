@@ -22,7 +22,7 @@ App 模块是整个应用的用户界面层，负责：
 ```
 CrosshairPro.App/
 ├── CrosshairPro.App.csproj                 # 项目文件（net8.0-windows / WPF，SupportedCultures: zh-CN;en）
-├── App.xaml                                # 应用资源：合并 ControlStyles，注册全局样式与 5 个转换器
+├── App.xaml                                # 应用资源：合并 ControlStyles，注册全局样式与 6 个转换器
 ├── App.xaml.cs                             # 应用入口：DI 容器、全局异常处理、语言初始化
 ├── AssemblyInfo.cs                         # ThemeInfo 程序集特性
 ├── MainWindow.xaml                         # 主窗口布局：标题栏 + 左侧导航 + 页面容器 + 底部工具栏/状态栏
@@ -31,6 +31,7 @@ CrosshairPro.App/
 ├── IntToBoolConverter.cs                   # int ↔ bool（0 = false，非 0 = true）
 ├── InverseBooleanToVisibilityConverter.cs  # 反向 bool → Visibility（true = Collapsed）
 ├── StringToVisibilityConverter.cs          # 非空字符串 → Visibility
+├── UtcToLocalTimeConverter.cs              # UTC DateTime → 本地时间字符串（yyyy-MM-dd HH:mm，预设创建时间）
 ├── ViewModels/
 │   ├── MainViewModel.cs                    # 主 ViewModel：页面导航 + 事件转发（含 PageType 枚举）
 │   ├── CrosshairViewModel.cs               # 准心配置 ViewModel：配置、预设加载/保存/导入/导出
@@ -49,7 +50,8 @@ CrosshairPro.App/
 │       ├── ApexPage.xaml.cs                # Apex 页逻辑：解析 ApexConfigViewModel、订阅 Toast
 │       ├── Cs2Page.xaml                    # CS2 配置页布局（视频/游戏设置/启动项）
 │       ├── Cs2Page.xaml.cs                 # CS2 页逻辑：解析 Cs2ConfigViewModel、加载配置、订阅 Toast
-│       └── GamePageSelector.cs             # 按 GameId（builtin-apex/builtin-cs2）选择页面模板
+│       ├── GamePageSelector.cs             # 按 GameId（builtin-apex/builtin-cs2）选择页面模板
+│       └── ConfigItemTemplateSelector.cs   # 按 ConfigItemType 选择配置项统一行模板（CS2 页）
 ├── Controls/
 │   ├── CrosshairPreview.cs                 # 准心预览控件（OnRender 绘制；当前 XAML 未引用，见数据模型）
 │   ├── DialogBase.cs                       # 对话框基类：统一无边框对话框、输入对话框工厂

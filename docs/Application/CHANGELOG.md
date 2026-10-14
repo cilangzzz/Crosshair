@@ -5,6 +5,40 @@
 
 ---
 
+## [2026-10-14] feat: LoadAllPresetsAsync 用户预设按创建时间降序
+
+**类型**: feat
+**提交**: 未提交（工作区）
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| src/CrosshairPro.Application/Services/PresetService.cs | +3/-1 | `LoadAllPresetsAsync()` 用户预设按 `CreatedAt` 降序排列（`OrderByDescending`，最新在前）后再插入默认预设 |
+
+### 影响范围
+- **行为**: 预设选择 ComboBox 与预设管理弹窗的列表顺序一致改为最新在前；默认预设仍固定在 `list[0]`；无迁移需要（CreatedAt 字段本已持久化）
+- **跨模块**: App 层 CrosshairViewModel/MainWindow 消费该顺序（见 App CHANGELOG 同日条目）；api-preset.md 文档同步（双树）
+
+---
+
+## [2026-10-14] feat: GameConfigService 仅保留 CS2 与 Apex 策略
+
+**类型**: feat
+**提交**: 未提交
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| src/CrosshairPro.Application/Services/GameConfigService.cs | +1/-221 | `InitializeStrategies()` 仅注册 `builtin-cs2` 与 `builtin-apex`；删除 `CreateValorantStrategy`/`CreateOverwatch2Strategy`/`CreatePUBGStrategy`/`CreateFortniteStrategy`/`CreateR6Strategy`/`CreateCSGOStrategy` 六个策略工厂方法 |
+
+### 影响范围
+- **API**: `GetStrategies()` 返回 2 项；`GetStrategy()` 对已移除 gameId 返回 null；`GetConfigAsync`/`SaveConfigAsync`/`ResetToDefaultAsync` 行为不变（仅对仍注册的游戏调用）；`ApplyConfigAsync` 仍为 TODO
+- **跨模块**: Core 层 `GameProfile.BuiltIn` 同步缩减为两款（见 Core CHANGELOG）；App 层 Cs2Page/ApexPage 与 `GamePageSelector` 不受影响
+
+---
+
 ## [2026-08-10] feat: add localization support and improve UI components
 
 **类型**: feat

@@ -35,7 +35,7 @@ public class PresetService : IPresetService
 }
 ```
 
-- `LoadAllPresetsAsync()` 自动在列表开头插入动态生成的默认预设（`Id = "default"`，不落盘）
+- `LoadAllPresetsAsync()` 自动在列表开头插入动态生成的默认预设（`Id = "default"`，不落盘）；用户预设按 `CreatedAt` 降序（最新在前）
 - 导出预设直接写文件，不经过 Repository（保持原 ID）
 - 当前预设ID经 `IAppStateRepository` 持久化
 
@@ -44,7 +44,7 @@ public class PresetService : IPresetService
 ```csharp
 public class GameConfigService : IGameConfigService
 {
-    private readonly Dictionary<string, GameConfigStrategy> _strategies;   // 8 款内置游戏策略
+    private readonly Dictionary<string, GameConfigStrategy> _strategies;   // 2 款内置游戏策略（CS2/Apex）
     private readonly string _configDir;                                    // %APPDATA%/CrosshairPro/gameconfigs/
     private readonly Dictionary<string, GameConfig> _configCache = new();  // 配置内存缓存
 }

@@ -74,7 +74,7 @@ src/
 
 ### 4. 游戏配置管理
 - **Apex Legends 专用通道**：直接读写游戏真实配置（videoconfig.txt / settings.cfg），支持备份、替换、恢复与启动项生成（ApexConfigService + ApexPage）
-- **通用策略通道**：内置 8 款 FPS 游戏（CS2、CS:GO、Valorant、Apex、Overwatch 2、PUBG、Fortnite、R6）配置档案（GameProfile + GameConfigStrategy），配置项支持布尔/整数/枚举/字符串类型，CS2 页面基于此通道（GameConfigService + Cs2Page）
+- **通用策略通道**：内置 2 款 FPS 游戏（CS2、Apex）配置档案（GameProfile + GameConfigStrategy），配置项支持布尔/整数/枚举/字符串类型，CS2 页面基于此通道（GameConfigService + Cs2Page）
 - 进程检测预留接口 IGameDetector
 
 ### 5. 本地化与 UI
@@ -96,7 +96,7 @@ src/
 ┌─────────────────────────────────────────────────────────────┐
 │              Application（业务服务，全部 Singleton）           │
 │  ConfigurationService   PresetService                        │
-│  GameConfigService（8 款内置游戏策略）                          │
+│  GameConfigService（2 款内置游戏策略）                          │
 │  ApexConfigService（Apex 专用：读写游戏真实配置 + 备份）        │
 └──────┬───────────────────┬──────────────────┬───────────────┘
        ▼                   ▼                  ▼

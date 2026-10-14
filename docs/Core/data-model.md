@@ -17,7 +17,7 @@ Preset ─── CrosshairConfig（配置快照）
     └── HotkeyBinding（热键绑定）
 
 GameProfile（游戏档案，Id 被 GameConfig / GameConfigStrategy 关联）
-    └── BuiltIn：内置 8 款游戏
+    └── BuiltIn：内置 2 款游戏（CS2/Apex）
 
 GameConfig（GameId → GameProfile.Id）
 GameConfigStrategy（GameId → GameProfile.Id）
@@ -194,18 +194,12 @@ public record GameInfo(string ProcessName, string DisplayName, int ProcessId, Da
 | IsSelected | bool | false | UI 选中态 |
 
 - `Matches(processName)`：与 ProcessName 做 `OrdinalIgnoreCase` 完全匹配。
-- 嵌套静态类 `BuiltIn`，`GetAll()` 返回内置 8 款游戏：
+- 嵌套静态类 `BuiltIn`，`GetAll()` 返回内置 2 款游戏：
 
 | Id | DisplayName | ProcessName | Priority | FullscreenOnly |
 |----|-------------|-------------|----------|----------------|
 | builtin-cs2 | Counter-Strike 2 | cs2 | 100 | 否 |
-| builtin-csgo | CS:GO | csgo | 90 | 否 |
-| builtin-valorant | Valorant | VALORANT-Win64-Shipping | 100 | 是 |
 | builtin-apex | Apex Legends | r5apex | 100 | 否 |
-| builtin-overwatch2 | Overwatch 2 | Overwatch | 100 | 否 |
-| builtin-pubg | PUBG | TslGame | 90 | 否 |
-| builtin-fortnite | Fortnite | FortniteClient-Win64-Shipping | 90 | 否 |
-| builtin-r6 | Rainbow Six Siege | RainbowSix | 90 | 否 |
 
 ## GameConfig — 游戏配置数据（GameConfig.cs）
 
@@ -215,7 +209,7 @@ public record GameInfo(string ProcessName, string DisplayName, int ProcessId, Da
 | LaunchOptions | string | 启动项参数；[ObservableProperty] 可观察 |
 | Settings | Dictionary&lt;string, object&gt; | 配置值字典，键对应 ConfigItemDefinition.Key；普通属性 |
 
-由 Application 层 `GameConfigService` 按各游戏策略创建与缓存（内置 CS2/Valorant/Apex/Overwatch2/PUBG 等策略），见 [../Application/README.md](../Application/README.md)。
+由 Application 层 `GameConfigService` 按各游戏策略创建与缓存（内置 CS2/Apex 策略），见 [../Application/README.md](../Application/README.md)。
 
 ## GameConfigStrategy — 游戏配置策略（GameConfigStrategy.cs）
 

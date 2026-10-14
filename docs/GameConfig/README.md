@@ -13,29 +13,21 @@ GameConfig 模块记录各游戏的**配置文件协议**（游戏侧配置文�
 | Apex Legends | [Apex/](Apex/README.md) | 完整：videoconfig.txt / settings.cfg 字段级协议 + 专用服务 `ApexConfigService`（真实读写游戏文件） |
 | Counter-Strike 2 | [CS2/](CS2/README.md) | 完整：配置协议 + `Cs2ConfigViewModel` 通用策略编辑（仅存本地 JSON，不写游戏文件） |
 
-### 仅内置档案的游戏（无独立子文档）
+### 内置游戏档案
 
-`GameProfile.BuiltIn`（`src/CrosshairPro.Core/Models/GameProfile.cs`）内置 8 个游戏档案，用于进程匹配与准心自动切换：
+`GameProfile.BuiltIn`（`src/CrosshairPro.Core/Models/GameProfile.cs`）内置 2 个游戏档案，用于进程匹配与准心自动切换；两款游戏均已有字段级协议子文档：
 
 | 游戏 | 进程名 | 通用策略启动项 |
 |------|--------|----------------|
 | Counter-Strike 2 | `cs2` | 支持 |
-| CS:GO | `csgo` | 支持（复用 CS2 策略） |
-| Valorant | `VALORANT-Win64-Shipping` | 不支持 |
 | Apex Legends | `r5apex` | 支持 |
-| Overwatch 2 | `Overwatch` | 不支持 |
-| PUBG | `TslGame` | 支持 |
-| Fortnite | `FortniteClient-Win64-Shipping` | 不支持 |
-| Rainbow Six Siege | `RainbowSix` | 支持 |
-
-这些游戏仅出现在通用策略（`GameConfigService`）与进程匹配（`GameProfile`）中，字段级配置协议未文档化。
 
 ## 两种配置通道
 
 应用对游戏配置有两条独立通道，不要混淆：
 
 1. **专用深度通道（仅 Apex）**：`IApexConfigService` 直接读写游戏真实配置文件（`videoconfig.txt`、`settings.cfg`），支持备份/替换/恢复。协议与坑点见 [Apex/](Apex/README.md)。
-2. **通用策略通道（8 个内置游戏）**：`IGameConfigService` 按 `GameConfigStrategy` 定义渲染可配置项，结果存到 CrosshairPro 自己的 JSON；`ApplyConfigAsync` 尚未实现写游戏文件（`GameConfigService.cs` 中为 TODO）。CS2 页面即基于此通道。
+2. **通用策略通道（2 个内置游戏）**：`IGameConfigService` 按 `GameConfigStrategy` 定义渲染可配置项，结果存到 CrosshairPro 自己的 JSON；`ApplyConfigAsync` 尚未实现写游戏文件（`GameConfigService.cs` 中为 TODO）。CS2 页面即基于此通道。
 
 ## 配置文件命名与存放规则
 

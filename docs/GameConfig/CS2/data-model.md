@@ -427,8 +427,6 @@ CS2 配置协议 → CrosshairPro 的字段映射与读写链路统一记录在 
 | game | `fps_max` | Int | `0` | Min 0，Max 999，"0 表示无限制" |
 | game | `cl_showfps` | Bool | `false` | — |
 
-> `builtin-csgo` 策略由 `CreateCSGOStrategy()` 克隆 CS2 策略并改写 `GameId`，两者字段相同但配置互相独立。
-
 ### GameConfig 持久化（CS2 实例）
 
 **存储路径**：`%APPDATA%\CrosshairPro\gameconfigs\builtin-cs2.json`（`System.Text.Json`，缩进格式）

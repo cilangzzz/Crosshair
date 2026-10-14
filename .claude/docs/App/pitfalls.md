@@ -247,9 +247,9 @@ private void OnUnloaded(object s, RoutedEventArgs e)
     => _viewModel?.ToastRequested -= OnToastRequested; // 退订
 ```
 
-## 17. Cs2Page 按 Sections 固定索引绑定
+## 17. Cs2Page 按 Sections 固定索引绑定（已解决）
 
-Cs2Page.xaml 通过 `Sections[x].Items[y]` 硬编码索引绑定配置项，调整 `CreateCS2Strategy()` 的分区/条目顺序会静默错绑。机制、XAML 示例与防御措施详见 [../GameConfig/CS2/pitfalls.md](../GameConfig/CS2/pitfalls.md) §18。
+Cs2Page.xaml 曾通过 `Sections[x].Items[y]` 硬编码索引绑定配置项，调整 `CreateCS2Strategy()` 的分区/条目顺序会静默错绑。2026-10 起改为 `ItemsControl` + `ConfigItemTemplateSelector`（按 `ConfigItemType` 选统一行模板）直接渲染 `Sections[x].Items`，项级索引绑定已消除；仅分区级 `Sections[x]` 保留。背景与细节见 [../GameConfig/CS2/pitfalls.md](../GameConfig/CS2/pitfalls.md) §18。
 
 ## 18. 运行时切换语言不会更新已生成的文本
 

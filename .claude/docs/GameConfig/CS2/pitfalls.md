@@ -42,7 +42,7 @@ foreach (var kvp in patchFields)
 
 ## 2. CS2 vs CS:GO 命令差异
 
-CS2 基于 Source 2，部分 CS:GO 命令被移除或语义变更。`CreateCSGOStrategy()` 复用 `CreateCS2Strategy()` 时需注意：
+CS2 基于 Source 2，部分 CS:GO 命令被移除或语义变更，在迁移 CS:GO 配置或编写 CS2 配置时需注意：
 
 | CS:GO 命令 | CS2 状态 | 影响 |
 |-----------|----------|------|
@@ -212,17 +212,16 @@ Steam 启动参数有长度限制（实测约 1023 字符）：
 
 ## 10. cs2.exe 与 csgo.exe 同时存在
 
-用户可能同时安装 CS2 和 CS:GO，进程名不同：
+用户可能同时安装 CS2 和 CS:GO，进程名不同；内置档案目前只注册了 CS2，CS:GO 不在 `GameProfile.BuiltIn` 列表中：
 
 | 游戏 | 进程名 | GameId |
 |------|--------|--------|
 | Counter-Strike 2 | `cs2.exe` | `builtin-cs2` |
-| Counter-Strike: Global Offensive | `csgo.exe` | `builtin-csgo` |
 
 **坑点**：
-- `CreateCSGOStrategy()` 直接克隆 CS2 策略并修改 `GameId`，两者配置完全独立
-- `GameProfile.Matches` 使用 `OrdinalIgnoreCase`，避免大小写问题
-- 用户从 CS:GO 升级到 CS2 时，需手动迁移 `autoexec.cfg`
+- `GameProfile.Matches` 使用 `OrdinalIgnoreCase` 全等匹配，`csgo.exe` 不会误匹配到 CS2 档案
+- 两者配置完全独立：CS:GO 的 `autoexec.cfg` 不会被 CS2 使用，升级时需手动迁移
+- 若未来为 CS:GO 重新建档，需同步补充 `GameConfigService` 策略定义
 
 ---
 
@@ -384,28 +383,21 @@ exec autoexec.cfg   ← 这行在 config.cfg 中
 
 ---
 
-## 18. UI 绑定依赖分区/项顺序
+## 18. UI 绑定依赖分区/项顺序（已解决）
 
-`Cs2Page.xaml` 通过**硬编码索引**绑定配置项，而非按键名查找：
+**历史问题**：`Cs2Page.xaml` 曾通过**硬编码索引**绑定配置项（如 `Sections[0].Items[3]` → refresh_rate），而非按键名查找：
 
 ```xml
-<!-- video 分区 -->
+<!-- 旧写法（已废弃） -->
 <CheckBox IsChecked="{Binding Sections[0].Items[0].Value, Mode=TwoWay}"/>   <!-- fullscreen -->
-<ComboBox SelectedItem="{Binding Sections[0].Items[1].Value, ...}"/>        <!-- resolution -->
-<ComboBox SelectedItem="{Binding Sections[0].Items[2].Value, ...}"/>        <!-- aspect_ratio -->
 <Slider Value="{Binding Sections[0].Items[3].Value, ...}"/>                 <!-- refresh_rate -->
-<!-- game 分区 -->
-<Slider Value="{Binding Sections[1].Items[0].Value, ...}"/>                 <!-- fps_max -->
-<CheckBox IsChecked="{Binding Sections[1].Items[1].Value, ...}"/>           <!-- cl_showfps -->
 ```
 
-**坑点**：
-- 调整 `CreateCS2Strategy()` 中 Sections/Items 的定义顺序，或增删中间的配置项，会让页面**静默错绑**（类型不匹配时仅产生绑定错误，不抛异常）
-- 例如在 `video` 分区头部插入新项，`Items[1]` 不再是 `resolution`，分辨率下拉框会绑到别的键
-- 同理，`builtin-csgo` 克隆 CS2 策略，改 CS2 顺序会连带影响 csgo 页面（若未来为其建页）
-- **防御**：修改策略定义顺序时，必须同步检查 `Cs2Page.xaml` 的全部 `Sections[x].Items[y]` 绑定（UI 侧视角另见 [../../App/pitfalls.md](../../App/pitfalls.md) §17）
+调整 `CreateCS2Strategy()` 的分区/条目顺序会让页面**静默错绑**（类型不匹配时仅产生绑定错误，不抛异常）。
 
-**相关怪癖**：Cs2Page 底部"恢复默认/保存配置"按钮复用了 Apex 的本地化键（`Apex.ResetToDefault`、`Apex.SaveConfiguration`），文案可接受但语义上应改用独立的 `Cs2.*` 键。
+**当前实现（2026-10 起）**：Cs2Page.xaml 改为 `ItemsControl` 绑定 `Sections[x].Items` 集合，经 `ConfigItemTemplateSelector` 按 `ConfigItemType` 选择统一行模板（开关/滑杆/下拉），项的增删与排序不再影响绑定；仅分区级索引 `Sections[x]` 保留（分区数量与顺序由策略稳定定义）。修改策略条目仍建议保持 Key 不变——`GenerateConfigFileCommand` 按键名（fps_max/cl_showfps 等）取值，与顺序无关。
+
+**相关怪癖**（已解决）：Cs2Page 底部"恢复默认/保存配置"按钮曾复用 Apex 的本地化键（`Apex.ResetToDefault`、`Apex.SaveConfiguration`），2026-10 起改用独立的 `Cs2.ResetToDefault`、`Cs2.SaveConfiguration` 键。
 
 ---
 

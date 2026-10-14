@@ -31,7 +31,7 @@
 - **签名**: `Task<IReadOnlyList<Preset>> LoadAllPresetsAsync()`
 - **参数**: 无
 - **返回值**: 预设列表，`list[0]` 始终是默认预设
-- **行为**: 调用 `_presetRepository.LoadPresetsAsync()` 后在索引 0 处插入 `new Preset { Id = "default", Name = "默认配置", Config = new CrosshairConfig(), IsDefault = true }`。默认预设不落盘，每次调用都生成新实例（见 [pitfalls.md](pitfalls.md) 坑点 3）。
+- **行为**: 调用 `_presetRepository.LoadPresetsAsync()` 后按 `CreatedAt` **降序**排列用户预设（最新在前），再在索引 0 处插入 `new Preset { Id = "default", Name = "默认配置", Config = new CrosshairConfig(), IsDefault = true }`。默认预设不落盘，每次调用都生成新实例（见 [pitfalls.md](pitfalls.md) 坑点 3）。
 
 ### SavePresetAsync(Preset preset)
 

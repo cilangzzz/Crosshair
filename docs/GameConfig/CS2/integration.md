@@ -63,7 +63,7 @@ new GameProfile
     Id = "builtin-cs2",
     DisplayName = "Counter-Strike 2",
     ProcessName = "cs2",          // cs2.exe 主进程
-    Priority = 100,               // 与 Apex/Overwatch2 同档
+    Priority = 100,               // 与 Apex 同档
     // FullscreenOnly = false     // CS2 在窗口化下也能叠加准心
 }
 ```
@@ -437,22 +437,21 @@ GameProfile (cs2)
 
 ---
 
-## 10. CS2 vs 其他游戏的差异
+## 10. CS2 vs 其他内置游戏的差异
 
-| 维度 | CS2 | Apex Legends | Valorant |
-|------|-----|--------------|----------|
-| 启动项支持 | ✅ | ✅ | ❌ |
-| 配置文件位置 | Steam 云 | 本地 Saved Games | 不支持 |
-| autoexec | ✅ | ❌ | ❌ |
-| 视频配置格式 | KeyValues | KeyValues | 专用客户端 |
-| 反作弊 | VAC | Easy Anti-Cheat | Vanguard |
-| CrosshairPro 深度集成 | 仅 Strategy | 完整服务（`IApexConfigService`） | 仅 Strategy |
+| 维度 | CS2 | Apex Legends |
+|------|-----|--------------|
+| 启动项支持 | ✅ | ✅ |
+| 配置文件位置 | Steam 云 | 本地 Saved Games |
+| autoexec | ✅ | ❌ |
+| 视频配置格式 | KeyValues | KeyValues |
+| 反作弊 | VAC | Easy Anti-Cheat |
+| CrosshairPro 深度集成 | 通用 Strategy + 专用页面 | 完整服务（`IApexConfigService`） |
 
-**集成优先级**：
+**集成状态**：
 - CS2: 通用 Strategy + 专用页面（Cs2Page/Cs2ConfigViewModel）✅
-- Apex: 专用服务（备份/恢复/导入导出）✅
-- CS:GO: 复用 CS2 Strategy ✅
-- 其他: 仅通用 Strategy
+- Apex: 专用服务（备份/恢复/导入导出）+ 通用 Strategy ✅
+- 其他游戏: 未内置
 
 ---
 

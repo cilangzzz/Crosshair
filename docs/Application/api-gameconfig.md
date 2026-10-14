@@ -2,7 +2,7 @@
 
 游戏配置域包含两个独立接口：
 
-- **`IGameConfigService`**: 通用游戏配置 — 内置 8 款游戏的策略元数据定义 + 配置存取（JSON）
+- **`IGameConfigService`**: 通用游戏配置 — 内置游戏（CS2/Apex）的策略元数据定义 + 配置存取（JSON）
 - **`IApexConfigService`**: Apex 专用深度配置 — 直接读写 Apex 存档目录的 `videoconfig.txt` / `settings.cfg`，含备份恢复与启动选项管理
 
 ---
@@ -77,13 +77,7 @@
 | 游戏 | GameId | 启动项 | 配置分区 |
 |------|--------|--------|----------|
 | CS2 | `builtin-cs2` | 是 | video（fullscreen / resolution / aspect_ratio / refresh_rate）+ game（fps_max / cl_showfps） |
-| Valorant | `builtin-valorant` | 否 | video（fullscreen / resolution / fps_limit） |
 | Apex Legends | `builtin-apex` | 是 | video（fullscreen / fps_max）+ game（cl_showpos） |
-| Overwatch 2 | `builtin-overwatch2` | 否 | video（fullscreen / resolution / fps_limit） |
-| PUBG | `builtin-pubg` | 是 | video（fullscreen / resolution） |
-| Fortnite | `builtin-fortnite` | 否 | video（fullscreen / fps_limit） |
-| Rainbow Six | `builtin-r6` | 是 | video（fullscreen / resolution） |
-| CS:GO | `builtin-csgo` | 是 | 复制 CS2 策略后改 GameId |
 
 策略元数据模型（`GameConfigStrategy` / `ConfigSectionDefinition` / `ConfigItemDefinition` / `ConfigItemType`）定义在 Core，详见 [../Core/README.md](../Core/README.md) 与 [../Core/data-model.md](../Core/data-model.md)。
 

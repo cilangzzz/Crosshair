@@ -89,7 +89,7 @@ Modifiers => (Ctrl ? 0x0002 : 0) | (Shift ? 0x0004 : 0) | (Alt ? 0x0001 : 0) | (
 
 ## 11. GameProfile.Matches 是 OrdinalIgnoreCase 完全匹配
 
-进程名比较不含 ".exe" 后缀，是全等匹配而非子串匹配；`BuiltIn` 内置游戏进程名（如 `VALORANT-Win64-Shipping`、`FortniteClient-Win64-Shipping`）必须完整书写。当前仓库无 `Matches` 调用方（`IGameDetector` 未实现，见坑点 14），`Priority` 排序属未来检测器实现的预留语义。
+进程名比较不含 ".exe" 后缀，是全等匹配而非子串匹配；`BuiltIn` 内置游戏进程名（如 Apex 的 `r5apex`）必须完整书写。当前仓库无 `Matches` 调用方（`IGameDetector` 未实现，见坑点 14），`Priority` 排序属未来检测器实现的预留语义。
 
 ## 12. Apex 配置模型与文件的对应关系
 
