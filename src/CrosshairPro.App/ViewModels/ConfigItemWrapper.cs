@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CrosshairPro.App.Localization;
 using CrosshairPro.Core.Models;
 
 namespace CrosshairPro.App.ViewModels;
@@ -10,10 +11,30 @@ public partial class ConfigItemWrapper : ObservableObject
 {
     private readonly Dictionary<string, object?> _settings;
 
+    /// <summary>项 Key → 本地化键映射（策略 DisplayName 为硬编码中文，英文界面需走 resx）</summary>
+    private static readonly Dictionary<string, string> LocKeyByItemKey = new()
+    {
+        ["fullscreen"] = "Cs2.Fullscreen",
+        ["resolution"] = "Cs2.Resolution",
+        ["aspect_ratio"] = "Cs2.AspectRatio",
+        ["refresh_rate"] = "Cs2.RefreshRate",
+        ["fps_max"] = "Cs2.MaxFps",
+        ["cl_showfps"] = "Cs2.ShowFps",
+    };
+
     public ConfigItemDefinition Definition { get; }
 
     public string Key => Definition.Key;
-    public string DisplayName => Definition.DisplayName;
+
+    /// <summary>
+    /// 显示名：已映射的项 Key 取本地化文本（随语言切换在下次构建 Sections 时刷新），
+    /// 未映射的项回退策略定义的 DisplayName
+    /// </summary>
+    public string DisplayName =>
+        LocKeyByItemKey.TryGetValue(Definition.Key, out var locKey)
+            ? LocalizationProvider.Get(locKey)
+            : Definition.DisplayName;
+
     public string? Description => Definition.Description;
     public ConfigItemType Type => Definition.Type;
     public int? MinValue => Definition.MinValue;

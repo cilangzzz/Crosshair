@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -242,9 +243,12 @@ public partial class CrosshairViewModel : ObservableObject
     /// </summary>
     public async Task SavePresetWithNameAsync(string name)
     {
+        // 重名处理：已存在同名预设时在末尾追加数字序号
+        var finalName = GetUniquePresetName(name.Trim());
+
         var preset = new Preset
         {
-            Name = name,
+            Name = finalName,
             Config = _configService.CloneConfig(Config),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -254,12 +258,39 @@ public partial class CrosshairViewModel : ObservableObject
         await LoadPresets();
 
         SelectedPreset = Presets.FirstOrDefault(p => p.Id == preset.Id) ?? Presets.FirstOrDefault();
-        CurrentPresetName = name;
+        CurrentPresetName = finalName;
         _currentPresetId = preset.Id;
 
         await SaveCurrentStateAsync();
 
-        ShowToast(LocalizationProvider.GetFormatted("Toast.PresetSaved", name));
+        ShowToast(LocalizationProvider.GetFormatted("Toast.PresetSaved", finalName));
+    }
+
+    /// <summary>
+    /// 生成不与现有预设重名的名称：重名时在末尾追加数字序号（"x" → "x (1)" → "x (2)"）；
+    /// 名称本身已带序号时从下一号续起（"x (1)" → "x (2)"）
+    /// </summary>
+    private string GetUniquePresetName(string name)
+    {
+        if (Presets.All(p => p.Name != name))
+            return name;
+
+        var baseName = name;
+        var next = 1;
+        var match = Regex.Match(name, @"^(.*) \((\d+)\)$");
+        if (match.Success)
+        {
+            baseName = match.Groups[1].Value;
+            next = int.Parse(match.Groups[2].Value) + 1;
+        }
+
+        var candidate = $"{baseName} ({next})";
+        while (Presets.Any(p => p.Name == candidate))
+        {
+            next++;
+            candidate = $"{baseName} ({next})";
+        }
+        return candidate;
     }
 
     /// <summary>

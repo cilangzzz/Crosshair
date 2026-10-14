@@ -24,6 +24,9 @@
             <!-- Inverse Boolean to Visibility Converter (true = Collapsed) -->
             <local:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
 
+            <!-- UTC time to local time string (preset creation time) -->
+            <local:UtcToLocalTimeConverter x:Key="UtcToLocalTimeConverter"/>
+
             <!-- Global implicit styles (reference design tokens) -->
             <Style TargetType="Window">
                 <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>

@@ -6,10 +6,83 @@
       xmlns:controls="clr-namespace:CrosshairPro.App.Controls"
       xmlns:loc="clr-namespace:CrosshairPro.App.Localization"
       xmlns:vm="clr-namespace:CrosshairPro.App.ViewModels"
-      xmlns:core="clr-namespace:CrosshairPro.Core.Models;assembly=CrosshairPro.Core"
+      xmlns:game="clr-namespace:CrosshairPro.App.Views.GamePages"
       mc:Ignorable="d"
       d:DesignHeight="700" d:DesignWidth="800"
       d:DataContext="{d:DesignInstance Type=vm:Cs2ConfigViewModel}">
+
+    <!-- 统一行模板：按 ConfigItemType 选择 开关/滑杆/下拉 行，保证与 Apex 页排版一致 -->
+    <UserControl.Resources>
+        <game:ConfigItemTemplateSelector x:Key="ConfigItemSelector">
+            <game:ConfigItemTemplateSelector.BoolTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DisplayName}"
+                                   VerticalAlignment="Center"/>
+                        <CheckBox Grid.Column="1"
+                                  IsChecked="{Binding Value, Mode=TwoWay}"
+                                  Style="{StaticResource ToggleSwitch}"/>
+                    </Grid>
+                </DataTemplate>
+            </game:ConfigItemTemplateSelector.BoolTemplate>
+            <game:ConfigItemTemplateSelector.IntTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="160"/>
+                            <ColumnDefinition Width="64"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DisplayName}"
+                                   VerticalAlignment="Center"/>
+                        <Slider Grid.Column="1"
+                                Value="{Binding Value, Mode=TwoWay}"
+                                Minimum="{Binding MinValue}"
+                                Maximum="{Binding MaxValue}"
+                                Style="{StaticResource CustomSlider}" Margin="8,0"/>
+                        <TextBox Grid.Column="2"
+                                 Text="{Binding Value, Mode=TwoWay}"
+                                 Style="{StaticResource NumericTextBox}"/>
+                    </Grid>
+                </DataTemplate>
+            </game:ConfigItemTemplateSelector.IntTemplate>
+            <game:ConfigItemTemplateSelector.EnumTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DisplayName}"
+                                   VerticalAlignment="Center"/>
+                        <ComboBox Grid.Column="1" Width="160"
+                                  ItemsSource="{Binding Options}"
+                                  SelectedItem="{Binding Value, Mode=TwoWay}"
+                                  Style="{StaticResource CustomComboBox}"/>
+                    </Grid>
+                </DataTemplate>
+            </game:ConfigItemTemplateSelector.EnumTemplate>
+            <game:ConfigItemTemplateSelector.StringTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding DisplayName}"
+                                   VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Width="240"
+                                 Text="{Binding Value, Mode=TwoWay}"
+                                 Style="{StaticResource CustomTextBox}"/>
+                    </Grid>
+                </DataTemplate>
+            </game:ConfigItemTemplateSelector.StringTemplate>
+        </game:ConfigItemTemplateSelector>
+    </UserControl.Resources>
 
     <Grid Margin="20,12,20,0">
         <Grid.RowDefinitions>
@@ -39,59 +112,8 @@
                     <StackPanel>
                         <TextBlock Text="{loc:Loc Key=Cs2.VideoSection}"
                                    Style="{StaticResource SectionHeader}"/>
-
-                        <!-- 全屏 -->
-                        <CheckBox Content="{loc:Loc Key=Cs2.Fullscreen}"
-                                  IsChecked="{Binding Sections[0].Items[0].Value, Mode=TwoWay}"
-                                  Style="{StaticResource CustomCheckBox}"
-                                  Margin="0,8,0,0"/>
-
-                        <!-- 分辨率 -->
-                        <Grid Margin="0,12,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" MinWidth="140"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Cs2.Resolution}"
-                                       VerticalAlignment="Center"/>
-                            <ComboBox Grid.Column="1" Width="160"
-                                      ItemsSource="{Binding Sections[0].Items[1].Options}"
-                                      SelectedItem="{Binding Sections[0].Items[1].Value, Mode=TwoWay}"
-                                      Style="{StaticResource CustomComboBox}"/>
-                        </Grid>
-
-                        <!-- 宽高比 -->
-                        <Grid Margin="0,12,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" MinWidth="140"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Cs2.AspectRatio}"
-                                       VerticalAlignment="Center"/>
-                            <ComboBox Grid.Column="1" Width="120"
-                                      ItemsSource="{Binding Sections[0].Items[2].Options}"
-                                      SelectedItem="{Binding Sections[0].Items[2].Value, Mode=TwoWay}"
-                                      Style="{StaticResource CustomComboBox}"/>
-                        </Grid>
-
-                        <!-- 刷新率 -->
-                        <Grid Margin="0,12,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="180"/>
-                                <ColumnDefinition Width="60"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Cs2.RefreshRate}"
-                                       VerticalAlignment="Center"/>
-                            <Slider Grid.Column="1"
-                                    Value="{Binding Sections[0].Items[3].Value, Mode=TwoWay}"
-                                    Minimum="{Binding Sections[0].Items[3].MinValue}"
-                                    Maximum="{Binding Sections[0].Items[3].MaxValue}"
-                                    Style="{StaticResource CustomSlider}" Margin="8,0"/>
-                            <TextBox Grid.Column="2"
-                                     Text="{Binding Sections[0].Items[3].Value, Mode=TwoWay}"
-                                     Style="{StaticResource NumericTextBox}"/>
-                        </Grid>
+                        <ItemsControl ItemsSource="{Binding Sections[0].Items}"
+                                      ItemTemplateSelector="{StaticResource ConfigItemSelector}"/>
                     </StackPanel>
                 </Border>
 
@@ -102,32 +124,9 @@
                                    Style="{StaticResource SectionHeader}"/>
                         <TextBlock Text="{loc:Loc Key=Cs2.AutoexecFileNote}"
                                    Foreground="{DynamicResource TextSecondaryBrush}"
-                                   FontSize="11" Margin="0,4,0,12"/>
-
-                        <!-- fps_max -->
-                        <Grid Margin="0,4,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="180"/>
-                                <ColumnDefinition Width="60"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Cs2.MaxFps}"
-                                       VerticalAlignment="Center"/>
-                            <Slider Grid.Column="1"
-                                    Value="{Binding Sections[1].Items[0].Value, Mode=TwoWay}"
-                                    Minimum="{Binding Sections[1].Items[0].MinValue}"
-                                    Maximum="{Binding Sections[1].Items[0].MaxValue}"
-                                    Style="{StaticResource CustomSlider}" Margin="8,0"/>
-                            <TextBox Grid.Column="2"
-                                     Text="{Binding Sections[1].Items[0].Value, Mode=TwoWay}"
-                                     Style="{StaticResource NumericTextBox}"/>
-                        </Grid>
-
-                        <!-- cl_showfps -->
-                        <CheckBox Content="{loc:Loc Key=Cs2.ShowFps}"
-                                  IsChecked="{Binding Sections[1].Items[1].Value, Mode=TwoWay}"
-                                  Style="{StaticResource CustomCheckBox}"
-                                  Margin="0,12,0,0"/>
+                                   FontSize="11" Margin="0,4,0,0"/>
+                        <ItemsControl ItemsSource="{Binding Sections[1].Items}"
+                                      ItemTemplateSelector="{StaticResource ConfigItemSelector}"/>
                     </StackPanel>
                 </Border>
 
@@ -169,6 +168,56 @@
                     </StackPanel>
                 </Border>
 
+                <!-- 配置管理（置于最下方） -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Key=Game.ConfigManagement}"
+                                   Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Loc Key=Game.ConfigManagementDesc}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="11" Margin="0,4,0,12"/>
+
+                        <!-- 本地配置文件 -->
+                        <Grid Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="120"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Cs2.LocalConfigFile}"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       FontFamily="{StaticResource FontFamilyMono}"/>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding ConfigFilePath}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"
+                                       Margin="12,0,12,0"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <Button Grid.Column="2"
+                                    Content="{loc:Loc Key=Game.OpenConfigFolder}"
+                                    Command="{Binding OpenConfigFolderCommand}"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Padding="10,4" FontSize="12"/>
+                        </Grid>
+
+                        <Separator Background="{DynamicResource BorderBrush}" Margin="0,12"/>
+
+                        <!-- 生成配置文件 -->
+                        <TextBlock Text="{loc:Loc Key=Cs2.GenerateConfigDesc}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="11" Margin="0,0,0,12"
+                                   TextWrapping="Wrap"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="{loc:Loc Key=Game.GenerateConfig}"
+                                    Command="{Binding GenerateConfigFileCommand}"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Padding="12,4" FontSize="12"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
                 <!-- 状态消息 -->
                 <TextBlock Text="{Binding StatusMessage}"
                            Foreground="{DynamicResource TextSecondaryBrush}"
@@ -182,11 +231,11 @@
         <!-- 底部按钮 -->
         <StackPanel Grid.Row="2" Orientation="Horizontal"
                     HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button Content="{loc:Loc Key=Apex.ResetToDefault}"
+            <Button Content="{loc:Loc Key=Cs2.ResetToDefault}"
                     Command="{Binding ResetCommand}"
                     Style="{StaticResource SecondaryButton}"
                     Margin="0,0,8,0"/>
-            <Button Content="{loc:Loc Key=Apex.SaveConfiguration}"
+            <Button Content="{loc:Loc Key=Cs2.SaveConfiguration}"
                     Command="{Binding SaveCommand}"
                     Style="{StaticResource PrimaryButton}"/>
         </StackPanel>

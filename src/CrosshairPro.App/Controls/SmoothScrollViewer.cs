@@ -22,7 +22,7 @@ public class SmoothScrollViewer : System.Windows.Controls.ScrollViewer
     /// <summary>每次滚动的像素量（控制滚动速度）</summary>
     public static readonly DependencyProperty ScrollStepProperty =
         DependencyProperty.Register(nameof(ScrollStep), typeof(double),
-            typeof(SmoothScrollViewer), new PropertyMetadata(32.0));
+            typeof(SmoothScrollViewer), new PropertyMetadata(120.0));
 
     /// <summary>缓动函数类型</summary>
     public static readonly DependencyProperty EasingModeProperty =
@@ -104,12 +104,16 @@ public class SmoothScrollViewer : System.Windows.Controls.ScrollViewer
 
         e.Handled = true;
 
-        // 计算目标偏移量
-        double delta = e.Delta > 0 ? -ScrollStep : ScrollStep;
-        double newTarget = Math.Max(0, Math.Min(ScrollableHeight, VerticalOffset + delta));
+        // 计算目标偏移量：按实际 Delta 等比缩放（标准滚轮一格 ±120 触发一个 ScrollStep，
+        // 触控板等设备的小 Delta 事件按比例减小步长，避免触控板滚动过跳）
+        double delta = -(e.Delta / 120.0) * ScrollStep;
 
-        // 如果目标相同，不处理
-        if (Math.Abs(newTarget - VerticalOffset) < 0.1)
+        // 动画进行中时在原目标上累加，连续滚动可叠加速度，避免每格重置动画导致越滚越慢
+        double baseOffset = _isAnimating ? _targetOffset : VerticalOffset;
+        double newTarget = Math.Max(0, Math.Min(ScrollableHeight, baseOffset + delta));
+
+        // 如果目标相同（仅限非动画状态），不处理；动画期间需继续更新目标以支持反向抵消
+        if (!_isAnimating && Math.Abs(newTarget - VerticalOffset) < 0.1)
             return;
 
         // 开始新的滚动动画

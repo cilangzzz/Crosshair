@@ -1,10 +1,13 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
+using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CrosshairPro.App.Localization;
 using CrosshairPro.Application.Interfaces;
 using CrosshairPro.Core.Models;
+using Microsoft.Win32;
 
 namespace CrosshairPro.App.ViewModels;
 
@@ -48,6 +51,10 @@ public partial class Cs2ConfigViewModel : ObservableObject
     [ObservableProperty]
     private bool _isCs2Running;
 
+    /// <summary>本地配置文件路径（gameconfigs/builtin-cs2.json）</summary>
+    [ObservableProperty]
+    private string _configFilePath = string.Empty;
+
     /// <summary>Toast 通知事件，页面层订阅后渲染</summary>
     public event EventHandler<string>? ToastRequested;
 
@@ -55,6 +62,9 @@ public partial class Cs2ConfigViewModel : ObservableObject
     {
         _gameConfigService = gameConfigService;
         _config = new GameConfig { GameId = GameId };
+        ConfigFilePath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "CrosshairPro", "gameconfigs", $"{GameId}.json");
     }
 
     /// <summary>
@@ -179,7 +189,108 @@ public partial class Cs2ConfigViewModel : ObservableObject
         IsCs2Running = IsProcessRunning("cs2");
     }
 
+    /// <summary>
+    /// 在资源管理器中定位本地配置文件
+    /// </summary>
+    [RelayCommand]
+    private void OpenConfigFolder()
+    {
+        try
+        {
+            Process.Start("explorer.exe", $"/select,\"{ConfigFilePath}\"");
+        }
+        catch (Exception ex)
+        {
+            var msg = LocalizationProvider.GetFormatted("Game.OpenFolderFailed", ex.Message);
+            StatusMessage = msg;
+            ToastRequested?.Invoke(this, msg);
+        }
+    }
+
+    /// <summary>
+    /// 从当前选项生成 exec 用的 .cfg 配置文件（用户选择保存位置，
+    /// 不直接写入游戏目录；仅含安全白名单 cvar，UTF-8 无 BOM）
+    /// </summary>
+    [RelayCommand]
+    private async Task GenerateConfigFileAsync()
+    {
+        var dlg = new SaveFileDialog
+        {
+            Filter = LocalizationProvider.Get("Filter.CfgFiles"),
+            FileName = "crosshairpro_cs2.cfg",
+            Title = LocalizationProvider.Get("Dialog.GenerateCs2Config")
+        };
+
+        if (dlg.ShowDialog() != true)
+        {
+            return;
+        }
+
+        try
+        {
+            var content = BuildConfigFileContent();
+            await File.WriteAllTextAsync(dlg.FileName, content, new UTF8Encoding(false));
+
+            var msg = LocalizationProvider.GetFormatted("Game.GenerateConfigSuccess", Path.GetFileName(dlg.FileName));
+            StatusMessage = msg;
+            ToastRequested?.Invoke(this, msg);
+        }
+        catch (Exception ex)
+        {
+            var msg = LocalizationProvider.GetFormatted("Game.GenerateConfigFailed", ex.Message);
+            StatusMessage = msg;
+            ToastRequested?.Invoke(this, msg);
+        }
+    }
+
     // ── 工具方法 ─────────────────────────────────────────────────
+
+    /// <summary>按 Key 读取当前 UI 上的配置值（未保存的修改也包含在内）；bool 渲染为 1/0（cvar 数值约定）</summary>
+    private string GetSetting(string key)
+    {
+        var value = Sections.SelectMany(s => s.Items)
+            .FirstOrDefault(i => i.Key == key)?.Value;
+        if (value is bool b)
+        {
+            return b ? "1" : "0";
+        }
+        return value?.ToString() ?? string.Empty;
+    }
+
+    private string BuildConfigFileContent()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("// ============================================================");
+        sb.AppendLine("// CrosshairPro 生成的 CS2 配置文件");
+        sb.AppendLine($"// 生成时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        sb.AppendLine("//");
+        sb.AppendLine("// 使用方法:");
+        sb.AppendLine("//   1. 将本文件放入 Steam 库目录:");
+        sb.AppendLine("//      SteamLibrary/steamapps/common/Counter-Strike 2/game/csgo/cfg/");
+        sb.AppendLine("//   2. 在 autoexec.cfg（或控制台）中执行: exec crosshairpro_cs2");
+        sb.AppendLine("// ============================================================");
+        sb.AppendLine();
+        sb.AppendLine("// ── 游戏设置 (cvar) ──");
+        sb.AppendLine($"fps_max \"{GetSetting("fps_max")}\"");
+        sb.AppendLine($"cl_showfps \"{GetSetting("cl_showfps")}\"");
+        sb.AppendLine();
+        sb.AppendLine("// ── Steam 启动项（填入 Steam 启动参数，勿加入本文件执行）──");
+        var launch = LaunchOptions?.Trim() ?? string.Empty;
+        if (launch.Length > 0)
+        {
+            foreach (var line in launch.Split('\n'))
+            {
+                sb.AppendLine($"// {line.TrimEnd('\r')}");
+            }
+        }
+        sb.AppendLine();
+        sb.AppendLine("// ── 视频设置（非 cvar，请在游戏内设置或 video.txt 中修改）──");
+        sb.AppendLine($"// fullscreen: {GetSetting("fullscreen")}");
+        sb.AppendLine($"// resolution: {GetSetting("resolution")}");
+        sb.AppendLine($"// aspect_ratio: {GetSetting("aspect_ratio")}");
+        sb.AppendLine($"// refresh_rate: {GetSetting("refresh_rate")}");
+        return sb.ToString();
+    }
 
     private static bool IsProcessRunning(string processName)
     {

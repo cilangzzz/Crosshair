@@ -94,6 +94,9 @@
   <data name="Preset.Manage" xml:space="preserve">
     <value>管理预设</value>
   </data>
+  <data name="Preset.CreatedAt" xml:space="preserve">
+    <value>创建时间</value>
+  </data>
 
   <!-- ═══════════════════════════════════════════════════ -->
   <!-- 操作按钮 -->
@@ -697,5 +700,59 @@
   </data>
   <data name="Cs2.SaveFailed" xml:space="preserve">
     <value>保存失败：{0}</value>
+  </data>
+  <data name="Cs2.ResetToDefault" xml:space="preserve">
+    <value>恢复默认</value>
+  </data>
+  <data name="Cs2.SaveConfiguration" xml:space="preserve">
+    <value>保存配置</value>
+  </data>
+  <data name="Cs2.LocalConfigFile" xml:space="preserve">
+    <value>本地配置文件</value>
+  </data>
+  <data name="Cs2.GenerateConfigDesc" xml:space="preserve">
+    <value>从当前选项生成 exec 用的 .cfg 文件，手动放入游戏 cfg 目录；不直接写入游戏文件，仅含安全白名单 cvar。</value>
+  </data>
+  <data name="Game.ConfigManagement" xml:space="preserve">
+    <value>配置管理</value>
+  </data>
+  <data name="Game.ConfigManagementDesc" xml:space="preserve">
+    <value>备份、替换、导出与生成游戏配置文件</value>
+  </data>
+  <data name="Game.GenerateConfig" xml:space="preserve">
+    <value>生成配置文件</value>
+  </data>
+  <data name="Game.GenerateConfigSuccess" xml:space="preserve">
+    <value>配置文件已生成：{0}</value>
+  </data>
+  <data name="Game.GenerateConfigFailed" xml:space="preserve">
+    <value>配置文件生成失败：{0}</value>
+  </data>
+  <data name="Game.OpenConfigFolder" xml:space="preserve">
+    <value>打开目录</value>
+  </data>
+  <data name="Game.OpenFolderFailed" xml:space="preserve">
+    <value>无法打开目录：{0}</value>
+  </data>
+  <data name="Apex.ScopeSection" xml:space="preserve">
+    <value>瞄准镜灵敏度</value>
+  </data>
+  <data name="Apex.LaunchOptionsFile" xml:space="preserve">
+    <value>启动项文件</value>
+  </data>
+  <data name="Apex.GenerateLaunchOptionsDesc" xml:space="preserve">
+    <value>将当前启动项导出为文本文件，便于备份或复制到启动参数</value>
+  </data>
+  <data name="Dialog.GenerateCs2Config" xml:space="preserve">
+    <value>生成 CS2 配置文件</value>
+  </data>
+  <data name="Dialog.GenerateApexLaunchOptions" xml:space="preserve">
+    <value>导出 Apex 启动项</value>
+  </data>
+  <data name="Filter.CfgFiles" xml:space="preserve">
+    <value>配置文件 (*.cfg)|*.cfg|所有文件 (*.*)|*.*</value>
+  </data>
+  <data name="Filter.TextFiles" xml:space="preserve">
+    <value>文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*</value>
   </data>
 </root>

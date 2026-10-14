@@ -138,18 +138,24 @@
                         </RadioButton>
                     </WrapPanel>
 
-                    <TextBlock Text="{loc:Loc Key=Crosshair.Advanced}" Style="{StaticResource SectionHeader}"/>
-                    <Expander Header="{loc:Loc Key=Effects.Header}" Margin="0,0,0,12">
-                        <StackPanel Margin="0,8,0,0">
-                            <CheckBox Content="{loc:Loc Key=Effects.EnableOutline}" IsChecked="{Binding Config.Effects.Outline.Enabled, Mode=TwoWay}" Margin="0,4"/>
-                            <Grid Margin="24,4,0,12">
-                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{loc:Loc Key=Effects.OutlineThickness}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                                <TextBox Grid.Column="1" Text="{Binding Config.Effects.Outline.Thickness, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
-                            </Grid>
-                            <CheckBox Content="{loc:Loc Key=Effects.EnableShadow}" IsChecked="{Binding Config.Effects.Shadow.Enabled, Mode=TwoWay}" Margin="0,4"/>
-                        </StackPanel>
-                    </Expander>
+                    <TextBlock Text="{loc:Loc Key=Effects.Header}" Style="{StaticResource SectionHeader}"/>
+                    <!-- 开关行：标签居左，药丸开关居右 -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{loc:Loc Key=Effects.EnableOutline}" Style="{StaticResource BodyText}" VerticalAlignment="Center"/>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding Config.Effects.Outline.Enabled, Mode=TwoWay}" Style="{StaticResource ToggleSwitch}"/>
+                    </Grid>
+                    <!-- 描边粗细（描边子选项，缩进） -->
+                    <Grid Margin="24,0,0,12">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{loc:Loc Key=Effects.OutlineThickness}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding Config.Effects.Outline.Thickness, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
+                    </Grid>
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{loc:Loc Key=Effects.EnableShadow}" Style="{StaticResource BodyText}" VerticalAlignment="Center"/>
+                        <CheckBox Grid.Column="1" IsChecked="{Binding Config.Effects.Shadow.Enabled, Mode=TwoWay}" Style="{StaticResource ToggleSwitch}"/>
+                    </Grid>
                 </StackPanel>
             </controls:SmoothScrollViewer>
         </Border>

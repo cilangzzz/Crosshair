@@ -76,7 +76,7 @@
                 <Grid>
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,4">
                         <controls:TabNavItem IconGeometry="Crosshair" IsSelected="{Binding IsCrosshairPage, Mode=OneWay}" Command="{Binding NavigateToCrosshairCommand}" ToolTip="{loc:Loc Key=Nav.Crosshair}" Margin="4"/>
-                        <controls:TabNavItem IconGeometry="Gamepad" IsSelected="{Binding IsGamesPage, Mode=OneWay}" Command="{Binding NavigateToGamesCommand}" ToolTip="{loc:Loc Key=Nav.Games}" Margin="4"/>
+                        <controls:TabNavItem IconGeometry="Settings" IsSelected="{Binding IsGamesPage, Mode=OneWay}" Command="{Binding NavigateToGamesCommand}" ToolTip="{loc:Loc Key=Nav.Games}" Margin="4"/>
                     </StackPanel>
                     <!-- 语言切换按钮 -->
                     <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,8">

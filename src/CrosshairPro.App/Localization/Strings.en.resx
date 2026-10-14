@@ -88,6 +88,9 @@
   <data name="Preset.Manage" xml:space="preserve">
     <value>Manage Presets</value>
   </data>
+  <data name="Preset.CreatedAt" xml:space="preserve">
+    <value>Created at</value>
+  </data>
 
   <!-- Actions -->
   <data name="Action.Save" xml:space="preserve">
@@ -673,5 +676,59 @@
   </data>
   <data name="Cs2.SaveFailed" xml:space="preserve">
     <value>Save failed: {0}</value>
+  </data>
+  <data name="Cs2.ResetToDefault" xml:space="preserve">
+    <value>Reset to Default</value>
+  </data>
+  <data name="Cs2.SaveConfiguration" xml:space="preserve">
+    <value>Save Configuration</value>
+  </data>
+  <data name="Cs2.LocalConfigFile" xml:space="preserve">
+    <value>Local config file</value>
+  </data>
+  <data name="Cs2.GenerateConfigDesc" xml:space="preserve">
+    <value>Generate an exec-able .cfg from the current options to place in the game cfg folder manually; game files are never written directly and only safe whitelisted cvars are included.</value>
+  </data>
+  <data name="Game.ConfigManagement" xml:space="preserve">
+    <value>Config Management</value>
+  </data>
+  <data name="Game.ConfigManagementDesc" xml:space="preserve">
+    <value>Back up, replace, export and generate game config files</value>
+  </data>
+  <data name="Game.GenerateConfig" xml:space="preserve">
+    <value>Generate Config File</value>
+  </data>
+  <data name="Game.GenerateConfigSuccess" xml:space="preserve">
+    <value>Config file generated: {0}</value>
+  </data>
+  <data name="Game.GenerateConfigFailed" xml:space="preserve">
+    <value>Failed to generate config file: {0}</value>
+  </data>
+  <data name="Game.OpenConfigFolder" xml:space="preserve">
+    <value>Open Folder</value>
+  </data>
+  <data name="Game.OpenFolderFailed" xml:space="preserve">
+    <value>Cannot open folder: {0}</value>
+  </data>
+  <data name="Apex.ScopeSection" xml:space="preserve">
+    <value>Scope Sensitivity</value>
+  </data>
+  <data name="Apex.LaunchOptionsFile" xml:space="preserve">
+    <value>Launch options file</value>
+  </data>
+  <data name="Apex.GenerateLaunchOptionsDesc" xml:space="preserve">
+    <value>Export current launch options to a text file for backup or copying into launch parameters</value>
+  </data>
+  <data name="Dialog.GenerateCs2Config" xml:space="preserve">
+    <value>Generate CS2 Config File</value>
+  </data>
+  <data name="Dialog.GenerateApexLaunchOptions" xml:space="preserve">
+    <value>Export Apex Launch Options</value>
+  </data>
+  <data name="Filter.CfgFiles" xml:space="preserve">
+    <value>Config files (*.cfg)|*.cfg|All files (*.*)|*.*</value>
+  </data>
+  <data name="Filter.TextFiles" xml:space="preserve">
+    <value>Text files (*.txt)|*.txt|All files (*.*)|*.*</value>
   </data>
 </root>

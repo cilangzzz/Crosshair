@@ -766,19 +766,22 @@ public partial class MainWindow : Window
         DockPanel.SetDock(topBar, Dock.Top);
         root.Children.Add(topBar);
 
-        // ── Preset list (each item has name + delete × button) ──
+        // ── Preset list (each item has name + created time + delete × button) ──
         var listBox = new ListBox
         {
             Background = surfaceBrush,
             Foreground = textPrimary,
             BorderThickness = new Thickness(0),
             Margin = new Thickness(16, 0, 16, 16),
-            Padding = new Thickness(0),
-            ItemsSource = _viewModel.CrosshairViewModel.Presets,
-            SelectedItem = _viewModel.CrosshairViewModel.SelectedPreset
+            Padding = new Thickness(0)
         };
+        // 绑定 VM 集合（LoadPresets 会替换整个列表实例，直接赋值不会刷新）
+        listBox.SetBinding(ItemsControl.ItemsSourceProperty,
+            new Binding(nameof(CrosshairViewModel.Presets)) { Source = _viewModel.CrosshairViewModel });
+        listBox.SetBinding(ListBox.SelectedItemProperty,
+            new Binding(nameof(CrosshairViewModel.SelectedPreset)) { Source = _viewModel.CrosshairViewModel, Mode = BindingMode.TwoWay });
 
-        // DataTemplate: [Name] ............ [×]
+        // DataTemplate: [Name / 创建时间] ............ [×]
         var itemTemplate = new DataTemplate();
         var panelFactory = new FrameworkElementFactory(typeof(DockPanel));
 
@@ -804,11 +807,31 @@ public partial class MainWindow : Window
             ev.Handled = true;
         }));
 
-        // Name text
-        var textFactory = new FrameworkElementFactory(typeof(TextBlock));
-        textFactory.SetValue(TextBlock.TextProperty, new Binding("Name"));
-        textFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
-        textFactory.SetValue(TextBlock.MarginProperty, new Thickness(12, 0, 8, 0));
+        // Name + creation time (stacked, fills remaining width)
+        var textFactory = new FrameworkElementFactory(typeof(StackPanel));
+        textFactory.SetValue(StackPanel.OrientationProperty, Orientation.Vertical);
+        textFactory.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+        textFactory.SetValue(FrameworkElement.MarginProperty, new Thickness(12, 0, 8, 0));
+
+        var nameFactory = new FrameworkElementFactory(typeof(TextBlock));
+        nameFactory.SetValue(TextBlock.TextProperty, new Binding("Name"));
+        nameFactory.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
+        textFactory.AppendChild(nameFactory);
+
+        var timeFactory = new FrameworkElementFactory(typeof(TextBlock));
+        timeFactory.SetBinding(TextBlock.TextProperty,
+            new Binding(nameof(Preset.CreatedAt)) { Converter = new UtcToLocalTimeConverter() });
+        timeFactory.SetValue(TextBlock.FontSizeProperty, 11.0);
+        timeFactory.SetValue(TextBlock.ForegroundProperty, textSecondary);
+        timeFactory.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 1, 0, 0));
+        timeFactory.SetValue(FrameworkElement.ToolTipProperty, LocalizationProvider.Get("Preset.CreatedAt"));
+        // 默认预设为合成项，无真实创建时间，隐藏
+        var timeStyle = new Style(typeof(TextBlock));
+        var defaultTrigger = new DataTrigger { Binding = new Binding(nameof(Preset.IsDefault)), Value = true };
+        defaultTrigger.Setters.Add(new Setter(TextBlock.VisibilityProperty, Visibility.Collapsed));
+        timeStyle.Triggers.Add(defaultTrigger);
+        timeFactory.SetValue(FrameworkElement.StyleProperty, timeStyle);
+        textFactory.AppendChild(timeFactory);
 
         panelFactory.AppendChild(delFactory);
         panelFactory.AppendChild(textFactory);

@@ -778,6 +778,101 @@
         </Setter>
     </Style>
 
+    <!-- ── TOGGLE SWITCH ── -->
+    <!-- 矩形微圆角开关：布尔选项行（行布局为标签居左、开关居右，由页面 Grid 提供） -->
+
+    <Style x:Key="ToggleSwitch" TargetType="CheckBox">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Background="Transparent" Width="44" Height="22" VerticalAlignment="Center">
+                        <Border x:Name="track"
+                                Width="44" Height="22"
+                                Background="{StaticResource ControlBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource RadiusSm}"/>
+                        <Border x:Name="thumb"
+                                Width="16" Height="16"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Margin="3,0,0,0"
+                                Background="{StaticResource TextSecondaryBrush}"
+                                CornerRadius="8">
+                            <Border.RenderTransform>
+                                <TranslateTransform x:Name="thumbShift" X="0"/>
+                            </Border.RenderTransform>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- Checked：滑块右移 + 强调色 -->
+                        <Trigger Property="IsChecked" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="thumbShift"
+                                                         Storyboard.TargetProperty="X"
+                                                         To="22" Duration="0:0:0.15">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <ColorAnimation Storyboard.TargetName="track"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#0D260D" Duration="0:0:0.15"/>
+                                        <ColorAnimation Storyboard.TargetName="track"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#00FF00" Duration="0:0:0.15"/>
+                                        <ColorAnimation Storyboard.TargetName="thumb"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#00FF00" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="thumbShift"
+                                                         Storyboard.TargetProperty="X"
+                                                         To="0" Duration="0:0:0.15">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <ColorAnimation Storyboard.TargetName="track"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#1E1E36" Duration="0:0:0.15"/>
+                                        <ColorAnimation Storyboard.TargetName="track"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#2A2A4A" Duration="0:0:0.15"/>
+                                        <ColorAnimation Storyboard.TargetName="thumb"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#9898B0" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <!-- Hover（未选中时）：亮边框 + 亮滑块（静态 Setter，避免与 Checked 动画冲突） -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                                <Condition Property="IsChecked" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="track" Property="BorderBrush" Value="{StaticResource BorderFocusBrush}"/>
+                            <Setter TargetName="thumb" Property="Background" Value="{StaticResource TextPrimaryBrush}"/>
+                        </MultiTrigger>
+                        <!-- Disabled -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- ── EXPANDER ── -->
     <!-- Animated arrow rotation on expand/collapse -->
 
@@ -1103,7 +1198,7 @@
         <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
         <Setter Property="ScrollDuration" Value="250"/>
-        <Setter Property="ScrollStep" Value="32"/>
+        <Setter Property="ScrollStep" Value="120"/>
         <Setter Property="EasingMode" Value="EaseOut"/>
         <Setter Property="IsSmoothScrollEnabled" Value="True"/>
         <Setter Property="Template">

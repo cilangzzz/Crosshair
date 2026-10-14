@@ -341,6 +341,36 @@ public partial class ApexConfigViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// 将当前启动项导出为文本文件（用户选择保存位置）
+    /// </summary>
+    [RelayCommand]
+    private async Task GenerateLaunchOptionsFile()
+    {
+        var dlg = new SaveFileDialog
+        {
+            Filter = LocalizationProvider.Get("Filter.TextFiles"),
+            FileName = "apex_launch_options.txt",
+            Title = LocalizationProvider.Get("Dialog.GenerateApexLaunchOptions")
+        };
+
+        if (dlg.ShowDialog() != true)
+        {
+            return;
+        }
+
+        try
+        {
+            var options = UseCustomLaunchOptions ? LaunchOptionsSummary : LaunchOptions;
+            await _apexService.ExportLaunchOptionsAsync(dlg.FileName, options ?? string.Empty);
+            ShowToast(LocalizationProvider.GetFormatted("Game.GenerateConfigSuccess", Path.GetFileName(dlg.FileName)));
+        }
+        catch (Exception ex)
+        {
+            ShowToast(LocalizationProvider.GetFormatted("Game.GenerateConfigFailed", ex.Message));
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════
     // 预设命令
     // ═══════════════════════════════════════════════════════════
