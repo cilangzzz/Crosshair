@@ -36,7 +36,9 @@ public class PresetService : IPresetService
     public async Task<IReadOnlyList<Preset>> LoadAllPresetsAsync()
     {
         var presets = await _presetRepository.LoadPresetsAsync();
-        var list = presets.ToList();
+
+        // 按创建时间降序（最新在前）
+        var list = presets.OrderByDescending(p => p.CreatedAt).ToList();
 
         // 始终在最前面放一个默认预设
         var defaultPreset = new Preset
