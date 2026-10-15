@@ -102,17 +102,26 @@ WPF 应用入口、UI 层、窗口和控件实现。（46 个源文件）
 | 文档 | 描述 |
 |------|------|
 | [tab-navigation-design](../.claude/docs/design/tab-navigation-design.md) | 标签页导航系统设计（权威位置 `.claude/docs/design/`） |
-| [games-tab-overflow-design](../.claude/docs/design/games-tab-overflow-design.md) | 游戏页 tab 溢出设计方案（现状分析/阈值/方案对比/实现草图，仅设计未实现） |
+| [games-tab-overflow-design](../.claude/docs/design/games-tab-overflow-design.md) | 游戏页选择器设计（tab 溢出方案对比 + ComboBox 决策记录，已实现） |
+| [pc-optimize-design](../.claude/docs/design/pc-optimize-design.md) | 电脑优化页设计（只开入口不代改原则、29 项清单与命令核验、ShellExecute 坑，已实现） |
 
 ## 文档统计
 
 - **模块目录**: 7（5 个代码模块 + GameConfig 配置层 + design 设计文档）
-- **文档文件**: 41（docs/ 树，含 README.md 与本索引；权威树 `.claude/docs/` 共 41 个 .md，design 仅存于权威树）
-- **最后更新**: 2026-10-14
+- **文档文件**: 权威树 `.claude/docs/` 共 42 个 .md；docs/ 树 44 个 .md（42 份镜像 + README.md 与本索引）
+- **最后更新**: 2026-10-15
 
 ## 最新变更
 
+### 2026-10-15 更新
+- 实现电脑优化管理页 [PcOptimizePage](App/README.md)：7 分类 29 项优化条目，每项仅提供「打开」按钮直达 Windows 管理页，全部操作由用户手动完成（不修改任何系统设置）
+- 新增 [PcOptimizeViewModel](App/data-model.md)（7 组 29 项静态数据 + OpenItem 命令 + ProbePaths 厂商面板探测）与 LocalizedTextConverter（IMultiValueConverter，locKey + CurrentCulture 双绑定）
+- resx 新增 PcOptimize.* 键 82 个 ×3（216→297），移除占位键 Games.PcOptimizeDesc
+- 新增设计文档 [pc-optimize-design](../.claude/docs/design/pc-optimize-design.md)：研究方法（29 项命令经官方文档核对并本机实测）、ShellExecute 单字符串不拆参坑、避坑迷思（11 研究/6 上页）、验证记录
+- 文件数口径更新（App 47）；App 根目录值转换器文件 6 个不变（新增 LocalizedTextConverter、移除 InverseBooleanToVisibilityConverter）
+
 ### 2026-10-14 更新
+- 游戏页 tab 条改为「游戏」标签 + ComboBox 选择器（用户确认未来游戏 10+，tab 范式不适用）：[games-tab-overflow-design](../.claude/docs/design/games-tab-overflow-design.md) 重写为决策记录与实现说明
 - 游戏页新增「电脑优化」占位 tab：[PcOptimizePage](App/README.md)（空状态占位，GameProfile 新增 builtin-pcopt 条目与 DisplayNameLocKey 本地化键）
 - 修复游戏页 tab 与内容左对齐（消除子页面双重 20px 边距）、底部保存/重置按钮增加 16px 底部留白
 - 新增设计文档 [games-tab-overflow-design](../.claude/docs/design/games-tab-overflow-design.md)（tab 溢出方案：横向滚动推荐 + 阈值分析，仅设计未实现）
@@ -188,9 +197,10 @@ docs/
         ├── pitfalls.md
         └── CHANGELOG.md
 
-.claude/docs/design/          # 设计文档（权威位置，不在 docs/ 镜像内）
+.claude/docs/design/          # 设计文档（权威位置，同步镜像到 docs/design/）
 ├── tab-navigation-design.md
-└── games-tab-overflow-design.md
+├── games-tab-overflow-design.md
+└── pc-optimize-design.md
 ```
 
 ## 快速查找

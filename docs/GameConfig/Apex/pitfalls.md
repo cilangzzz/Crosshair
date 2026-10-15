@@ -47,15 +47,17 @@
 
 **规避**：读写 float 一律使用 `CultureInfo.InvariantCulture`。
 
-## 6. `GenerateOptionsString` 的条件输出（2026-10-14 调整）
+## 6. `GenerateOptionsString` 的条件输出与未知令牌丢失（2026-10-14 调整）
 
-**证据**（`ApexLaunchOptions.GenerateOptionsString`）：
+**证据**（`ApexLaunchOptions.GenerateOptionsString` / `LoadFromString`）：
 
-- `+fps_max` 自 2026-10-14 起改为 `FpsMax > 0` 条件输出（此前恒输出，`FpsMax=0` 也会生成 `+fps_max 0`）；`+cl_fovScale` 输出已移除——fps_max/cl_showfps/cl_showpos/cl_fov_scale 统一由 settings.cfg（游戏设置卡）管理，避免启动项默认值覆盖用户设置
-- `-w` / `-h` 仅在 `Windowed || Noborder` 时输出，单独设置 `Width`/`Height` 不生效
-- 其余数值参数仅在大于 0 时输出
+- 数值参数仅在大于 0 时输出，0 = 未设置（含 `-w`/`-h`，独立于窗口模式；解析无 `-w/-h` 的字符串后重新生成不会注入默认分辨率——模型默认值为 0 而非 1920/1080）
+- float 经 InvariantCulture 格式化与解析（小数逗号区域安全）；令牌匹配大小写不敏感（重新生成时输出规范大小写）
+- `+cl_fovScale` 以带引号形式 `+cl_fovScale "1.27"` 输出（同日回归启动项通道，取代当日早前「cl_fovScale 归 settings.cfg 单一来源」的调整——UI 编辑入口移入启动选项卡「游戏参数」组）
+- `LoadFromString` 先 `ResetToDefaults()` 再解析已知令牌（22 种，`-refresh` 为 `-freq` 别名）；**未知令牌被忽略**，切入自定义模式后经面板重新生成的字符串会丢失未知令牌与值为 0 的已知令牌
+- UI 滑杆有界：解析出的越界值会被 Slider 收窄并回写（FpsMax > 600、Freq > 500、ClFovScale > 3.0、Width > 3840 等场景），重新生成输出收窄后的值
 
-**规避**：预期输出与实际不一致时先对照 [launch-options.md](launch-options.md) 的生成规则表。
+**规避**：预期输出与实际不一致时先对照 [launch-options.md](launch-options.md) 的生成规则表；手写串含未建模令牌（如 `-condebug`，调试模式预设即含此令牌）或显式 `+fps_max 0` 时，切入自定义模式再改面板会丢令牌——需要保留时留在文本模式编辑。
 
 ## 7. UI 启动项预设按索引耦合
 

@@ -38,7 +38,7 @@ src/
     ├── Helpers/                  # ThemeHelper
     ├── Controls/                 # DialogBase, ToastManager/ToastNotification, IconButton, TabNavItem, CrosshairPreview, SmoothScrollViewer, ScrollViewerBehavior, PageTemplateSelector
     ├── Themes/                   # DesignTokens, ControlStyles, IconGeometries
-    ├── ViewModels/               # MainViewModel, CrosshairViewModel, GamesViewModel, ApexConfigViewModel, Cs2ConfigViewModel, ConfigItemWrapper
+    ├── ViewModels/               # MainViewModel, CrosshairViewModel, GamesViewModel, ApexConfigViewModel, Cs2ConfigViewModel, PcOptimizeViewModel, ConfigItemWrapper
     └── Views/                    # OverlayWindow, CrosshairPage, GamesPage, GamePages/(ApexPage, Cs2Page, PcOptimizePage, GamePageSelector)
 ```
 
@@ -52,7 +52,7 @@ src/
 | 基础层 | Infrastructure | Win32 API 封装、热键管理 | 3 | [README](Infrastructure/README.md) |
 | 数据层 | Services | 配置持久化、准心渲染实现 | 3 | [README](Services/README.md) |
 | 应用层 | Application | 业务服务抽象、依赖注入 | 9 | [README](Application/README.md) |
-| 表现层 | App | WPF 应用入口、UI 层 | 46 | [README](App/README.md) |
+| 表现层 | App | WPF 应用入口、UI 层 | 47 | [README](App/README.md) |
 | 配置层 | GameConfig | 游戏配置协议文档（无独立源码目录） | 16 | [README](GameConfig/README.md) |
 
 文件数口径：代码模块 = `find src/CrosshairPro.{模块} -type f ( -name "*.cs" -o -name "*.xaml" ) ! -path "*/obj/*" ! -path "*/bin/*" | wc -l`；GameConfig = 配置文档 .md 文件数。
@@ -74,7 +74,7 @@ src/
 
 ### 4. 游戏配置管理
 - **Apex Legends 专用通道**：直接读写游戏真实配置（videoconfig.txt / settings.cfg），支持备份、替换、恢复与启动项生成（ApexConfigService + ApexPage）
-- **通用策略通道**：内置配置档案（CS2、Apex，及"电脑优化"占位条目）（GameProfile + GameConfigStrategy），配置项支持布尔/整数/枚举/字符串类型，CS2 页面基于此通道（GameConfigService + Cs2Page）
+- **通用策略通道**：内置配置档案（CS2、Apex，及"电脑优化"功能页条目）（GameProfile + GameConfigStrategy），配置项支持布尔/整数/枚举/字符串类型，CS2 页面基于此通道（GameConfigService + Cs2Page）
 - 进程检测预留接口 IGameDetector
 
 ### 5. 本地化与 UI
@@ -161,6 +161,6 @@ csproj 物理引用比理想分层更宽（App 直接引用全部四层），见
 | Application | [README](Application/README.md) | [data-model](Application/data-model.md) | [pitfalls](Application/pitfalls.md) | [CHANGELOG](Application/CHANGELOG.md) | [api-configuration](Application/api-configuration.md) · [api-gameconfig](Application/api-gameconfig.md) · [api-preset](Application/api-preset.md) |
 | App | [README](App/README.md) | [data-model](App/data-model.md) | [pitfalls](App/pitfalls.md) | [CHANGELOG](App/CHANGELOG.md) | — |
 | GameConfig | [README](GameConfig/README.md) | — | — | — | [Apex/](GameConfig/Apex/README.md) · [CS2/](GameConfig/CS2/README.md) |
-| design | — | — | — | — | [tab-navigation-design](../.claude/docs/design/tab-navigation-design.md) · [games-tab-overflow-design](../.claude/docs/design/games-tab-overflow-design.md) |
+| design | — | — | — | — | [tab-navigation-design](../.claude/docs/design/tab-navigation-design.md) · [games-tab-overflow-design](../.claude/docs/design/games-tab-overflow-design.md) · [pc-optimize-design](../.claude/docs/design/pc-optimize-design.md) |
 
 完整逐文件索引见 [INDEX.md](INDEX.md)。设计文档权威位置为 `.claude/docs/design/`。

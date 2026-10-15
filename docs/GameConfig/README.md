@@ -15,7 +15,7 @@ GameConfig 模块记录各游戏的**配置文件协议**（游戏侧配置文�
 
 ### 内置游戏档案
 
-`GameProfile.BuiltIn`（`src/CrosshairPro.Core/Models/GameProfile.cs`）内置 2 个游戏档案，用于进程匹配与准心自动切换；两款游戏均已有字段级协议子文档：
+`GameProfile.BuiltIn`（`src/CrosshairPro.Core/Models/GameProfile.cs`）内置 2 个游戏档案，用于进程匹配与准心自动切换；另含 1 个「电脑优化」功能页条目 `builtin-pcopt`（无进程名，不参与进程匹配，无通用策略与协议子文档——该页为静态优化指南，见 [../design/pc-optimize-design.md](../design/pc-optimize-design.md)）。两款游戏均已有字段级协议子文档：
 
 | 游戏 | 进程名 | 通用策略启动项 |
 |------|--------|----------------|

@@ -5,6 +5,42 @@
 
 ---
 
+## [2026-10-14] feat: ApexLaunchOptions 新增 LoadFromString 反向解析；生成规则调整
+
+**类型**: feat
+**提交**: 未提交（工作区）
+**风险**: MEDIUM
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Models/ApexLaunchOptions.cs | +~130 行 | 新增 `LoadFromString(string?)`（先 `ResetToDefaults()` 重置再解析，保证解析后选项与字符串严格一致）+ `Tokenize`（引号感知：引号内空白不拆分、引号剥除）+ `NextInt`/`NextFloat`（InvariantCulture）；识别 22 种令牌（大小写不敏感，`-refresh` 为 `-freq` 别名），未知令牌忽略 |
+
+### 影响范围
+- **生成规则**: 数值参数默认值全部改为 0（0 = 未设置、不输出）——`-w`/`-h` 不再被 `Windowed \|\| Noborder` 门控且不再有 1920/1080 默认值（解析无 -w/-h 的字符串后重新生成不注入默认分辨率）；`+cl_fovScale` 恢复输出（`"{值:F2}"` 带引号），取代同日早前「移除 cl_fovScale 归 settings.cfg」的调整；float 输出/解析一律 InvariantCulture（小数逗号区域安全）
+- **消费方**: `ApexConfigViewModel` 切入自定义模式与 Reset 时调用 LoadFromString 回填面板（双向联动）；未知令牌与值为 0 的已知令牌经再生成会丢失，见 GameConfig/Apex/pitfalls.md §6
+- **跨模块**: App（ApexConfigViewModel/ApexPage/resx），见 App/CHANGELOG.md 同日条目；GameConfig 文档（launch-options 生成规则表、pitfalls §6）
+
+---
+
+## [2026-10-14] feat: GameProfile 新增 DisplayNameLocKey 与 builtin-pcopt 占位档案
+
+**类型**: feat
+**提交**: 未提交（工作区）
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Models/GameProfile.cs | +10 行 | 新增 `[ObservableProperty] DisplayNameLocKey`（string?，非空时 UI 优先取 Strings 资源）；`BuiltIn.GetAll()` 追加 builtin-pcopt 条目（DisplayName="PC Optimization"、LocKey="Games.PcOptimize"、ProcessName 空） |
+
+### 影响范围
+- **行为**: 游戏页 tab 出现第三个"电脑优化"条目（App 层 PcOptimizePage 占位页渲染）；cs2/apex 不设 LocKey 走 DisplayName 回退，行为不变
+- **边界**: GameProfile 无序列化路径；`Matches()` 无调用方（IGameDetector 预留无实现）；GameConfigService 策略字典不含 builtin-pcopt，选中该 tab 不触发配置读写
+- **跨模块**: App（GamesPage/GamePageSelector/PcOptimizePage/转换器/resx），见 App/CHANGELOG.md 同日条目；文档同步 Core/data-model.md（双树）
+
+---
+
 ## [2026-10-14] feat: 新增 CrosshairProPaths 路径权威定义
 
 **类型**: feat

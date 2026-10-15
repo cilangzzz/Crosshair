@@ -5,10 +5,150 @@
 
 ---
 
-## [2026-10-14] fix: 预设选择按 Id 保全防删除重置；主题画笔全部冻结防动画泄漏
+## [2026-10-15] feat: 电脑优化管理页（29 项条目，仅开入口不代改）
+
+**类型**: feat
+**提交**: 未提交（工作区）
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| ViewModels/PcOptimizeViewModel.cs | 新增 | PcOptimizeViewModel（ObservableCollection Categories：7 分类 29 项静态数据，无持久化无服务依赖）+ PcOptimizeCategory/PcOptimizeItem（TitleKey/DescKey/GainKey/OpenTarget/OpenArguments/ProbePaths/HasEntry）+ `[RelayCommand] OpenItem`（Process.Start UseShellExecute；ProbePaths 探测 NVIDIA/AMD 厂商面板，未命中或异常 → Toast）+ ToastRequested 事件 |
+| Views/GamePages/PcOptimizePage.xaml | 重写 | 占位页 → 功能页：标题 + 免责声明 + SmoothScrollViewer 内 7 张分类卡（SectionHeader + 条目行：标题+收益徽章+描述+「打开」按钮，HasEntry 控制可见）+ 避坑卡（6 条静态文案）+ Win11 路径页脚注 |
+| Views/GamePages/PcOptimizePage.xaml.cs | 重写 | OnLoaded 从 App.Services 解析 PcOptimizeViewModel、订阅 ToastRequested；OnUnloaded 退订（与 Cs2Page 同构，无 LoadAsync） |
+| LocalizedTextConverter.cs | 新增 | IMultiValueConverter：[0]=locKey、[1]=CurrentCulture（语言切换重算触发器）；取 LocalizationProvider.Get，缺键回退键名 |
+| App.xaml | +1 行 | 注册 LocalizedTextConverter 资源 |
+| App.xaml.cs | +1 行 | DI 注册 PcOptimizeViewModel（Singleton） |
+| Localization/Strings*.resx ×3 | +82/-1 键 | 新增 PcOptimize.* 82 键（UI 5 + 收益 4 + 分类 7 + 条目 29×2 + 避坑 8），移除占位键 Games.PcOptimizeDesc；键数 216→297（三份同步 grep 计数核对） |
+
+### 影响范围
+- **动因**: 用户要求实现电脑优化管理页——爬取文档与网上方案设计，提供尽可能多的优化点，且**只提供打开对应管理页的入口、由用户手动操作**（不修改任何系统设置，与 VAC 边界哲学同源）
+- **行为**: 页面为纯静态内容 + 事件命令；29 项条目全部对应已核验的 Windows 管理页（ms-settings URI / 控制面板 cpl / 系统 exe / 厂商面板探测）；带参 cpl（powercfg.cpl,,3 / main.cpl,,2）经 `control` + Arguments 拆分（ShellExecute 单字符串不拆参，本机实测坑）
+- **研究**: 三代理 workflow 并行——29 项优化文案（Microsoft/Intel/NVIDIA/AMD 官方来源）、29 条命令逐条核验（learn.microsoft.com ms-settings 权威列表 + 控制面板规范名 + 本机 Win11 26200 实测）、11 条避坑迷思（页面上 6 条）；完整记录见 [design/pc-optimize-design.md](../design/pc-optimize-design.md)
+- **验证**: `dotnet build` 0 警告 0 错误；UIA 自动化——导航+选中可达、141 文本元素全渲染（7 分类头+29 条目+29 按钮+避坑卡+页脚）、点击「打开」拉起 SystemSettings（PID 核对后自动关闭还原）、🌐 双语切换各 5 锚点全中（结束恢复中文）
+- **坑点**: TabNavItem 无 UIA Name（ToolTip 不映射）；PS 5.1 解析无 BOM UTF-8 .ps1 中文吞字节；UIA 语言切换后树重建需重取窗口引用重试——自动化脚本须从 UI 实际检测语言而非假设状态
+- **跨模块**: 无（Core/GameProfile 沿用上次的 builtin-pcopt；DI/资源仅 App 内追加）
+
+---
+
+## [2026-10-14] feat: GamesPage 游戏选择由 tab 条改为 ComboBox 选择器
+
+**类型**: feat
+**提交**: 未提交（工作区）
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Views/GamesPage.xaml | +13/-29 | tab 条（ItemsControl+Button+IsSelected DataTrigger）替换为「游戏」标签（`Games.SelectorLabel`，SectionHeader）+ ComboBox（Width 200，CustomComboBox，ItemsSource=Games，SelectedItem 双向绑定）；ItemTemplate 经 GameProfileTitleConverter MultiBinding 本地化（下拉项与折叠态选区框共用同一模板）；内容容器与 GamePageSelector 不变 |
+| ViewModels/GamesViewModel.cs | +1/-13 | 删除 `[RelayCommand] SelectGame` 命令与 `using CommunityToolkit.Mvvm.Input`（唯一调用方是被移除的 tab 按钮），`SelectGameInternal` 收为 private；`SelectedGame`/`OnSelectedGameChanged`/默认选中 builtin-apex 不变 |
+| Localization/Strings*.resx ×3 | +1 键 | `Games.SelectorLabel`（游戏/Game），键数 214→215 |
+
+### 影响范围
+- **动因**: 用户决策——未来内置游戏页预计 10+ 或持续增加，tab 范式容量上限（800px 最小窗口约 6 个 tab）不适用；原 tab 溢出设计推荐方案 A（横向滚动）改选方案 E（ComboBox 整替），[design/games-tab-overflow-design.md](../design/games-tab-overflow-design.md) 已重写为决策记录 + 实现说明（含方案对比保留）
+- **行为**: 选择游戏改为下拉形态（下拉一次可见全部，无布局上限）；`GameProfile.IsSelected` 仍由 ViewModel 维护但 UI 不再消费（原 tab 高亮 DataTrigger 已删，留作未来恢复 tab 形态的语义保留）
+- **验证**: UIA + 截图像素分析——下拉 3 项内文本正确（Counter-Strike 2 / Apex Legends / 电脑优化）、UIA 选中 CS2 后页面切换、折叠态选区框内容随选择更新（CS2/Apex 文本带差分 1179px）、语言切换选区框重算（zh 电脑优化 → en PC Optimization 差分 1360px）、标签「游戏」→ "Game"
+- **坑点**: UIA 折叠态 ComboBox 选区框子树恒为 0 子元素（ContentPresenter 内部 TextBlock 不暴露给自动化对等体），勿据此误判"选区框未渲染"；判定用截图像素分析（亮像素成行分布 = 文本存在），详见设计文档坑点节
+- **跨模块**: 无（GameProfile/GamePageSelector/ControlStyles 均未动；CustomComboBox 为既有样式）
+
+---
+
+## [2026-10-14] feat: Apex 启动项字符串与启动参数面板双向联动；游戏参数并入自定义面板
+
+**类型**: feat
+**提交**: 未提交（工作区）
+**风险**: MEDIUM
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| ViewModels/ApexConfigViewModel.cs | ~14 处 | 删除 `LaunchOptionsSummary` 属性（复制/生成启动项命令改读 `LaunchOptions`）；新增 `_isLoadingOptionsFromString` 防回环标志与 `SeedPanelFromLaunchOptions()` 助手、`PresetStringFor()` 预设串助手；ctor 中 `CustomLaunchOptions.PropertyChanged` 钩子：任意模式下面板编辑实时回写 `LaunchOptions`，且回显偏离预设时在 guard+`_isInitializing` 包裹下置 `SelectedLaunchPresetIndex = 3`（预设回显联动）；选预设/切入自定义/重置/配置加载完成均经 `LoadFromString` 回填面板（初始化加载后立即回填一次；`InitializeAsync` 去掉 `ConfigureAwait(false)`——continuation 回 UI 线程，消除后台线程改绑定属性与面板编辑的竞态）；新增 `NotifyLaunchOptionsEdited()`：文本模式手改字符串失焦后偏离预设则回显切「自定义」并级联回填面板（未偏离仅回填） |
+| Views/GamePages/ApexPage.xaml | ~8 处 | **启动参数面板常显**（删除面板 Border 的 `UseCustomLaunchOptions` Visibility 绑定——原「自定义模式才显示」致用户看不到参数选项）；面板标题键换为 `Apex.LaunchParams`；启动项 TextBox 始终可见、`UseCustomLaunchOptions` 为 true 时 `IsReadOnly`，挂 `LostFocus="OnLaunchOptionsBoxLostFocus"`；自定义面板窗口组后新增「游戏参数」组（FOV 滑杆 0-3.0 / 最大FPS 滑杆 0-600 / 显示FPS / 显示位置，绑定 `CustomLaunchOptions`，数值 0 = 不输出对应令牌）；滑杆边界放宽防解析值被收窄（Width 下限 800→0、Height 600→0、Freq 上限 360→500、InterpRatio 下限 1→0）；删除面板底部汇总 Border；「游戏设置」小节删 FOV/FPS/显示FPS/显示位置四行（仅剩鼠标灵敏度/加速）；视频设置卡删分辨率/刷新率两行（-w/-h/-freq 走启动参数通道） |
+| Views/GamePages/ApexPage.xaml.cs | +9 行 | 新增 `OnLaunchOptionsBoxLostFocus` 处理器 → `VM.NotifyLaunchOptionsEdited()`（失焦而非 PropertyChanged 触发：每字符解析会过早锁定字符串框） |
+| Core/Models/ApexLaunchOptions.cs | +~130 行 | 生成/解析规则调整（见 Core/CHANGELOG 同日条目：默认值归 0、InvariantCulture、大小写不敏感、LoadFromString/ResetToDefaults/Tokenize） |
+| App.xaml | -2 行 | 移除 `InverseBoolToVisibilityConverter` 注册（唯一使用点随 TextBox 显隐改 IsReadOnly 而消失） |
+| InverseBooleanToVisibilityConverter.cs | 删除 | 全应用无引用的死转换器 |
+| Localization/Strings*.resx ×3 | +2/-2 键 | 新增 `Apex.GameParams`（游戏参数/Game Params）、`Apex.LaunchParams`（启动参数/Launch Params，面板常显后的新标题）；删除死键 `Apex.Resolution`、`Apex.GeneratedLaunchOptions`；键数 216（同工作区另有 Games.SelectorLabel 随电脑优化工作新增） |
+
+### 影响范围
+- **联动语义**: 面板常显可编辑 → 字符串实时重生成 + 预设回显自动切「自定义」（回环由 `_isLoadingOptionsFromString` 抑制，初始化期由 `_isInitializing` 拦截误切）；选预设/切入自定义/重置/加载完成 → 字符串解析回填面板；未知令牌（如调试预设的 `-condebug`）与值为 0 的已知令牌（如 `+fps_max 0`）在再生成时丢失（文本模式编辑不受影响），见 GameConfig/Apex/pitfalls.md §6
+- **默认值语义**: `ApexLaunchOptions` 全部数值默认值改为 0（= 未设置、不输出）——解析无 `-w/-h` 的字符串后重新生成不会注入默认分辨率 1080p，也不会注入网络参数默认值（cmdrate/updaterate 无面板控件，此前一旦注入无法从面板移除）
+- **UI 结构**: 启动选项卡自上而下为 预设 → 启动项字符串（常显）→ 启动参数面板（性能/窗口/游戏参数/网络/调试）→ 复制 → 游戏设置（鼠标项）；视频设置卡仅剩亮度/伽马——分辨率/刷新率行移除属 UI 层，`VideoConfig` 加载/保存链路未动
+- **跨模块**: Core（ApexLaunchOptions 生成/解析）；GameConfig 文档（launch-options 生成规则表、pitfalls §6 改写）
+
+---
+
+## [2026-10-14] fix: 启动语言恢复不再绕过 INPC；清理 ApexPage Separator 无效 Background
 
 **类型**: fix
 **提交**: 未提交（工作区）
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Localization/LocalizationProvider.cs | ~Initialize | 初始化改为经 `CurrentCulture` setter 赋值（原直改 `_currentCulture` 私有字段不发通知），恢复路径自动补发 CurrentCulture/Item[] 通知；CurrentUICulture/CurrentCulture 副作用设置由 setter 承担 |
+| Views/GamePages/ApexPage.xaml | 3 处 | 移除 Separator 的 `Background="{DynamicResource BorderBrush}"` 局部值——隐式样式模板 Border 硬编码 `StaticResource BorderBrush` 且无 TemplateBinding，局部值不生效（死代码，视觉效果不变） |
+
+### 影响范围
+- **动因**: 后台评审（xaml-binding / csharp-correctness 双维度对抗确认）发现的既有缺陷：MainWindow.Loaded 异步回调在窗口绑定求值后才调用 `Initialize(state.Language)`，保存过 en-US 的用户重启后主窗口 chrome 与默认页 loc:Loc 绑定停留中文（本批新增的 GameProfileTitleConverter 属懒实例化路径不受影响，但同样是该模式的消费方）
+- **行为**: 保存 en-US 冷启动直接显示英文（UIA 实测：en-US 冷启动全英文 → invoke 语言按钮 → 切中文并持久化 zh-CN）；App.OnStartup 的 `Initialize()`（绑定求值前调用）行为不变；游戏 tab 标题中英往返已验证
+- **跨模块**: 无（LocalizationProvider 仅 App 层消费；SetCulture/CurrentCulture 公共 API 未变）
+
+---
+
+## [2026-10-14] feat: 游戏页新增「电脑优化」占位 tab；修复 tab 与内容对齐及底部按钮贴边
+
+**类型**: feat
+**提交**: 50cbb90（App 代码）；533eef7（Core GameProfile.cs）
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Views/GamePages/PcOptimizePage.xaml(.cs) | 新增 | 电脑优化空状态占位页（居中 SettingsIconGeometry + 标题 + 描述，无 ViewModel） |
+| Views/GamesPage.xaml | ~2 处 | tab Button Content 改 MultiBinding（GameProfileTitleConverter：LocKey 优先/DisplayName 回退/CurrentCulture 触发重算）；内联 selector 注册 PcOptimizeTemplate |
+| Views/GamePages/GamePageSelector.cs | +2 处 | PcOptimizeTemplate 属性 + "builtin-pcopt" 分支 |
+| GameProfileTitleConverter.cs | 新增 | IMultiValueConverter（项目首例），App.xaml 注册 |
+| Views/GamePages/ApexPage.xaml | 2 处 | 根 Grid Margin 20,12,20,0 删除（消除与 GamesPage 的双重 20px 嵌套，内容与 tab 条左对齐）；底部按钮行 Margin 加 bottom 16 |
+| Views/GamePages/Cs2Page.xaml | 2 处 | 同上 |
+| Localization/Strings{,.zh-CN,.en}.resx | +2 键/份 | Games.PcOptimize（电脑优化/PC Optimization）、Games.PcOptimizeDesc（功能开发中，敬请期待/Coming soon） |
+| （Core）Models/GameProfile.cs | +10 行 | 见 Core/CHANGELOG.md 同日条目 |
+
+### 影响范围
+- **UI**: 游戏页 3 个 tab（CS2/APEX/电脑优化）；内容卡片左缘 40→20px 与 tab 条对齐；tab-内容间距 28→16px；底部按钮距窗口下缘 16px
+- **本地化**: tab 标题经 MultiBinding 绑 CurrentCulture，语言切换动态刷新（UIA 实测中英往返正常）
+- **跨模块**: Core（GameProfile.DisplayNameLocKey + builtin-pcopt）；文档同步 App/README+data-model、Core/data-model、docs/README+INDEX、design/games-tab-overflow-design（双树，design 仅权威树）
+
+---
+
+## [2026-10-14] feat: 准心设置新增「旋转」参数；描边粗细行对齐滑杆行规格
+
+**类型**: feat
+**提交**: 50cbb90
+**风险**: LOW
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| Views/CrosshairPage.xaml | +11/-4 | 亮度行后新增旋转行（Slider 0-360 + NumericTextBox，绑定既有 `Config.Rotation`——模型/Clone/CopyFrom/ConfigurationService 此前已支持，UI 未暴露）；效果区描边粗细行取消 24px 缩进、与「启用描边」开关行同缩进，数值框补 `Margin="8,0,0,0"` 与其他滑杆行同规格 |
+| Views/CrosshairPage.xaml.cs | +6/-0 | 预览 `RenderCrosshair()` 对 `CrosshairCanvas` 施加 `RenderTransform(RotateTransform 旋转角, 画布中心)`，0° 置 null 防残留 |
+| Views/OverlayWindow.cs | +5/-0 | 覆盖层 `RenderCrosshair()` 对 `_canvas` 同型施加旋转变换（App 未使用 Services 层 CrosshairRenderer，预览与覆盖层均为自绘 Shape，两条路径必须各自应用，否则覆盖层不随参数旋转） |
+| Localization/Strings{,.zh-CN,.en}.resx | +3/-0 ×3 | 新增 `Crosshair.Rotation`（旋转 / 旋转 / ROTATION），置于 `Crosshair.CenterSize` 与 `Crosshair.Color` 之间 |
+| docs/App/data-model.md（双树） | 同步 | 控制面板描述补旋转行与描边粗细新对齐；OverlayWindow.RenderCrosshair 表行补旋转变换说明 |
+
+### 影响范围
+- **行为**: 旋转 0-360° 实时生效于预览与覆盖层（`UpdateSourceTrigger=PropertyChanged`，走既有四级 PropertyChanged 重绘链路）；`Rotation` 字段本就随 config.json/预设序列化，旧配置文件缺字段反序列化为默认 0°
+- **预留渲染器**: Services 层 `CrosshairRenderer` 的 RotateTransform 实现保持不变（App 未引用，属预留代码，本次未改动）
+- **验证**: 评审工作流 96/96 断言全过（真实 WPF STA harness：真实加载 CrosshairPage BAML 检查绑定表达式、Slider/VM 双向同步、预览与 OverlayWindow 旋转变换含 RenderTargetBitmap 像素级旋转对比、AllowsTransparency 窗口保持可见且逐 Shape Opacity 在变换下不变、三 resx 文化取值与回退、六既有滑杆行无损、预设/配置 JSON 往返、旧配置缺字段反序列化默认 0）
+
+---
+
+## [2026-10-14] fix: 预设选择按 Id 保全防删除重置；主题画笔全部冻结防动画泄漏
+
+**类型**: fix
+**提交**: 50cbb90
 **风险**: MEDIUM
 
 ### 变更文件
@@ -30,7 +170,7 @@
 ## [2026-10-14] feat: 单实例校验（命名 Mutex 防重复启动）
 
 **类型**: feat
-**提交**: 未提交（工作区）
+**提交**: 50cbb90
 **风险**: LOW
 
 ### 变更文件
@@ -49,7 +189,7 @@
 ## [2026-10-14] style: 开关滑块改方圆造型
 
 **类型**: style
-**提交**: 未提交（工作区）
+**提交**: 50cbb90
 **风险**: LOW
 
 ### 变更文件
@@ -65,18 +205,18 @@
 ## [2026-10-14] refactor: Apex 启动参数与游戏设置同卡分区，开关改矩形微圆角并加父子联动
 
 **类型**: refactor
-**提交**: ControlStyles 外形随 cdf152f 提交；ApexPage 分区重构与父子联动未提交（工作区）
+**提交**: ControlStyles 外形随 cdf152f 提交；ApexPage 分区重构、缩进取消与值联动随 50cbb90 提交
 **风险**: MEDIUM
 
 ### 变更文件
 | 文件 | 变更 | 说明 |
 |------|------|------|
 | Themes/ControlStyles.xaml | ~3 处 | `ToggleSwitch` 40×22 胶囊 → 44×22 矩形微圆角（CornerRadius 用 `RadiusSm`），滑块边距 2→3、行程 X 20→22（随 cdf152f 提交） |
-| Views/GamePages/ApexPage.xaml | +90/-93 | ① 自定义启动面板移除「游戏设置」组（MaxFPS/ShowPositionInfo/FOVScale/LetterboxAspect 4 行，与游戏设置卡重复）；信箱比例行移入「窗口」组 ② 独立「游戏设置」卡并入「启动选项」卡：Separator + Accent 子标题分区，含鼠标灵敏度/鼠标加速/FOV/FPS/显示FPS/显示位置 6 行——启动参数与游戏设置同卡、与视频/画质等其他配置分开 ③ 父子联动：级联阴影←启用阴影、体积雾←体积光照、倍镜灵敏度 6 个滑杆行←独立倍镜灵敏度开关（`x:Name` + `ElementName` 绑定 IsChecked→IsEnabled，父关子整行禁用） ④ 联动子项取消缩进（级联阴影/体积雾标签与父项同列） ⑤ 值联动：父开关经 UI 点击关闭时子开关值同步置 0 |
-| Views/GamePages/ApexPage.xaml.cs | +22 | `OnEnableShadowsClick`/`OnVolumetricLightingClick`：用 Click 事件（仅用户点击触发，加载配置/应用预设经绑定更新 IsChecked 不触发）检测父开关关闭，置 `CsmEnabled`/`VolumetricFog` = 0，经 PropertyChanged 刷新子开关 UI |
+| Views/GamePages/ApexPage.xaml | +95/-98 | ① 独立「游戏设置」卡并入「启动选项」卡：Separator + Accent 子标题分区，含鼠标灵敏度/鼠标加速/FOV/FPS/显示FPS/显示位置 6 行——启动参数与游戏设置同卡、与视频/画质等其他配置分开（自定义启动面板 性能/窗口/网络/调试 分组不变，信箱比例行保持在「窗口」组） ② 父子联动：级联阴影←启用阴影、体积雾←体积光照、倍镜灵敏度 6 个滑杆行←独立倍镜灵敏度开关（`x:Name` + `ElementName` 绑定 IsChecked→IsEnabled，父关子整行禁用） ③ 联动子项取消缩进（级联阴影/体积雾标签与父项同列） ④ 值联动：父开关经 UI 点击关闭时子开关值同步置 0 |
+| Views/GamePages/ApexPage.xaml.cs | +20 | `OnEnableShadowsClick`/`OnVolumetricLightingClick`：用 Click 事件（仅用户点击触发，加载配置/应用预设经绑定更新 IsChecked 不触发）检测父开关关闭，置 `CsmEnabled`/`VolumetricFog` = 0，经 PropertyChanged 刷新子开关 UI |
 
 ### 影响范围
-- **数据流**: 游戏设置类条目（fps_max/cl_fov_scale/cl_showfps/cl_showpos）常规配置入口收敛为 settings.cfg；配套 Core `ApexLaunchOptions.GenerateOptionsString()` 改为 `+fps_max` 条件输出并移除 `+cl_fovScale`（见 Core/CHANGELOG 同日条目，随 b546b85 提交），**结构化生成通道**（自定义面板）的启动项默认值不再覆盖游戏设置。注意：启动项预设字符串（竞技优化/高画质仍含 `+fps_max 0`/`+cl_fovScale "2"`）与文本模式行为未变，选用预设或手填后仍可能覆盖 settings.cfg——如需彻底收敛可后续清理预设模板
+- **数据流**: 游戏设置类条目（fps_max/cl_fov_scale/cl_showfps/cl_showpos）常规配置入口收敛为 settings.cfg；配套 Core `ApexLaunchOptions.GenerateOptionsString()` 改为 `+fps_max` 条件输出并移除 `+cl_fovScale`（见 Core/CHANGELOG 同日条目，随 b546b85 提交），**结构化生成通道**（自定义面板）的启动项默认值不再覆盖游戏设置。注意：启动项预设字符串（竞技优化/高画质仍含 `+cl_fovScale "2"`，分别另带 `+fps_max 0`/`+fps_max 279`）与文本模式行为未变，选用预设或手填后仍可能覆盖 settings.cfg——如需彻底收敛可后续清理预设模板
 - **UI**: 开关为 44×22 矩形微圆角（滑块同为方圆，见上方 style 条目）；联动子项父开关关闭时整行禁用（Opacity 0.4），布尔子项值同步置 0（重新开启父项不自动恢复，保持关闭）；倍镜滑杆子项仅禁用不禁值
 - **跨模块**: Core（ApexLaunchOptions.cs）；文档同步 Core/data-model、GameConfig/Apex/pitfalls+launch-options（双树）
 

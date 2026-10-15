@@ -1,16 +1,39 @@
 # Apex Legends 配置变更日志
 
+## [2026-10-14] feat: 启动项字符串↔启动参数面板双向联动，游戏参数并入自定义面板
+
+**类型**: feat
+**提交**: 未提交（工作区）
+**风险**: MEDIUM
+
+### 变更文件
+| 文件 | 变更 | 说明 |
+|------|------|------|
+| src/CrosshairPro.Core/Models/ApexLaunchOptions.cs | +~130 行 | `GenerateOptionsString()`：数值默认值归 0（0 = 不输出，`-w`/`-h` 独立于窗口模式且不再注入默认 1920/1080）、`+cl_fovScale "F2"` 恢复输出（取代同日早前的移除调整）、float 一律 InvariantCulture；新增 `LoadFromString`（先 `ResetToDefaults` 再解析 22 种令牌，大小写不敏感，`-refresh` 为 `-freq` 别名，未知忽略）+ 引号感知 `Tokenize` |
+| src/CrosshairPro.App/ViewModels/ApexConfigViewModel.cs | ~14 处 | 删除 `LaunchOptionsSummary`；面板常显可编辑：任意模式下面板编辑经 `CustomLaunchOptions.PropertyChanged` 实时回写 `LaunchOptions` 并把预设回显切「自定义」（guard+`_isInitializing` 包裹）；选预设/切入自定义/重置/加载完成均经 `SeedPanelFromLaunchOptions()`（`LoadFromString`）解析回填；文本模式手改字符串失焦经 `NotifyLaunchOptionsEdited()` 偏离预设则切「自定义」；`InitializeAsync` 去掉 `ConfigureAwait(false)` 消除后台线程改绑定属性竞态；复制/生成命令直接读 `LaunchOptions` |
+| src/CrosshairPro.App/Views/GamePages/ApexPage.xaml.cs | +9 行 | 新增启动项字符串 `LostFocus` 处理器（`OnLaunchOptionsBoxLostFocus` → `NotifyLaunchOptionsEdited`） |
+| src/CrosshairPro.App/Views/GamePages/ApexPage.xaml | ~8 处 | **启动参数面板常显**（原自定义模式才显示）；面板标题键 `Apex.LaunchParams`；启动项字符串框常显（偏离预设后只读）；自定义面板新增「游戏参数」组（FOV 0-3.0/最大FPS 0-600/显示FPS/显示位置，绑定 ApexLaunchOptions，数值 0=不输出）；滑杆边界放宽防解析值收窄（Width/Height/InterpRatio 下限→0、Freq→500）；「游戏设置」小节删 FOV/FPS/显示FPS/显示位置（编辑入口移入游戏参数组）；视频设置卡删分辨率/刷新率行（-w/-h/-freq 走启动参数通道，VideoConfig 数据链路未动） |
+| docs/GameConfig/Apex/launch-options.md | ~2 处 | 生成规则表 Width/Height/ClFovScale 行更新；补充 LoadFromString 与未知令牌/值 0 令牌丢失说明 |
+| docs/GameConfig/Apex/pitfalls.md | ~§6 | 改写为「条件输出与未知令牌丢失」（cl_fovScale 回归启动项通道；`-condebug` 等未建模令牌与 `+fps_max 0` 切入自定义再生成会丢失；滑杆越界收窄边界） |
+
+### 影响范围
+- **数据流**: fps_max/cl_showfps/cl_showpos/cl_fov_scale 的 UI 编辑入口从 settings.cfg 小节移入启动选项卡自定义面板「游戏参数」组；settings.cfg 渠道读写逻辑未动（加载/保存仍含这些字段，仅无独立编辑行）
+- **协议**: 双向联动语义（面板→字符串实时生成、字符串→面板切入/重置时解析）、数值 0=未设置、令牌丢失边界见 pitfalls §6；预设字符串与文本模式行为不变
+- **跨模块**: Core（ApexLaunchOptions）与 App（含 InverseBooleanToVisibilityConverter 删除、resx 死键清理），见两模块 CHANGELOG 同日条目
+
+---
+
 ## [2026-10-14] fix: 启动项生成通道与 settings.cfg 解耦，UI 分区重构
 
 **类型**: fix
-**提交**: 部分（b546b85）
+**提交**: b546b85（Core 生成规则）；50cbb90（ApexPage 重构与联动）；pitfalls/launch-options 文档变更未提交
 **风险**: MEDIUM
 
 ### 变更文件
 | 文件 | 变更 | 说明 |
 |------|------|------|
 | src/CrosshairPro.Core/Models/ApexLaunchOptions.cs | ~2 处 | `GenerateOptionsString()`：`+fps_max` 改条件输出（`FpsMax > 0`），移除 `+cl_fovScale`（随 b546b85 提交，详见 [Core/CHANGELOG](../../../Core/CHANGELOG.md) 同日条目） |
-| src/CrosshairPro.App/Views/GamePages/ApexPage.xaml | +90/-93 | 自定义启动面板移除与游戏设置卡重复的「游戏设置」组（信箱比例移入「窗口」组）；独立「游戏设置」卡并入「启动选项」卡作下半分区；父子联动（级联阴影←启用阴影、体积雾←体积光照、倍镜滑杆←独立倍镜开关，ElementName 绑定 IsChecked→IsEnabled）；子项取消缩进与父项同列；父开关经 UI 点击关闭时子开关值同步置 0（Click 处理器，见 App/CHANGELOG 同日条目） |
+| src/CrosshairPro.App/Views/GamePages/ApexPage.xaml | +95/-98 | 独立「游戏设置」卡并入「启动选项」卡作下半分区（自定义启动面板 性能/窗口/网络/调试 分组不变，信箱比例行保持在「窗口」组）；父子联动（级联阴影←启用阴影、体积雾←体积光照、倍镜滑杆←独立倍镜开关，ElementName 绑定 IsChecked→IsEnabled）；子项取消缩进与父项同列；父开关经 UI 点击关闭时子开关值同步置 0（Click 处理器，见 App/CHANGELOG 同日条目） |
 | docs/GameConfig/Apex/pitfalls.md | ~§6 | 无条件输出坑点改写为已调整状态（fps_max 条件化、cl_fovScale 移除） |
 | docs/GameConfig/Apex/launch-options.md | ~3 处 | 生成规则表 FpsMax/ClFovScale 行更新；补充 settings.cfg 为主通道说明 |
 

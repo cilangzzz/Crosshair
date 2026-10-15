@@ -128,11 +128,10 @@ public partial class GamesViewModel : ObservableObject
 
 | 成员 | 说明 |
 |------|------|
-| Games | 来自 `GameProfile.BuiltIn.GetAll()` 的 3 个内置条目（Counter-Strike 2、Apex Legends、电脑优化占位），见 [../Core/data-model.md](../Core/data-model.md) |
+| Games | 来自 `GameProfile.BuiltIn.GetAll()` 的 3 个内置条目（Counter-Strike 2、Apex Legends、电脑优化），见 [../Core/data-model.md](../Core/data-model.md) |
 | CurrentGameId | 当前选中游戏 ID（GamesPage 的 ContentControl 绑定它驱动 GamePageSelector） |
-| SelectedGame | 当前选中的游戏，变更时同步 IsSelected 标记与 CurrentGameId |
-| SelectGameCommand(game) | 选择游戏（列表按钮绑定） |
-| SelectGameInternal(game) | 内部选中方法；构造时默认选中 `builtin-apex` |
+| SelectedGame | 当前选中的游戏（GamesPage ComboBox 的 SelectedItem 双向绑定），变更时同步 IsSelected 标记与 CurrentGameId |
+| SelectGameInternal(game) | private 内部选中方法；构造时默认选中 `builtin-apex` |
 
 ## ApexConfigViewModel
 
@@ -147,7 +146,7 @@ Apex Legends 配置 ViewModel（单例），管理 videoconfig.txt、settings.cf
 | LaunchOptions | string | 启动项文本 |
 | CustomLaunchOptions | ApexLaunchOptions | 自定义启动项结构化选项（高性能/窗口/游戏/网络/调试分组） |
 | UseCustomLaunchOptions | bool | 是否使用自定义启动项（选择"自定义"预设时为 true） |
-| LaunchOptionsSummary | string | 汇总启动项显示（自定义模式下由 CustomLaunchOptions.GenerateOptionsString() 生成） |
+| _isLoadingOptionsFromString | bool | 内部标志：把启动项字符串解析回填面板（选预设 / 切入自定义 / 重置 / 配置加载完成）期间抑制面板→字符串的再生成；钩子置预设回显索引时也短暂置位（面板即源头，避免回读解析） |
 | IsApexInstalled | bool | Apex 是否检测到安装 |
 | VideoConfigPath / SettingsConfigPath | string | 配置文件路径（未找到时显示 "Path.NotFound" 文案） |
 | StatusMessage | string | 状态消息 |
@@ -214,6 +213,45 @@ public partial class Cs2ConfigViewModel : ObservableObject
 
 Cs2Page.xaml 通过 `ConfigItemTemplateSelector`（按 `ConfigItemType` 选 开关/滑杆/下拉 统一行模板）渲染 `Sections[x].Items`，不再使用 `Items[j]` 固定索引绑定（坑点 §17 已消除）；分区标题仍为固定本地化键。
 
+## PcOptimizeViewModel
+
+电脑优化 ViewModel（单例），纯静态内容 + 打开命令：7 分类 29 项 Windows 游戏优化条目，每项只提供对应系统管理页的「打开」入口，**不修改任何系统设置**（设计决策、29 项清单与命令核验记录见 [../design/pc-optimize-design.md](../design/pc-optimize-design.md)）。无持久化、无服务依赖。
+
+```csharp
+public partial class PcOptimizeViewModel : ObservableObject
+{
+    public ObservableCollection<PcOptimizeCategory> Categories { get; } = new();
+    public event EventHandler<string>? ToastRequested;
+    [RelayCommand] private void OpenItem(PcOptimizeItem? item);
+}
+
+public class PcOptimizeCategory
+{
+    public string TitleKey { get; }                          // PcOptimize.Cat.* 分组标题键
+    public ObservableCollection<PcOptimizeItem> Items { get; }
+}
+
+public class PcOptimizeItem
+{
+    public string Id { get; }                                // 条目标识（本地化键后缀）
+    public string TitleKey => $"PcOptimize.{Id}";            // 标题本地化键
+    public string DescKey => $"PcOptimize.{Id}Desc";         // 说明本地化键
+    public string GainKey { get; }                           // PcOptimize.GainHigh/Medium/Low/Varies
+    public string OpenTarget { get; }                        // ms-settings URI / .cpl / .exe
+    public string OpenArguments { get; }                     // 带参 cpl 经 control 拆分（ShellExecute 不拆空格）
+    public string[] ProbePaths { get; } = [];                // 厂商面板全路径候选（NVIDIA/AMD）
+    public bool HasEntry => !string.IsNullOrEmpty(OpenTarget) || ProbePaths.Length > 0;
+}
+```
+
+| 成员 | 说明 |
+|------|------|
+| Categories | 构造函数静态构建 7 组：系统 8 / 电源 4 / 显示 6 / 网络 3 / 存储 3 / 驱动与显卡 3 / 输入与音频 2 |
+| OpenItemCommand | OpenTarget 为 ms-settings URI 或 exe → `Process.Start(UseShellExecute=true)`（Arguments 非空时附加）；ProbePaths 非空 → `FirstOrDefault(File.Exists)` 探测（未命中 → Toast `PcOptimize.VendorNotFound`）；异常 → Toast `PcOptimize.OpenFailed` |
+| ToastRequested | 事件，由 PcOptimizePage 订阅（Loaded 订阅 / Unloaded 退订） |
+
+PcOptimizePage.xaml 条目行经 `LocalizedTextConverter` 双绑定（TitleKey/DescKey + CurrentCulture）渲染，语言切换即时重算；`HasEntry` 控制按钮可见性。
+
 ## ConfigItemWrapper / ConfigSectionWrapper
 
 配置项 UI 包装类（定义于 ViewModels/ConfigItemWrapper.cs），把 Core 的 `ConfigItemDefinition` / `ConfigSectionDefinition` 与实际设置字典连接起来供绑定。
@@ -276,9 +314,9 @@ public bool IsCrosshairVisible => _isVisible;
 
 ### GamesPage
 
-游戏配置页：顶部 ItemsControl 游戏按钮（IsSelected 高亮，绑定 SelectGameCommand）；内容区 ContentControl 绑定 `CurrentGameId`，由 GamePageSelector 切换模板。Loaded 时从主窗口 DataContext 取 GamesViewModel。
+游戏配置页：顶部「游戏」标签（`Games.SelectorLabel`）+ ComboBox 选择器（`SelectedItem` 绑定 SelectedGame，Width 200，ItemTemplate 经 GameProfileTitleConverter 本地化；下拉项与折叠态选区框共用同一模板）；内容区 ContentControl 绑定 `CurrentGameId`，由 GamePageSelector 切换模板。Loaded 时从主窗口 DataContext 取 GamesViewModel。`GameProfile.IsSelected` 标志仍由 ViewModel 维护但 UI 不再消费（原 tab 高亮已随 tab 条移除）。
 
-### ApexPage / Cs2Page
+### ApexPage / Cs2Page / PcOptimizePage
 
 游戏子页面，均从 `App.Services` 解析各自 ViewModel（单例）：
 
@@ -286,6 +324,7 @@ public bool IsCrosshairVisible => _isVisible;
 |------|------|------|
 | ApexPage | OnLoaded 设置 DataContext 并订阅 ToastRequested（无退订） | ToastNotification.ShowIn(Panel) |
 | Cs2Page | OnLoaded 订阅 + await LoadAsync()；OnUnloaded 退订 | 同上 |
+| PcOptimizePage | OnLoaded 解析 PcOptimizeViewModel、订阅 ToastRequested；OnUnloaded 退订（无加载步骤） | 同上 |
 
 ### 模板选择器（GamePageSelector / PageTemplateSelector / ConfigItemTemplateSelector）
 
@@ -296,7 +335,7 @@ public class GamePageSelector : DataTemplateSelector
 {
     public DataTemplate? ApexTemplate { get; set; }     // gameId == "builtin-apex"
     public DataTemplate? Cs2Template { get; set; }      // gameId == "builtin-cs2"
-    public DataTemplate? PcOptimizeTemplate { get; set; } // gameId == "builtin-pcopt"（电脑优化占位页）
+    public DataTemplate? PcOptimizeTemplate { get; set; } // gameId == "builtin-pcopt"（电脑优化页）
     public DataTemplate? DefaultTemplate { get; set; }  // 其他（"请选择游戏"提示）
 }
 
@@ -315,7 +354,7 @@ public class ConfigItemTemplateSelector : DataTemplateSelector  // Views/GamePag
 }
 ```
 
-Cs2Page 资源中声明 `ConfigItemTemplateSelector` 并为三/四类模板提供统一行规格（开关行「标签居左 + `ToggleSwitch` 矩形微圆角开关居右」、滑杆行 `*/160/64` 三列、下拉行 ComboBox 宽 160），ApexPage 手写行遵循同一规格。ApexPage 卡片结构：启动选项卡内含「启动参数（预设/文本框/自定义面板：性能/窗口/网络/调试）」与「游戏设置（settings.cfg）」两个分区（游戏设置卡已于 2026-10-14 并入），瞄准镜灵敏度独立成卡；父子联动（级联阴影←启用阴影、体积雾←体积光照、倍镜滑杆←独立倍镜灵敏度开关）经 `x:Name` + `ElementName` 绑定 IsChecked→IsEnabled 实现，子项与父项同列无缩进；布尔子项另有值联动——父开关经 UI 点击（Click 事件，绑定更新不触发）关闭时 `CsmEnabled`/`VolumetricFog` 同步置 0（ApexPage.xaml.cs 处理器），重新开启父项不自动恢复。
+Cs2Page 资源中声明 `ConfigItemTemplateSelector` 并为三/四类模板提供统一行规格（开关行「标签居左 + `ToggleSwitch` 矩形微圆角开关居右」、滑杆行 `*/160/64` 三列、下拉行 ComboBox 宽 160），ApexPage 手写行遵循同一规格。ApexPage 启动选项卡自上而下：预设 → 启动项字符串（始终可见；`UseCustomLaunchOptions`（含义：面板内容已偏离预设/处于自定义态）为 true 时 IsReadOnly 只读）→ 启动参数面板（**常显**：性能/窗口/游戏参数/网络/调试，游戏参数组含 FOV/最大FPS/显示FPS/显示位置，数值 0 = 不输出对应令牌）→ 复制按钮 →「游戏设置」小节（settings.cfg：仅剩鼠标灵敏度/鼠标加速）；视频设置卡的分辨率/刷新率行已移除（对应 -w/-h/-freq 走启动参数通道，videoconfig.txt 数据链路不变）。启动项字符串与启动参数面板双向联动：面板编辑 → `CustomLaunchOptions.PropertyChanged` → `LaunchOptions` 实时重生成，且回显偏离预设时 `SelectedLaunchPresetIndex` 自动切 3「自定义」（`_isLoadingOptionsFromString` + `_isInitializing` 双重防回环/防初始化误切）；选预设/切入自定义/重置/配置加载完成 → `ApexLaunchOptions.LoadFromString(LaunchOptions)` 先重置后解析回填面板（`SeedPanelFromLaunchOptions()` 助手；`LaunchOptionsSummary` 已删除，复制/生成命令直接读 `LaunchOptions`）。瞄准镜灵敏度独立成卡；父子联动（级联阴影←启用阴影、体积雾←体积光照、倍镜滑杆←独立倍镜灵敏度开关）经 `x:Name` + `ElementName` 绑定 IsChecked→IsEnabled 实现，子项与父项同列无缩进；布尔子项另有值联动——父开关经 UI 点击（Click 事件，绑定更新不触发）关闭时 `CsmEnabled`/`VolumetricFog` 同步置 0（ApexPage.xaml.cs 处理器），重新开启父项不自动恢复。
 
 ## 自定义控件
 
@@ -379,9 +418,9 @@ public string? GetInputResult();  // 从 Tag 中取输入框文本
 | StringToVisibilityConverter | StringToVisibilityConverter | 非空字符串 → Visible，否则 Collapsed |
 | ConfigTypeToVisibilityConverter | ConfigTypeToVisibilityConverter | value 为 ConfigItemType 且 parameter（字符串）解析后相等 → Visible |
 | IntToBoolConverter | IntToBoolConverter | 0 → false，非 0 → true；ConvertBack：true → 1 |
-| InverseBooleanToVisibilityConverter | InverseBoolToVisibilityConverter | true → Collapsed，false → Visible |
 | UtcToLocalTimeConverter | UtcToLocalTimeConverter | UTC DateTime → 本地时间字符串（yyyy-MM-dd HH:mm） |
 | GameProfileTitleConverter | GameProfileTitleConverter | IMultiValueConverter：[0]=DisplayName、[1]=DisplayNameLocKey、[2]=CurrentCulture（语言切换触发重算）；LocKey 非空取 LocalizationProvider.Get，否则回退 DisplayName |
+| LocalizedTextConverter | LocalizedTextConverter | IMultiValueConverter：[0]=locKey、[1]=CurrentCulture（语言切换触发重算）；取 LocalizationProvider.Get(locKey)，键缺失回退键名 |
 
 另使用 WPF 内置 `BooleanToVisibilityConverter`（键 BoolToVisibilityConverter）。
 
@@ -392,7 +431,7 @@ public string? GetInputResult();  // 从 Tag 中取输入框文本
   └─ LocExtension.ProvideValue()
        └─ Binding("[App.Title]") → LocalizationProvider.Instance（索引器）
              └─ Strings.ResourceManager.GetString(key, culture)
-                   └─ Strings.resx / Strings.en.resx / Strings.zh-CN.resx（各 192 键）
+                   └─ Strings.resx / Strings.en.resx / Strings.zh-CN.resx（各 297 键）
 语言切换
   MainWindow.LanguageButton_Click → LocalizationProvider.SetCulture("en-US"/"zh-CN")
     → CurrentCulture setter 触发 PropertyChanged("Item[]") → 所有索引器 Binding 自动刷新

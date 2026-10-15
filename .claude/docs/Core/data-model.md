@@ -17,7 +17,7 @@ Preset ─── CrosshairConfig（配置快照）
     └── HotkeyBinding（热键绑定）
 
 GameProfile（游戏档案，Id 被 GameConfig / GameConfigStrategy 关联）
-    └── BuiltIn：内置 2 款游戏（CS2/Apex）+ 电脑优化占位（builtin-pcopt）
+    └── BuiltIn：内置 2 款游戏（CS2/Apex）+ 电脑优化功能页条目（builtin-pcopt）
 
 GameConfig（GameId → GameProfile.Id）
 GameConfigStrategy（GameId → GameProfile.Id）
@@ -195,7 +195,7 @@ public record GameInfo(string ProcessName, string DisplayName, int ProcessId, Da
 | DisplayNameLocKey | string? | null | 显示名称本地化键（非空时 UI 优先取 Strings 资源，空则显示 DisplayName） |
 
 - `Matches(processName)`：与 ProcessName 做 `OrdinalIgnoreCase` 完全匹配。
-- 嵌套静态类 `BuiltIn`，`GetAll()` 返回内置 3 个条目（2 款游戏 + 1 个电脑优化占位）：
+- 嵌套静态类 `BuiltIn`，`GetAll()` 返回内置 3 个条目（2 款游戏 + 1 个电脑优化功能页）：
 
 | Id | DisplayName | ProcessName | Priority | FullscreenOnly | DisplayNameLocKey |
 |----|-------------|-------------|----------|----------------|-------------------|
@@ -290,12 +290,12 @@ public record GameInfo(string ProcessName, string DisplayName, int ProcessId, Da
 | 分区 | 参数（默认值） |
 |------|----------------|
 | 性能 | High、Threads(0)、Freq(0)、Novid、Nojoy |
-| 窗口 | Windowed、Noborder、Fullscreen、Width(1920)、Height(1080)——仅 Windowed 或 Noborder 时追加 -w/-h |
-| 游戏控制 | FpsMax(0)、ClShowfps(0)、ClShowpos、ClFovScale(1.27)、MatLetterboxAspectMin(0)、MRawinput |
-| 网络 | ClInterp(0.015)、ClInterpRatio(1)、ClCmdrate(60)、ClUpdaterate(60) |
+| 窗口 | Windowed、Noborder、Fullscreen、Width(0)、Height(0) |
+| 游戏控制 | FpsMax(0)、ClShowfps(0)、ClShowpos、ClFovScale(0)、MatLetterboxAspectMin(0)、MRawinput |
+| 网络 | ClInterp(0)、ClInterpRatio(0)、ClCmdrate(0)、ClUpdaterate(0) |
 | 调试 | Dev、Console |
 
-`GenerateOptionsString()`：按启用状态拼接完整命令行（如 `-high -novid +mat_letterbox_aspect_min 1.0`）。数值参数仅在大于 0 时输出；`+fps_max` 自 2026-10-14 起同为条件输出，`+cl_fovScale` 输出已移除——fps_max/cl_showfps/cl_showpos/cl_fov_scale 统一由 settings.cfg（游戏设置卡）管理，启动项默认值不再覆盖。
+`GenerateOptionsString()`：按启用状态拼接完整命令行（如 `-high -novid +mat_letterbox_aspect_min 1.0`）。数值参数仅在大于 0 时输出（0 = 未设置；`-w`/`-h` 亦然，独立于窗口模式）；float 一律 InvariantCulture 格式化（小数逗号区域安全）；`+cl_fovScale` 以 `"{值:F2}"` 带引号输出（2026-10-14 回归启动项通道，配合信箱比例可超 1.35）。`LoadFromString(string?)` 为其逆操作：先 `ResetToDefaults()` 重置全部字段，再经引号感知 tokenizer 解析（大小写不敏感、InvariantCulture，`-refresh` 为 `-freq` 别名，未知令牌忽略）；解析→重新生成对值 > 0 的已知令牌无损，值为 0 的已知令牌（如 `+fps_max 0`）与未知令牌（如 `-condebug`）在重新生成时丢失。
 
 ## 接口定义
 

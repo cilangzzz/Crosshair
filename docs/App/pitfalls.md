@@ -293,3 +293,14 @@ MainWindow.RegisterHotkeys 仅注册 `Ctrl+Shift+X`（toggle-crosshair）。`OnH
 - `OnExit` 主动 `ReleaseMutex()` + `Dispose()`；`ReleaseMutex` 在线程未持有时抛异常（退出路径已提前 Dispose 并置空字段），需 try/catch 兜底
 - Mutex 用 `Local\` 而非 `Global\`：准心覆盖层按登录会话隔离，多用户会话内各允许一个实例
 - appstate.json 路径来自 `Core.CrosshairProPaths.AppStateFile`（与 JsonConfigRepository 同源），不要重新硬编码 `%APPDATA%\CrosshairPro` 路径
+
+## 24. ShellExecute 单字符串不拆参数（PcOptimizeViewModel）
+
+`Process.Start(new ProcessStartInfo(cmd) { UseShellExecute = true })` 把 `cmd` 整体作为 `FileName`，**不会**按空格拆出参数：`"control powercfg.cpl,,3"` 直接抛 Win32Exception「找不到文件」（本机实测复现）。带参控制面板项必须拆分调用：`FileName="control"`、`Arguments="powercfg.cpl,,3"`（`main.cpl,,2` 同理）。裸 .cpl/.exe（PATH/System32 可达）与 `ms-settings:` URI 单字符串可用。`PcOptimizeItem` 的 `OpenTarget`/`OpenArguments` 两字段即为此设计——新增优化条目时禁止把带参命令写进 `OpenTarget`。
+
+## 25. 主窗口关闭后进程仍驻留（有意设计：关闭到托盘）
+
+点击主窗口关闭按钮后，`MainWindow` 隐藏但 `CrosshairPro` 进程不退出——这是 OnClosing 显式设计（拦截关闭事件 → 最小化到托盘而非退出），非缺陷；真正退出走托盘菜单「退出」（`Tray.Exit` → `ReallyExit()`：Dispose 托盘、关 Overlay、`Application.Current.Shutdown()`，见 MainWindow.xaml.cs）。运维影响：
+
+- 构建前窗口没了进程还在，DLL 仍被锁定（MSB3027），需 `Stop-Process -Name CrosshairPro` 按进程名杀，不能只判断窗口
+- 自动化脚本按窗口名 FindFirst 会找不到主窗口（UIA 中 MainWindowTitle 为空、MainWindowHandle=0），先确认进程与窗口状态再操作

@@ -1,5 +1,7 @@
 # Tab 导航系统设计方案
 
+> 状态注记（2026-10-14）：本方案整体仍然有效；唯 GamesPage 页内的游戏选择器已由「横向 Tab 列表」改为「游戏」标签 + ComboBox 下拉选择器（预期游戏 10+，tab 范式不适用），详见 [games-tab-overflow-design](games-tab-overflow-design.md)。文中涉及页内 Tab 的段落按设计时状态保留。
+
 ## 概述
 
 为 CrosshairPro 添加左侧图标导航栏，支持多页面切换：
@@ -130,7 +132,7 @@ Hover 状态：
 ```
 
 **布局说明**：
-- 顶部：游戏选择器（横向 Tab 列表）
+- 顶部：游戏选择器（设计时为横向 Tab 列表，现为 ComboBox 选择器，见 [games-tab-overflow-design](games-tab-overflow-design.md)）
 - 内容区：当前选中游戏的配置项
 - 全宽布局，充分利用空间
 
@@ -289,7 +291,7 @@ src/CrosshairPro.Services/
 - 配置项读写
 
 #### Step 7: 创建 GamesPage
-- 游戏选择器（横向 Tab）
+- 游戏选择器（设计时为横向 Tab，现为 ComboBox 选择器）
 - 配置项表单（启动项、画质设置）
 - 应用/重置按钮
 

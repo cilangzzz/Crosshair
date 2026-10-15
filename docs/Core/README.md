@@ -31,7 +31,7 @@ CrosshairPro.Core/
     ├── GameConfig.cs          # 单个游戏的配置数据（GameId + LaunchOptions + Settings 字典）
     ├── GameConfigStrategy.cs  # 游戏配置策略 + ConfigItemType/ConfigItemDefinition/ConfigSectionDefinition
     ├── GameInfo.cs            # 游戏信息 record + GameDetectedEventArgs
-    ├── GameProfile.cs         # 游戏档案（进程匹配/优先级）+ BuiltIn 内置 2 款游戏（CS2/Apex）
+    ├── GameProfile.cs         # 游戏档案（进程匹配/优先级）+ BuiltIn 内置 2 款游戏（CS2/Apex）+ 电脑优化功能页条目（builtin-pcopt）
     ├── HotkeyBinding.cs       # 热键绑定 + HotkeyAction 枚举 + KeyCombo 结构
     └── Preset.cs              # 预设模型（配置快照 + 元数据）
 ```
@@ -72,7 +72,7 @@ CrosshairPro.Core/
 | Preset | 预设 = CrosshairConfig 快照 + 游戏关联 + 热键 + IsDefault 标记 |
 | AppPersistedState | 启动恢复数据：CurrentPresetId、IsConfigModified、Language |
 | HotkeyBinding | 热键绑定：Combo 字符串 + HotkeyAction 动作；配套 KeyCombo 解析结构 |
-| GameProfile | 游戏档案：进程名匹配、优先级、预设关联；`BuiltIn.GetAll()` 提供内置 2 款游戏（CS2/Apex） |
+| GameProfile | 游戏档案：进程名匹配、优先级、预设关联；`BuiltIn.GetAll()` 提供内置 2 款游戏（CS2/Apex）+ 电脑优化功能页条目（builtin-pcopt，无进程名不参与匹配） |
 | GameInfo | 已检测到的游戏进程（record：ProcessName/DisplayName/ProcessId/StartTime） |
 | GameConfig | 单个游戏的配置数据：启动项字符串 + `Dictionary<string, object>` 设置字典 |
 | GameConfigStrategy | 游戏配置元数据：分区、配置项定义、配置文件路径模板 |

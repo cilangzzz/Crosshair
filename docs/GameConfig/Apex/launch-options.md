@@ -114,17 +114,19 @@ CrosshairPro 允许两种模式：直接编辑字符串，或使用结构化的 
 | `Threads` / `Freq` | `-threads N` / `-freq N` | 值 > 0 |
 | `Novid` / `Nojoy` | `-novid` / `-nojoy` | 为 true |
 | `Windowed` / `Noborder` / `Fullscreen` | `-windowed` / `-noborder` / `-fullscreen` | 为 true |
-| `Width` / `Height` | `-w N` / `-h N` | **仅当 `Windowed \|\| Noborder`** 且值 > 0 |
-| `FpsMax` | `+fps_max N` | 值 > 0（2026-10-14 起不再恒输出，0 不再生成 `+fps_max 0`） |
+| `Width` / `Height` | `-w N` / `-h N` | 值 > 0（0 = 不输出，独立于窗口模式；解析无 -w/-h 的字符串后保持不输出，不注入默认值） |
+| `FpsMax` | `+fps_max N` | 值 > 0（显式 `+fps_max 0` 不还原） |
 | `ClShowfps` | `+cl_showfps N` | 值 > 0 |
 | `ClShowpos` | `+cl_showpos 1` | 为 true |
-| `ClFovScale` | — | 已移除（2026-10-14 起 `cl_fov_scale` 由 settings.cfg 渠道管理，避免默认值覆盖） |
+| `ClFovScale` | `+cl_fovScale "F2"` | 值 > 0（带引号输出；2026-10-14 起回归启动项通道，UI 面板范围 0-3.0，超 1.35 需配合信箱比例） |
 | `MatLetterboxAspectMin` | `+mat_letterbox_aspect_min F1` | 值 > 0，一位小数 |
 | `MRawinput` | `+m_rawinput 1` | 为 true |
 | `ClInterp` / `ClInterpRatio` / `ClCmdrate` / `ClUpdaterate` | 对应 `+cl_*` | 值 > 0 |
 | `Dev` / `Console` | `-dev` / `-console` | 为 true |
 
-各参数按上述顺序拼接，空格分隔。注意：fps_max/cl_showfps/cl_showpos/cl_fov_scale 的常规配置入口是 settings.cfg（游戏设置卡），启动项仅作为补充通道。
+各参数按上述顺序拼接，空格分隔。UI 上启动参数面板在启动选项卡中常显（预设下方、启动项字符串框下方），fps_max/cl_showfps/cl_showpos/cl_fov_scale 的编辑入口位于面板「游戏参数」组（绑定 `ApexLaunchOptions`）；settings.cfg 渠道仍保留这些字段的读写，但 ApexPage 不再提供其独立编辑行。
+
+`LoadFromString(string?)` 为逆向解析（双向联动：切入自定义模式或自定义模式下重置时把启动项字符串还原为结构化编辑器）：先 `ResetToDefaults()` 重置全部字段（数值 0 = 未设置），再按空白/引号拆分令牌识别上表全部参数（大小写不敏感，`-refresh` 作为 `-freq` 别名），未知令牌忽略——因此经面板重新生成时，字符串中的未知令牌（如 `-condebug`）与值为 0 的已知令牌（如 `+fps_max 0`）会丢失。
 
 ## 应用侧预设
 

@@ -36,7 +36,7 @@ src/
     ├── Helpers/                  # ThemeHelper
     ├── Controls/                 # DialogBase, ToastManager/ToastNotification, IconButton, TabNavItem, CrosshairPreview, SmoothScrollViewer, ScrollViewerBehavior, PageTemplateSelector
     ├── Themes/                   # DesignTokens, ControlStyles, IconGeometries
-    ├── ViewModels/               # MainViewModel, CrosshairViewModel, GamesViewModel, ApexConfigViewModel, Cs2ConfigViewModel, ConfigItemWrapper
+    ├── ViewModels/               # MainViewModel, CrosshairViewModel, GamesViewModel, ApexConfigViewModel, Cs2ConfigViewModel, PcOptimizeViewModel, ConfigItemWrapper
     └── Views/                    # OverlayWindow, CrosshairPage, GamesPage, GamePages/(ApexPage, Cs2Page, PcOptimizePage, GamePageSelector)
 ```
 
@@ -50,7 +50,7 @@ src/
 | 基础层 | Infrastructure | Win32 API 封装、热键管理 | 3 | [README](docs/Infrastructure/README.md) |
 | 数据层 | Services | 配置持久化、准心渲染实现 | 3 | [README](docs/Services/README.md) |
 | 应用层 | Application | 业务服务抽象、依赖注入 | 9 | [README](docs/Application/README.md) |
-| 表现层 | App | WPF 应用入口、UI 层 | 46 | [README](docs/App/README.md) |
+| 表现层 | App | WPF 应用入口、UI 层 | 47 | [README](docs/App/README.md) |
 | 配置层 | GameConfig | 游戏配置协议文档（无独立源码目录） | 16 | [README](docs/GameConfig/README.md) |
 
 文件数口径：代码模块 = `find src/CrosshairPro.{模块} -type f ( -name "*.cs" -o -name "*.xaml" ) ! -path "*/obj/*" ! -path "*/bin/*" | wc -l`；GameConfig = `.claude/docs/GameConfig` 下全部 .md 文件数。
@@ -137,4 +137,4 @@ csproj 物理引用比理想分层更宽（App 直接引用全部四层），见
 | GameConfig | [README](docs/GameConfig/README.md) |
 | GameConfig/Apex | [README](docs/GameConfig/Apex/README.md) · [videoconfig](docs/GameConfig/Apex/videoconfig.md) · [settings](docs/GameConfig/Apex/settings.md) · [launch-options](docs/GameConfig/Apex/launch-options.md) · [data-model](docs/GameConfig/Apex/data-model.md) · [pitfalls](docs/GameConfig/Apex/pitfalls.md) · [CHANGELOG](docs/GameConfig/Apex/CHANGELOG.md) |
 | GameConfig/CS2 | [README](docs/GameConfig/CS2/README.md) · [video](docs/GameConfig/CS2/video.md) · [config](docs/GameConfig/CS2/config.md) · [launch-options](docs/GameConfig/CS2/launch-options.md) · [integration](docs/GameConfig/CS2/integration.md) · [data-model](docs/GameConfig/CS2/data-model.md) · [pitfalls](docs/GameConfig/CS2/pitfalls.md) · [CHANGELOG](docs/GameConfig/CS2/CHANGELOG.md) |
-| design | [tab-navigation-design](docs/design/tab-navigation-design.md) · [games-tab-overflow-design](docs/design/games-tab-overflow-design.md) |
+| design | [tab-navigation-design](docs/design/tab-navigation-design.md) · [games-tab-overflow-design](docs/design/games-tab-overflow-design.md) · [pc-optimize-design](docs/design/pc-optimize-design.md) |
