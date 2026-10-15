@@ -224,12 +224,280 @@
     <value>Select a game to configure</value>
   </data>
 
+  <data name="Games.SelectorLabel" xml:space="preserve">
+    <value>Game</value>
+  </data>
+
   <data name="Games.PcOptimize" xml:space="preserve">
     <value>PC Optimization</value>
   </data>
 
-  <data name="Games.PcOptimizeDesc" xml:space="preserve">
-    <value>Coming soon</value>
+  <!-- PC Optimization -->
+  <data name="PcOptimize.Intro" xml:space="preserve">
+    <value>CrosshairPro never changes system settings — each item below only explains the tweak and links to its management page. Click Open and make the change yourself; adjust one item at a time and measure the result.</value>
+  </data>
+  <data name="PcOptimize.Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="PcOptimize.OpenFailed" xml:space="preserve">
+    <value>Failed to open the page: {0}</value>
+  </data>
+  <data name="PcOptimize.VendorNotFound" xml:space="preserve">
+    <value>No NVIDIA/AMD control panel detected. Open it from the Start menu.</value>
+  </data>
+  <data name="PcOptimize.WinVerNote" xml:space="preserve">
+    <value>Paths follow Windows 11. For Control Panel items, continue inside the opened window as described.</value>
+  </data>
+
+  <!-- Gains -->
+  <data name="PcOptimize.GainHigh" xml:space="preserve">
+    <value>High impact</value>
+  </data>
+  <data name="PcOptimize.GainMedium" xml:space="preserve">
+    <value>Medium impact</value>
+  </data>
+  <data name="PcOptimize.GainLow" xml:space="preserve">
+    <value>Low impact</value>
+  </data>
+  <data name="PcOptimize.GainVaries" xml:space="preserve">
+    <value>Situational</value>
+  </data>
+
+  <!-- Categories -->
+  <data name="PcOptimize.Cat.System" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="PcOptimize.Cat.Power" xml:space="preserve">
+    <value>Power</value>
+  </data>
+  <data name="PcOptimize.Cat.Display" xml:space="preserve">
+    <value>Display</value>
+  </data>
+  <data name="PcOptimize.Cat.Network" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="PcOptimize.Cat.Storage" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="PcOptimize.Cat.Driver" xml:space="preserve">
+    <value>Drivers and GPU</value>
+  </data>
+  <data name="PcOptimize.Cat.InputAudio" xml:space="preserve">
+    <value>Input and Audio</value>
+  </data>
+
+  <!-- System -->
+  <data name="PcOptimize.GameMode" xml:space="preserve">
+    <value>Game Mode</value>
+  </data>
+  <data name="PcOptimize.GameModeDesc" xml:space="preserve">
+    <value>While a game is running, Windows prioritizes resources and pauses update installs and restart notifications for steadier frame rates. Turn on the toggle in the opened Game Mode page; the benefit is bigger on PCs with many background apps or frequent updates.</value>
+  </data>
+  <data name="PcOptimize.GameBar" xml:space="preserve">
+    <value>Game Bar</value>
+  </data>
+  <data name="PcOptimize.GameBarDesc" xml:space="preserve">
+    <value>The Game Bar and its widgets are resident overlay processes; disabling them reduces in-game overlay overhead and accidental key presses. Turn off options like "Allow your controller to open Game Bar" in the opened page and re-enable temporarily when recording. Note: keep it if you rely on the Game Bar FPS overlay.</value>
+  </data>
+  <data name="PcOptimize.BackgroundRecording" xml:space="preserve">
+    <value>Background Recording (Game DVR)</value>
+  </data>
+  <data name="PcOptimize.BackgroundRecordingDesc" xml:space="preserve">
+    <value>Background recording keeps writing the last seconds of gameplay to disk and occupies the encoder. In the opened Captures page (Game DVR on Windows 10), turn off "Record what happened" and "Record in the background while playing a game"; shorten "Record the last" if you still want highlights. Biggest benefit on integrated or low-end GPUs.</value>
+  </data>
+  <data name="PcOptimize.StartupApps" xml:space="preserve">
+    <value>Startup Apps</value>
+  </data>
+  <data name="PcOptimize.StartupAppsDesc" xml:space="preserve">
+    <value>Fewer resident background programs free memory and CPU; high-impact startup entries also slow boot and worsen 1% lows. Sort by "Startup impact" in the opened page and disable launchers and updaters you do not need.</value>
+  </data>
+  <data name="PcOptimize.NotificationsDnd" xml:space="preserve">
+    <value>Do Not Disturb While Gaming</value>
+  </data>
+  <data name="PcOptimize.NotificationsDndDesc" xml:space="preserve">
+    <value>Notification banners steal focus in games, causing stutters and distractions. Enable Do not disturb in the opened page, then under "Turn on do not disturb automatically" check "When playing a game" and "When using an app in full screen".</value>
+  </data>
+  <data name="PcOptimize.MemoryIntegrity" xml:space="preserve">
+    <value>Memory Integrity Trade-off</value>
+  </data>
+  <data name="PcOptimize.MemoryIntegrityDesc" xml:space="preserve">
+    <value>Core isolation (HVCI) validates kernel code via virtualization, which costs measurable performance on older CPUs (pre-Intel 7th gen or pre-Zen 2) — evaluate turning it off for maximum FPS. Toggle "Memory integrity" in the opened Core isolation page, then restart. Note: disabling it weakens kernel exploit protection, and managed PCs may block the change — weigh it yourself.</value>
+  </data>
+  <data name="PcOptimize.UpdateActiveHours" xml:space="preserve">
+    <value>Update Active Hours</value>
+  </data>
+  <data name="PcOptimize.UpdateActiveHoursDesc" xml:space="preserve">
+    <value>Active hours prevent automatic restarts during your gaming sessions; you can also pause updates before important matches. In the opened page set active hours manually to cover your gaming time, or pause updates as needed.</value>
+  </data>
+  <data name="PcOptimize.UninstallUnusedApps" xml:space="preserve">
+    <value>Uninstall Unused Apps</value>
+  </data>
+  <data name="PcOptimize.UninstallUnusedAppsDesc" xml:space="preserve">
+    <value>Uninstalling bundled antivirus, toolbars and other resident software frees disk space and background resources. Sort by size or usage in the opened page and uninstall programs you no longer use.</value>
+  </data>
+
+  <!-- Power -->
+  <data name="PcOptimize.PowerPlan" xml:space="preserve">
+    <value>High Performance Power Plan</value>
+  </data>
+  <data name="PcOptimize.PowerPlanDesc" xml:space="preserve">
+    <value>Avoids idle downclocking and frequency-ramp latency under burst load. Pick the "High performance" plan in the opened Power Options; on laptops also set the power mode to "Best performance" under Power and battery. Note: watch thermals and battery life on laptops.</value>
+  </data>
+  <data name="PcOptimize.UsbSelectiveSuspend" xml:space="preserve">
+    <value>USB Selective Suspend Off</value>
+  </data>
+  <data name="PcOptimize.UsbSelectiveSuspendDesc" xml:space="preserve">
+    <value>Prevents Windows from suspending idle USB ports, fixing lag or disconnects on mice, keyboards and capture cards. In the opened advanced power settings expand "USB settings > USB selective suspend setting" and set both On battery and Plugged in to Disabled. Note: slightly higher standby power draw.</value>
+  </data>
+  <data name="PcOptimize.PcieLinkStatePm" xml:space="preserve">
+    <value>PCIe Link Power Management Off</value>
+  </data>
+  <data name="PcOptimize.PcieLinkStatePmDesc" xml:space="preserve">
+    <value>Keeps the PCIe link at full speed, avoiding micro-stutters from GPU link sleep and wake. In the opened advanced power settings set "PCI Express > Link State Power Management" to Off. Note: slightly higher power draw; keep the default on laptops that rely on ASPM for thermals.</value>
+  </data>
+  <data name="PcOptimize.PowerSleepTimeouts" xml:space="preserve">
+    <value>Screen and Sleep Timeouts</value>
+  </data>
+  <data name="PcOptimize.PowerSleepTimeoutsDesc" xml:space="preserve">
+    <value>Prevents the screen turning off or the PC going to sleep while you are downloading, spectating or idling in-game. In the opened page extend the Plugged in screen and sleep timeouts or set them to Never.</value>
+  </data>
+
+  <!-- Display -->
+  <data name="PcOptimize.GraphicsHags" xml:space="preserve">
+    <value>Hardware-accelerated GPU Scheduling</value>
+  </data>
+  <data name="PcOptimize.GraphicsHagsDesc" xml:space="preserve">
+    <value>Lets the GPU manage its own VRAM and task queues for slightly lower latency; DLSS Frame Generation also requires it. Turn on "Hardware-accelerated GPU scheduling" in the opened Default graphics settings page, then restart. Note: requires an NVIDIA Pascal or newer GPU with recent drivers; turn it back off if you see glitches.</value>
+  </data>
+  <data name="PcOptimize.FullscreenOptimizations" xml:space="preserve">
+    <value>Per-Game Graphics Optimizations</value>
+  </data>
+  <data name="PcOptimize.FullscreenOptimizationsDesc" xml:space="preserve">
+    <value>Windows optimizes fullscreen and borderless games via the flip model; if an older game misbehaves or feels laggy, tune it per game. In the opened Graphics page add the game exe and use "Options" to set GPU preference or disable windowed game optimizations; legacy games can also use exe Properties > Compatibility > "Disable fullscreen optimizations".</value>
+  </data>
+  <data name="PcOptimize.RefreshRateMax" xml:space="preserve">
+    <value>Max Refresh Rate</value>
+  </data>
+  <data name="PcOptimize.RefreshRateMaxDesc" xml:space="preserve">
+    <value>After a fresh install or a cable change Windows often falls back to 60 Hz — set your monitor's maximum refresh rate to get the smoothness and input lag you paid for. Open "Advanced display settings" in the opened page and pick the highest value under "Select a refresh rate".</value>
+  </data>
+  <data name="PcOptimize.HdrSettings" xml:space="preserve">
+    <value>HDR and Auto HDR</value>
+  </data>
+  <data name="PcOptimize.HdrSettingsDesc" xml:space="preserve">
+    <value>On an HDR display, enabling HDR and Auto HDR greatly improves picture quality; SDR displays do not need it. Turn on "Use HDR" in the opened page and expand the toggle for Auto HDR. Note: laptops disable HDR on battery; competitive players chasing maximum FPS may keep it off. Win+Alt+B toggles HDR quickly.</value>
+  </data>
+  <data name="PcOptimize.DisplayScaling" xml:space="preserve">
+    <value>Display Scaling 100%</value>
+  </data>
+  <data name="PcOptimize.DisplayScalingDesc" xml:space="preserve">
+    <value>Non-integer scaling blurs the UI and crosshair mapping; competitive players use 100% for pixel-crisp visuals and a consistent pointer speed. Set "Scale" to 100% in the opened Display page and keep the native resolution. Note: text gets small on high-DPI laptops; sign out to apply.</value>
+  </data>
+  <data name="PcOptimize.VisualEffects" xml:space="preserve">
+    <value>Visual Effects</value>
+  </data>
+  <data name="PcOptimize.VisualEffectsDesc" xml:space="preserve">
+    <value>Turning off transparency and animations reduces desktop composition overhead — noticeable on older or integrated-GPU machines. Choose "Adjust for best performance" (or a custom set keeping font smoothing) in the opened Performance Options; you can also disable transparency under Settings > Personalization > Colors.</value>
+  </data>
+
+  <!-- Network -->
+  <data name="PcOptimize.NicPowerManagement" xml:space="preserve">
+    <value>NIC Power Management</value>
+  </data>
+  <data name="PcOptimize.NicPowerManagementDesc" xml:space="preserve">
+    <value>Disabling adapter power saving prevents mid-match drops, latency spikes and disconnects. In the opened Network Connections page right-click the adapter > Properties > Configure: under Power Management uncheck "Allow the computer to turn off this device to save power", and under Advanced disable "Energy Efficient Ethernet" style options. Admin rights are required to change.</value>
+  </data>
+  <data name="PcOptimize.ProxyVpn" xml:space="preserve">
+    <value>Proxy and VPN</value>
+  </data>
+  <data name="PcOptimize.ProxyVpnDesc" xml:space="preserve">
+    <value>Proxies and VPNs add routing hops and latency, and online matchmaking may place you on distant servers. Turn off automatic and manual proxy in the opened page; disconnect or remove VPNs. Note: corporate networks may require the proxy — disable it only while gaming.</value>
+  </data>
+  <data name="PcOptimize.DeliveryOptimization" xml:space="preserve">
+    <value>Delivery Optimization Limits</value>
+  </data>
+  <data name="PcOptimize.DeliveryOptimizationDesc" xml:space="preserve">
+    <value>Caps Windows Update background upload and download bandwidth so updates do not spike your ping mid-game. In the opened Delivery Optimization page limit background download and upload bandwidth by percentage or absolute values.</value>
+  </data>
+
+  <!-- Storage -->
+  <data name="PcOptimize.StorageSense" xml:space="preserve">
+    <value>Storage Sense</value>
+  </data>
+  <data name="PcOptimize.StorageSenseDesc" xml:space="preserve">
+    <value>Automatically cleans temp files and the Recycle Bin, keeping free space on the system drive (especially SSDs) to avoid stutter when it runs full. Turn on Storage Sense in the opened page, set a schedule, or click "Run Storage Sense now".</value>
+  </data>
+  <data name="PcOptimize.OptimizeDrives" xml:space="preserve">
+    <value>Optimize Drives</value>
+  </data>
+  <data name="PcOptimize.OptimizeDrivesDesc" xml:space="preserve">
+    <value>Defragmenting HDDs and periodic TRIM for SSDs maintain read and write performance; you can also check drive health here. In the opened Optimize Drives window select a drive and click Analyze or Optimize, and keep weekly scheduled optimization on. Note: SSDs need no manual defrag — Windows runs TRIM automatically (the UI shows "Optimize", not "Defragment", for SSDs).</value>
+  </data>
+  <data name="PcOptimize.GameInstallSsd" xml:space="preserve">
+    <value>Games on SSD</value>
+  </data>
+  <data name="PcOptimize.GameInstallSsdDesc" xml:space="preserve">
+    <value>SSD random reads are far faster than HDDs, greatly cutting load times and open-world texture-streaming stutter (mainly loads, not maximum FPS). In the opened page set "New apps will save to" to an SSD drive; migrate installed games from Steam or your launcher.</value>
+  </data>
+
+  <!-- Drivers and GPU -->
+  <data name="PcOptimize.GpuDriverUpdate" xml:space="preserve">
+    <value>GPU Driver Update</value>
+  </data>
+  <data name="PcOptimize.GpuDriverUpdateDesc" xml:space="preserve">
+    <value>New drivers often bring performance and stability fixes for new games; a bad driver can also be rolled back here. In Device Manager expand "Display adapters", right-click the GPU and choose "Update driver" (or roll back under Properties > Driver); getting the latest from NVIDIA/AMD/Intel or their apps is recommended.</value>
+  </data>
+  <data name="PcOptimize.OptionalDriverUpdates" xml:space="preserve">
+    <value>Optional Driver Updates</value>
+  </data>
+  <data name="PcOptimize.OptionalDriverUpdatesDesc" xml:space="preserve">
+    <value>Windows Update "Optional updates" ships WHQL-certified chipset and peripheral drivers — more reliable than third-party driver managers. Expand "Driver updates" in the opened page and install what you need.</value>
+  </data>
+  <data name="PcOptimize.VendorGpuPanel" xml:space="preserve">
+    <value>GPU Vendor Control Panel</value>
+  </data>
+  <data name="PcOptimize.VendorGpuPanelDesc" xml:space="preserve">
+    <value>The NVIDIA/AMD/Intel control panels expose low-latency mode, V-Sync, per-game profiles and color output — deeper tuning beyond Windows settings. Click Open to auto-detect the installed panel (NVIDIA/AMD); if none is found, open it from the Start menu (NVIDIA App / AMD Adrenalin / Intel graphics software).</value>
+  </data>
+
+  <!-- Input and Audio -->
+  <data name="PcOptimize.PointerPrecision" xml:space="preserve">
+    <value>Enhance Pointer Precision Off</value>
+  </data>
+  <data name="PcOptimize.PointerPrecisionDesc" xml:space="preserve">
+    <value>"Enhance pointer precision" is mouse acceleration; turning it off makes wrist movement map 1:1 to your view, stabilizing aim muscle memory (a common FPS setting). In the opened Mouse Properties > Pointer Options tab uncheck "Enhance pointer precision" and click OK. If the wrong tab opens, switch to Pointer Options manually.</value>
+  </data>
+  <data name="PcOptimize.AudioEnhancements" xml:space="preserve">
+    <value>Audio Enhancements Off</value>
+  </data>
+  <data name="PcOptimize.AudioEnhancementsDesc" xml:space="preserve">
+    <value>Audio enhancement DSP adds processing latency and can cause crackling or conflicts with in-game voice on some drivers. In the opened Sound control panel select the playback device > Properties > Enhancements and check "Disable all enhancements"; on Windows 11 you can also set "Audio enhancements" to Off under Settings > System > Sound. Note: Dolby, loudness equalization and similar effects will be disabled.</value>
+  </data>
+
+  <!-- Myths -->
+  <data name="PcOptimize.MythsTitle" xml:space="preserve">
+    <value>Avoid: Not Recommended</value>
+  </data>
+  <data name="PcOptimize.MythsIntro" xml:space="preserve">
+    <value>The tweaks below appear in many online "optimization guides" but are placebo or even harmful. CrosshairPro never performs them and we do not recommend trying:</value>
+  </data>
+  <data name="PcOptimize.Myth.RegistryCleaners" xml:space="preserve">
+    <value>"Registry cleaners/optimizers": Microsoft officially discourages them — stale entries have near-zero performance impact, and deleting the wrong keys can break apps or even prevent boot.</value>
+  </data>
+  <data name="PcOptimize.Myth.ServiceDisabling" xml:space="preserve">
+    <value>"Mass-disabling Windows services": idle services do not consume CPU; FPS gains are near zero while updates, audio or networking often break. Trim startup apps instead.</value>
+  </data>
+  <data name="PcOptimize.Myth.TimerResolution" xml:space="preserve">
+    <value>"Forcing 0.5 ms timer resolution": Windows 11 applies timer requests per process, so global hacks mostly no longer work; average FPS barely changes while power draw rises.</value>
+  </data>
+  <data name="PcOptimize.Myth.RamCleaner" xml:space="preserve">
+    <value>"RAM cleaners/boosters": free memory is used as file cache — "emptier is faster" is a myth; wiping the standby list forces re-reading from disk and causes stutters.</value>
+  </data>
+  <data name="PcOptimize.Myth.SsdDefrag" xml:space="preserve">
+    <value>"Manually defragmenting SSDs": SSDs have no mechanical seek cost — manual defrag only adds wear; Windows already optimizes SSDs via TRIM.</value>
+  </data>
+  <data name="PcOptimize.Myth.BoosterSuites" xml:space="preserve">
+    <value>"Game booster suites": tested average-FPS gains are near zero — they mostly kill background processes and clear caches, while running resident in the background themselves.</value>
   </data>
 
   <!-- Apex Legends -->
@@ -287,6 +555,12 @@
   <data name="Apex.GameSettings" xml:space="preserve">
     <value>Game Settings</value>
   </data>
+  <data name="Apex.GameParams" xml:space="preserve">
+    <value>Game Params</value>
+  </data>
+  <data name="Apex.LaunchParams" xml:space="preserve">
+    <value>Launch Params</value>
+  </data>
   <data name="Apex.MaxFPS" xml:space="preserve">
     <value>Max FPS (0=Unlimited)</value>
   </data>
@@ -317,14 +591,8 @@
   <data name="Apex.EnableConsole" xml:space="preserve">
     <value>Enable Console (-console)</value>
   </data>
-  <data name="Apex.GeneratedLaunchOptions" xml:space="preserve">
-    <value>Generated Launch Options:</value>
-  </data>
   <data name="Apex.VideoSettings" xml:space="preserve">
     <value>VIDEO SETTINGS</value>
-  </data>
-  <data name="Apex.Resolution" xml:space="preserve">
-    <value>Resolution</value>
   </data>
   <data name="Apex.Gamma" xml:space="preserve">
     <value>Gamma (Brightness)</value>

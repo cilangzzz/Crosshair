@@ -14,43 +14,27 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- 游戏选择器 -->
+        <!-- 游戏选择器（ComboBox 形态：预期游戏 10+，tab 条范式不适用，见 design/games-tab-overflow-design.md） -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-            <ItemsControl ItemsSource="{Binding Games}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
+            <TextBlock Text="{loc:Loc Key=Games.SelectorLabel}" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <ComboBox Width="200"
+                      Style="{StaticResource CustomComboBox}"
+                      ItemsSource="{Binding Games}"
+                      SelectedItem="{Binding SelectedGame, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
                     <DataTemplate>
-                        <Button
-                                Command="{Binding DataContext.SelectGameCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                CommandParameter="{Binding}"
-                                Margin="0,0,8,0"
-                                Padding="12,6">
-                            <Button.Content>
+                        <TextBlock>
+                            <TextBlock.Text>
                                 <MultiBinding Converter="{StaticResource GameProfileTitleConverter}">
                                     <Binding Path="DisplayName"/>
                                     <Binding Path="DisplayNameLocKey"/>
                                     <Binding Path="CurrentCulture" Source="{x:Static loc:LocalizationProvider.Instance}"/>
                                 </MultiBinding>
-                            </Button.Content>
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
-                                    <Setter Property="Background" Value="Transparent"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                            <Setter Property="Background" Value="{DynamicResource AccentTintBrush}"/>
-                                            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                            </TextBlock.Text>
+                        </TextBlock>
                     </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
         </StackPanel>
 
         <!-- 游戏配置页面容器 -->

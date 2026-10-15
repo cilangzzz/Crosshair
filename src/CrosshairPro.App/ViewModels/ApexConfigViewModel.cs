@@ -146,10 +146,8 @@ public partial class ApexConfigViewModel : ObservableObject
     [ObservableProperty]
     private bool _useCustomLaunchOptions = false;
 
-    /// <summary>汇总的启动选项显示</summary>
-    public string LaunchOptionsSummary => UseCustomLaunchOptions
-        ? CustomLaunchOptions.GenerateOptionsString()
-        : LaunchOptions;
+    // 进入自定义模式解析既有字符串期间抑制生成回写（避免逐属性触发覆盖）
+    private bool _isLoadingOptionsFromString;
 
     // 事件
     public event EventHandler<string>? ToastRequested;
@@ -158,17 +156,33 @@ public partial class ApexConfigViewModel : ObservableObject
     {
         _apexService = apexService;
 
-        // 订阅自定义启动选项的属性变更
+        // 订阅自定义启动选项的属性变更：启动参数面板常显，任意模式下编辑都实时回写启动项字符串（启动参数 → 启动项联动）；
+        // 面板内容偏离所选预设时，预设回显切到「自定义」（guard 包裹置索引，面板即源头无需回读解析）
         _customLaunchOptions.PropertyChanged += (s, e) =>
         {
-            if (UseCustomLaunchOptions)
+            if (_isLoadingOptionsFromString)
             {
-                OnPropertyChanged(nameof(LaunchOptionsSummary));
+                return;
+            }
+
+            LaunchOptions = CustomLaunchOptions.GenerateOptionsString();
+
+            if (!_isInitializing && SelectedLaunchPresetIndex != 3)
+            {
+                _isLoadingOptionsFromString = true;
+                try
+                {
+                    SelectedLaunchPresetIndex = 3;
+                }
+                finally
+                {
+                    _isLoadingOptionsFromString = false;
+                }
             }
         };
 
-        // 异步初始化
-        InitializeAsync().ConfigureAwait(false);
+        // 异步初始化（continuation 回 UI 线程：后续 LoadFromString 会在后台线程改绑定属性，与 UI 面板编辑构成竞态）
+        InitializeAsync();
     }
 
     private async Task InitializeAsync()
@@ -188,6 +202,11 @@ public partial class ApexConfigViewModel : ObservableObject
                 VideoConfig = await _apexService.LoadVideoConfigAsync();
                 SettingsConfig = await _apexService.LoadSettingsConfigAsync();
                 LaunchOptions = await _apexService.LoadLaunchOptionsAsync();
+
+                // 面板常显：加载后立即回填面板，避免静止状态下面板（全 0）与字符串（文件内容）失同步的错觉。
+                // 必须经 guard 包裹：否则逐属性赋值触发钩子把字符串重新生成，launch_options.txt 内容被静默改写
+                // （未知令牌如 -condebug、显式 +fps_max 0 丢失）。此间钩子的预设回显切换由 _isInitializing 拦下
+                SeedPanelFromLaunchOptions();
             }
             else
             {
@@ -323,7 +342,7 @@ public partial class ApexConfigViewModel : ObservableObject
     {
         try
         {
-            var textToCopy = UseCustomLaunchOptions ? LaunchOptionsSummary : LaunchOptions;
+            var textToCopy = LaunchOptions;
 
             if (!string.IsNullOrWhiteSpace(textToCopy))
             {
@@ -361,7 +380,7 @@ public partial class ApexConfigViewModel : ObservableObject
 
         try
         {
-            var options = UseCustomLaunchOptions ? LaunchOptionsSummary : LaunchOptions;
+            var options = LaunchOptions;
             await _apexService.ExportLaunchOptionsAsync(dlg.FileName, options ?? string.Empty);
             ShowToast(LocalizationProvider.GetFormatted("Game.GenerateConfigSuccess", Path.GetFileName(dlg.FileName)));
         }
@@ -422,6 +441,17 @@ public partial class ApexConfigViewModel : ObservableObject
         SettingsConfig = new ApexSettingsConfig();
         LaunchOptions = _apexService.GenerateLaunchOptions();
 
+        // 回显同步到预设 0（默认模板与预设 0 内容一致）；索引切换级联写串+回填面板，
+        // 已是 0 时 setter 幂等跳过，由显式重置的字符串 + else 分支回填收敛
+        if (SelectedLaunchPresetIndex != 0)
+        {
+            SelectedLaunchPresetIndex = 0;
+        }
+        else
+        {
+            SeedPanelFromLaunchOptions();
+        }
+
         await Save();
         ShowToast(LocalizationProvider.Get("Toast.ResetToDefault"));
     }
@@ -444,24 +474,83 @@ public partial class ApexConfigViewModel : ObservableObject
 
         if (!UseCustomLaunchOptions)
         {
-            LaunchOptions = value switch
+            var preset = PresetStringFor(value);
+            if (preset != null)
             {
-                0 => "-dev +fps_max 0 +cl_showpos 1 +mat_letterbox_aspect_min 1.0 +cl_fovScale \"2\" -novid",
-                1 => "-dev +fps_max 279 +cl_showpos 1 +mat_letterbox_aspect_min 1.0 +cl_fovScale \"2\" -w 2560 -h 1600 -novid",
-                2 => "-console -dev -condebug +fps_max 0",
-                _ => LaunchOptions
-            };
+                LaunchOptions = preset;
+            }
+
+            // 启动参数面板常显：选预设后同步回填面板，避免面板残留上一次的值
+            SeedPanelFromLaunchOptions();
         }
+    }
+
+    /// <summary>内置预设字符串；非预设索引返回 null（调用方保持原字符串不变）</summary>
+    private static string? PresetStringFor(int index) => index switch
+    {
+        0 => "-dev +fps_max 0 +cl_showpos 1 +mat_letterbox_aspect_min 1.0 +cl_fovScale \"2\" -novid",
+        1 => "-dev +fps_max 279 +cl_showpos 1 +mat_letterbox_aspect_min 1.0 +cl_fovScale \"2\" -w 2560 -h 1600 -novid",
+        2 => "-console -dev -condebug +fps_max 0",
+        _ => null
+    };
+
+    /// <summary>
+    /// 文本模式手改启动项字符串失焦时由视图调用（面板常显，须与字符串保持一致）：
+    /// 字符串已偏离所选预设时回显切「自定义」并级联回填面板，此后面板编辑从手改内容继续生成
+    /// </summary>
+    public void NotifyLaunchOptionsEdited()
+    {
+        if (_isInitializing || _isLoadingOptionsFromString)
+        {
+            return;
+        }
+
+        if (SelectedLaunchPresetIndex is >= 0 and <= 2)
+        {
+            if (LaunchOptions == PresetStringFor(SelectedLaunchPresetIndex))
+            {
+                // 未偏离预设：仅回填面板，回显保持所选预设
+                SeedPanelFromLaunchOptions();
+                return;
+            }
+
+            if (SelectedLaunchPresetIndex != 3)
+            {
+                SelectedLaunchPresetIndex = 3; // 偏离预设：切「自定义」回显（级联触发 OnUseCustomLaunchOptionsChanged 回填面板）
+                return;
+            }
+        }
+
+        SeedPanelFromLaunchOptions();
     }
 
     partial void OnUseCustomLaunchOptionsChanged(bool value)
     {
-        OnPropertyChanged(nameof(LaunchOptionsSummary));
+        if (!value || _isLoadingOptionsFromString)
+        {
+            return;
+        }
+
+        // 进入自定义模式：把当前启动项字符串解析回结构化选项（启动项 → 启动参数联动），
+        // 未知令牌被忽略；此后改动结构化选项会重新生成字符串（未知令牌丢失，见 GameConfig/Apex/pitfalls.md）
+        SeedPanelFromLaunchOptions();
     }
 
-    partial void OnCustomLaunchOptionsChanged(ApexLaunchOptions value)
+    /// <summary>
+    /// 把当前启动项字符串解析回结构化面板（启动项 → 启动参数联动）。
+    /// 解析先重置后填充，保证面板与字符串内容严格一致；解析期间抑制生成回写（防回环）
+    /// </summary>
+    private void SeedPanelFromLaunchOptions()
     {
-        OnPropertyChanged(nameof(LaunchOptionsSummary));
+        _isLoadingOptionsFromString = true;
+        try
+        {
+            CustomLaunchOptions.LoadFromString(LaunchOptions);
+        }
+        finally
+        {
+            _isLoadingOptionsFromString = false;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════

@@ -238,12 +238,282 @@
     <value>选择一款游戏进行配置</value>
   </data>
 
+  <data name="Games.SelectorLabel" xml:space="preserve">
+    <value>游戏</value>
+  </data>
+
   <data name="Games.PcOptimize" xml:space="preserve">
     <value>电脑优化</value>
   </data>
 
-  <data name="Games.PcOptimizeDesc" xml:space="preserve">
-    <value>功能开发中，敬请期待</value>
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 电脑优化 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <data name="PcOptimize.Intro" xml:space="preserve">
+    <value>CrosshairPro 不会修改任何系统设置——每项优化仅提供说明与对应管理页的快捷入口，点击「打开」后由你手动操作。建议逐项调整并实测效果。</value>
+  </data>
+  <data name="PcOptimize.Open" xml:space="preserve">
+    <value>打开</value>
+  </data>
+  <data name="PcOptimize.OpenFailed" xml:space="preserve">
+    <value>无法打开系统页面：{0}</value>
+  </data>
+  <data name="PcOptimize.VendorNotFound" xml:space="preserve">
+    <value>未检测到 NVIDIA/AMD 控制面板，请从开始菜单打开</value>
+  </data>
+  <data name="PcOptimize.WinVerNote" xml:space="preserve">
+    <value>以上路径以 Windows 11 为准；控制面板项需在打开的窗口中按说明继续操作。</value>
+  </data>
+
+  <!-- 期望收益 -->
+  <data name="PcOptimize.GainHigh" xml:space="preserve">
+    <value>收益：高</value>
+  </data>
+  <data name="PcOptimize.GainMedium" xml:space="preserve">
+    <value>收益：中</value>
+  </data>
+  <data name="PcOptimize.GainLow" xml:space="preserve">
+    <value>收益：低</value>
+  </data>
+  <data name="PcOptimize.GainVaries" xml:space="preserve">
+    <value>收益：视情况</value>
+  </data>
+
+  <!-- 分类 -->
+  <data name="PcOptimize.Cat.System" xml:space="preserve">
+    <value>系统</value>
+  </data>
+  <data name="PcOptimize.Cat.Power" xml:space="preserve">
+    <value>电源</value>
+  </data>
+  <data name="PcOptimize.Cat.Display" xml:space="preserve">
+    <value>显示</value>
+  </data>
+  <data name="PcOptimize.Cat.Network" xml:space="preserve">
+    <value>网络</value>
+  </data>
+  <data name="PcOptimize.Cat.Storage" xml:space="preserve">
+    <value>存储</value>
+  </data>
+  <data name="PcOptimize.Cat.Driver" xml:space="preserve">
+    <value>驱动与显卡</value>
+  </data>
+  <data name="PcOptimize.Cat.InputAudio" xml:space="preserve">
+    <value>输入与音频</value>
+  </data>
+
+  <!-- 系统 -->
+  <data name="PcOptimize.GameMode" xml:space="preserve">
+    <value>开启游戏模式</value>
+  </data>
+  <data name="PcOptimize.GameModeDesc" xml:space="preserve">
+    <value>游戏运行时 Windows 自动优先分配资源、暂停更新安装与重启通知，帧率更稳定。在打开的「游戏模式」页打开开关；后台程序多或更新频繁的电脑收益更明显。</value>
+  </data>
+  <data name="PcOptimize.GameBar" xml:space="preserve">
+    <value>游戏栏设置</value>
+  </data>
+  <data name="PcOptimize.GameBarDesc" xml:space="preserve">
+    <value>游戏栏及其小组件是常驻叠加进程，关闭可减少游戏内叠加开销与按键误触。在打开的「游戏栏」页关闭「允许控制器打开游戏栏」等开关，需要录屏时再临时打开。注意：若习惯用游戏栏查看 FPS 叠加，请先确认使用习惯。</value>
+  </data>
+  <data name="PcOptimize.BackgroundRecording" xml:space="preserve">
+    <value>关闭后台录制</value>
+  </data>
+  <data name="PcOptimize.BackgroundRecordingDesc" xml:space="preserve">
+    <value>后台录制会持续把最近几秒画面写入磁盘并占用编码器。在打开的「摄像」页（Win10 为「游戏 DVR」）关闭「录制发生的事情」与「玩游戏时在后台录制」；仍需精彩集锦可只缩短「录制最后」时长。核显或低配机收益更明显。</value>
+  </data>
+  <data name="PcOptimize.StartupApps" xml:space="preserve">
+    <value>禁用开机自启</value>
+  </data>
+  <data name="PcOptimize.StartupAppsDesc" xml:space="preserve">
+    <value>减少开机常驻后台程序可释放内存与 CPU，高影响自启项还会拖慢启动与 1% 低帧。在打开的「启动应用」页按「启动影响」排序，关闭游戏平台、更新器等不需要自启的程序。</value>
+  </data>
+  <data name="PcOptimize.NotificationsDnd" xml:space="preserve">
+    <value>游戏时勿扰</value>
+  </data>
+  <data name="PcOptimize.NotificationsDndDesc" xml:space="preserve">
+    <value>通知横幅会在游戏中抢焦点，造成切屏卡顿与分心。在打开的「通知」页开启「勿扰」，并在「自动开启勿扰」中勾选「玩游戏时」与「使用全屏应用时」。</value>
+  </data>
+  <data name="PcOptimize.MemoryIntegrity" xml:space="preserve">
+    <value>内存完整性权衡</value>
+  </data>
+  <data name="PcOptimize.MemoryIntegrityDesc" xml:space="preserve">
+    <value>内核隔离（HVCI）用虚拟化校验内核代码，老 CPU（Intel 7 代前、AMD Zen2 前）上有可感知的性能损耗，追求极限帧率可评估关闭。在打开的「内核隔离」页按需开关「内存完整性」，重启生效。注意：关闭会降低系统安全性（削弱内核漏洞防护），受管理策略管控的电脑可能无法更改，请自行权衡。</value>
+  </data>
+  <data name="PcOptimize.UpdateActiveHours" xml:space="preserve">
+    <value>使用时间与暂停更新</value>
+  </data>
+  <data name="PcOptimize.UpdateActiveHoursDesc" xml:space="preserve">
+    <value>设定使用时间可避免游戏时段自动重启，重要比赛前还可暂停更新。在打开的页面把「使用时间」设为手动并覆盖你的游戏时段，或按需「暂停更新」。</value>
+  </data>
+  <data name="PcOptimize.UninstallUnusedApps" xml:space="preserve">
+    <value>卸载闲置软件</value>
+  </data>
+  <data name="PcOptimize.UninstallUnusedAppsDesc" xml:space="preserve">
+    <value>卸载捆绑杀毒、工具条等常驻软件可释放磁盘与后台资源，减少冲突进程。在打开的「安装的应用」页按大小或使用情况排序，卸载不再使用的程序。</value>
+  </data>
+
+  <!-- 电源 -->
+  <data name="PcOptimize.PowerPlan" xml:space="preserve">
+    <value>高性能电源计划</value>
+  </data>
+  <data name="PcOptimize.PowerPlanDesc" xml:space="preserve">
+    <value>避免闲置降频，减少突发负载时的频率爬升延迟。在打开的「电源选项」选择「高性能」计划；笔记本另在「电源和电池」页把电源模式设为「最佳性能」。注意：笔记本请关注散热与续航。</value>
+  </data>
+  <data name="PcOptimize.UsbSelectiveSuspend" xml:space="preserve">
+    <value>关闭USB选择性暂停</value>
+  </data>
+  <data name="PcOptimize.UsbSelectiveSuspendDesc" xml:space="preserve">
+    <value>防止系统为省电暂停空闲 USB 端口，避免鼠标、键盘、采集卡等外设迟滞与掉线。在打开的「高级电源设置」展开「USB 设置 > USB 选择性暂停设置」，接通电源与用电池均设为「已禁用」。注意：待机功耗略增，笔记本续航小幅下降。</value>
+  </data>
+  <data name="PcOptimize.PcieLinkStatePm" xml:space="preserve">
+    <value>关闭PCIe链路节能</value>
+  </data>
+  <data name="PcOptimize.PcieLinkStatePmDesc" xml:space="preserve">
+    <value>让 PCIe 链路保持满速，避免 GPU 链路休眠唤醒带来的微卡顿。在打开的「高级电源设置」找到「PCI Express > 链路状态电源管理」设为「关闭」。注意：整机功耗略增；个别笔记本依赖 ASPM 控温请保持默认。</value>
+  </data>
+  <data name="PcOptimize.PowerSleepTimeouts" xml:space="preserve">
+    <value>电源与睡眠超时</value>
+  </data>
+  <data name="PcOptimize.PowerSleepTimeoutsDesc" xml:space="preserve">
+    <value>防止挂机下载、观战或刷副本时熄屏或进入睡眠打断游戏。在打开的「电源和电池 > 屏幕和睡眠」页把「接通电源」时的熄屏与睡眠时间调长或设为「从不」。</value>
+  </data>
+
+  <!-- 显示 -->
+  <data name="PcOptimize.GraphicsHags" xml:space="preserve">
+    <value>硬件加速GPU计划</value>
+  </data>
+  <data name="PcOptimize.GraphicsHagsDesc" xml:space="preserve">
+    <value>让 GPU 直接管理显存与任务队列，可小幅降低延迟；开启 DLSS 帧生成等新特性也需要它。在打开的「默认图形设置」页打开「硬件加速 GPU 计划」后重启电脑。注意：需 NVIDIA Pascal 及更新显卡与新驱动；出现画面异常可关回。</value>
+  </data>
+  <data name="PcOptimize.FullscreenOptimizations" xml:space="preserve">
+    <value>逐游戏图形优化</value>
+  </data>
+  <data name="PcOptimize.FullscreenOptimizationsDesc" xml:space="preserve">
+    <value>Windows 默认用翻转模型优化全屏/无边框游戏，个别老游戏全屏异常或延迟变高时可按游戏单独调整。在打开的「显示卡」页添加游戏 exe，点「选项」设置 GPU 首选项或关闭窗口化游戏优化；老游戏也可在其 exe「属性 > 兼容性」勾选「禁用全屏优化」。</value>
+  </data>
+  <data name="PcOptimize.RefreshRateMax" xml:space="preserve">
+    <value>刷新率设为最高</value>
+  </data>
+  <data name="PcOptimize.RefreshRateMaxDesc" xml:space="preserve">
+    <value>新装系统或换线后 Windows 常回落到 60Hz，拉到显示器最高刷新率才能获得应有的流畅度与更低输入延迟。在打开的页面进入「高级显示器设置」，用「选择刷新率」下拉选最高值。</value>
+  </data>
+  <data name="PcOptimize.HdrSettings" xml:space="preserve">
+    <value>HDR 游戏设置</value>
+  </data>
+  <data name="PcOptimize.HdrSettingsDesc" xml:space="preserve">
+    <value>HDR 显示器上开启 HDR 与自动 HDR 可显著提升画面观感，SDR 显示器无需开启。在打开的 HDR 页开启「使用 HDR」，并展开开关按需打开「自动 HDR」。注意：笔记本用电池默认禁用 HDR；纯竞技玩家可保持关闭。切换 HDR 也可用 Win+Alt+B。</value>
+  </data>
+  <data name="PcOptimize.DisplayScaling" xml:space="preserve">
+    <value>显示缩放 100%</value>
+  </data>
+  <data name="PcOptimize.DisplayScalingDesc" xml:space="preserve">
+    <value>非整数缩放会让 UI 与准心映射变模糊，竞技玩家常用 100% 获得像素级清晰与一致的指针速度。在打开的「显示」页把「缩放」改为 100%，分辨率保持原生值。注意：高分小屏笔记本上 100% 字体会偏小，更改后需注销生效。</value>
+  </data>
+  <data name="PcOptimize.VisualEffects" xml:space="preserve">
+    <value>视觉效果调优</value>
+  </data>
+  <data name="PcOptimize.VisualEffectsDesc" xml:space="preserve">
+    <value>关闭透明、动画等桌面特效可减轻桌面窗口管理器的合成负担，低配机更明显。在打开的「性能选项」选「调整为最佳性能」或保留字体平滑的自定义组合；也可在「设置 > 个性化 > 颜色」关闭透明效果。</value>
+  </data>
+
+  <!-- 网络 -->
+  <data name="PcOptimize.NicPowerManagement" xml:space="preserve">
+    <value>网卡节能管理</value>
+  </data>
+  <data name="PcOptimize.NicPowerManagementDesc" xml:space="preserve">
+    <value>关闭网卡省电项可避免对战中断流、延迟突增和反复掉线。在打开的「网络连接」页右键网卡 > 属性 > 配置：在「电源管理」取消「允许计算机关闭此设备以节约电源」，在「高级」关闭「节能以太网」等省电选项。修改需管理员权限。</value>
+  </data>
+  <data name="PcOptimize.ProxyVpn" xml:space="preserve">
+    <value>关闭代理与VPN</value>
+  </data>
+  <data name="PcOptimize.ProxyVpnDesc" xml:space="preserve">
+    <value>代理和 VPN 会增加路由跳数与延迟，联机时还可能被匹配到远端服务器。在打开的「代理」页关闭自动和手动代理；装有 VPN 时断开或移除。注意：公司网络可能必须走代理，游戏时断开、完成后恢复即可。</value>
+  </data>
+  <data name="PcOptimize.DeliveryOptimization" xml:space="preserve">
+    <value>限制更新占带宽</value>
+  </data>
+  <data name="PcOptimize.DeliveryOptimizationDesc" xml:space="preserve">
+    <value>限制 Windows 更新的后台上传/下载带宽，避免游戏时网络被更新任务占用造成延迟波动。在打开的「传递优化」页按百分比或绝对值限制后台下载与上传带宽。</value>
+  </data>
+
+  <!-- 存储 -->
+  <data name="PcOptimize.StorageSense" xml:space="preserve">
+    <value>开启存储感知</value>
+  </data>
+  <data name="PcOptimize.StorageSenseDesc" xml:space="preserve">
+    <value>自动清理临时文件与回收站，保持系统盘（尤其 SSD）留有充足空间，避免空间不足导致的卡顿。在打开的「存储感知」页开启开关并设置清理周期，也可点「立即运行」手动清理。</value>
+  </data>
+  <data name="PcOptimize.OptimizeDrives" xml:space="preserve">
+    <value>碎片整理与优化</value>
+  </data>
+  <data name="PcOptimize.OptimizeDrivesDesc" xml:space="preserve">
+    <value>机械盘碎片整理、SSD 定期 TRIM 都能维持读写性能，也可查看驱动器健康状态。在打开的「优化驱动器」选中盘片点「分析/优化」，并确认计划优化保持每周开启。注意：SSD 无需手动整理，Windows 会自动执行 TRIM（界面对 SSD 显示「优化」而非「碎片整理」）。</value>
+  </data>
+  <data name="PcOptimize.GameInstallSsd" xml:space="preserve">
+    <value>游戏装进SSD</value>
+  </data>
+  <data name="PcOptimize.GameInstallSsdDesc" xml:space="preserve">
+    <value>SSD 随机读取远快于机械盘，能大幅缩短加载时间并减少开放世界贴图流送卡顿（主要改善加载而非帧率上限）。在打开的「保存新内容的地方」页把「新的应用将保存到」改为 SSD 盘符；已装游戏可在 Steam/启动器中整体迁移。</value>
+  </data>
+
+  <!-- 驱动与显卡 -->
+  <data name="PcOptimize.GpuDriverUpdate" xml:space="preserve">
+    <value>更新显卡驱动</value>
+  </data>
+  <data name="PcOptimize.GpuDriverUpdateDesc" xml:space="preserve">
+    <value>新驱动常带针对新游戏的性能与稳定性修复；驱动异常时也可在此回退。在打开的设备管理器展开「显示适配器」，右键显卡选「更新驱动程序」，或在「属性 > 驱动程序」回退问题版本；更推荐到 NVIDIA/AMD/Intel 官网或其应用获取最新驱动。</value>
+  </data>
+  <data name="PcOptimize.OptionalDriverUpdates" xml:space="preserve">
+    <value>可选驱动更新</value>
+  </data>
+  <data name="PcOptimize.OptionalDriverUpdatesDesc" xml:space="preserve">
+    <value>Windows 更新的「可选更新」提供经 WHQL 认证的芯片组/外设驱动，比第三方驱动管理器可靠。在打开的「可选更新」页展开「驱动程序更新」，按需勾选安装。</value>
+  </data>
+  <data name="PcOptimize.VendorGpuPanel" xml:space="preserve">
+    <value>显卡厂商控制面板</value>
+  </data>
+  <data name="PcOptimize.VendorGpuPanelDesc" xml:space="preserve">
+    <value>NVIDIA/AMD/Intel 控制面板可设置低延迟模式、垂直同步、每游戏档案与色彩输出，是系统设置之外的深度优化入口。点击「打开」自动探测本机面板（NVIDIA/AMD）；未探测到时从开始菜单打开「NVIDIA 控制面板 / NVIDIA App、AMD Software: Adrenalin 或 Intel 显卡软件」。</value>
+  </data>
+
+  <!-- 输入与音频 -->
+  <data name="PcOptimize.PointerPrecision" xml:space="preserve">
+    <value>关闭增强指针精度</value>
+  </data>
+  <data name="PcOptimize.PointerPrecisionDesc" xml:space="preserve">
+    <value>「提高指针精确度」即鼠标加速，关闭后手腕移动与视角 1:1 对应，瞄准肌肉记忆更稳定（FPS 玩家共识设置）。在打开的「鼠标属性 > 指针选项」取消勾选「提高指针精确度」后确定；个别系统若落错选项卡，手动切到「指针选项」即可。</value>
+  </data>
+  <data name="PcOptimize.AudioEnhancements" xml:space="preserve">
+    <value>关闭音频增强</value>
+  </data>
+  <data name="PcOptimize.AudioEnhancementsDesc" xml:space="preserve">
+    <value>音频增强 DSP 会增加处理延迟，个别驱动还可能造成爆音或与游戏语音冲突。在打开的「声音」控制面板选中播放设备点「属性」，在「增强功能」勾选「禁用所有增强功能」；Win11 也可在「设置 > 系统 > 声音」把「音频增强」设为「关」。注意：Dolby、响度均衡等音效将失效。</value>
+  </data>
+
+  <!-- 避坑 -->
+  <data name="PcOptimize.MythsTitle" xml:space="preserve">
+    <value>避坑：不推荐的做法</value>
+  </data>
+  <data name="PcOptimize.MythsIntro" xml:space="preserve">
+    <value>以下做法常见于网络「优化指南」，但多为安慰剂甚至有害，CrosshairPro 不会执行，也不建议尝试：</value>
+  </data>
+  <data name="PcOptimize.Myth.RegistryCleaners" xml:space="preserve">
+    <value>「注册表清理/优化工具」：微软官方明确不支持注册表清理工具，无效残留对性能几乎零影响；误删关键键值可能导致应用损坏甚至无法开机。</value>
+  </data>
+  <data name="PcOptimize.Myth.ServiceDisabling" xml:space="preserve">
+    <value>「批量禁用系统服务」：空闲服务并不占用 CPU，FPS 提升几乎为零，却常弄坏系统更新、音频或网络；只精简开机自启即可。</value>
+  </data>
+  <data name="PcOptimize.Myth.TimerResolution" xml:space="preserve">
+    <value>「强改计时器分辨率 0.5ms」：Windows 11 已改为按进程生效，全局强制在多数场景不再起作用；平均帧率几乎不变，只增加功耗与后台负载。</value>
+  </data>
+  <data name="PcOptimize.Myth.RamCleaner" xml:space="preserve">
+    <value>「内存清理/加速器」：空闲内存被 Windows 用作文件缓存，「越空越快」是误解；清空待机列表会迫使系统重新从磁盘读取，反而更卡。</value>
+  </data>
+  <data name="PcOptimize.Myth.SsdDefrag" xml:space="preserve">
+    <value>「手动整理 SSD 碎片」：SSD 没有机械寻道开销，手动碎片整理只增加写入损耗、缩短寿命；Windows 早已自动用 TRIM 优化 SSD。</value>
+  </data>
+  <data name="PcOptimize.Myth.BoosterSuites" xml:space="preserve">
+    <value>「游戏加速器全家桶」：实测平均帧率几乎无提升，本质只是关闭后台进程和清空缓存；工具自身还常驻后台占用资源。</value>
   </data>
 
   <!-- ═══════════════════════════════════════════════════ -->
@@ -303,6 +573,12 @@
   <data name="Apex.GameSettings" xml:space="preserve">
     <value>游戏设置</value>
   </data>
+  <data name="Apex.GameParams" xml:space="preserve">
+    <value>游戏参数</value>
+  </data>
+  <data name="Apex.LaunchParams" xml:space="preserve">
+    <value>启动参数</value>
+  </data>
   <data name="Apex.MaxFPS" xml:space="preserve">
     <value>最大 FPS (0=无限制)</value>
   </data>
@@ -333,14 +609,8 @@
   <data name="Apex.EnableConsole" xml:space="preserve">
     <value>启用控制台 (-console)</value>
   </data>
-  <data name="Apex.GeneratedLaunchOptions" xml:space="preserve">
-    <value>生成的启动选项：</value>
-  </data>
   <data name="Apex.VideoSettings" xml:space="preserve">
     <value>视频设置</value>
-  </data>
-  <data name="Apex.Resolution" xml:space="preserve">
-    <value>分辨率</value>
   </data>
   <data name="Apex.Gamma" xml:space="preserve">
     <value>伽马 (亮度)</value>

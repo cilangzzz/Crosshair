@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using CrosshairPro.Core.Models;
 
 namespace CrosshairPro.App.ViewModels;
@@ -60,19 +59,8 @@ public partial class GamesViewModel : ObservableObject
     /// <summary>
     /// 选择游戏（内部方法）
     /// </summary>
-    public void SelectGameInternal(GameProfile game)
+    private void SelectGameInternal(GameProfile game)
     {
         SelectedGame = game;
-    }
-
-    // ── 命令 ───────────────────────────────────────────────────
-
-    [RelayCommand]
-    private void SelectGame(GameProfile? game)
-    {
-        if (game != null)
-        {
-            SelectGameInternal(game);
-        }
     }
 }

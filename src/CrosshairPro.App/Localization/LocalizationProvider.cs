@@ -88,7 +88,9 @@ public sealed class LocalizationProvider : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// 初始化：默认中文，可选指定已保存的语言
+    /// 初始化：默认中文，可选指定已保存的语言。
+    /// 统一经 CurrentCulture setter 赋值：启动恢复路径（MainWindow.Loaded 异步回调）执行时
+    /// 窗口绑定已求值，必须补发 CurrentCulture/Item[] 通知才能让已挂接的 loc:Loc 绑定刷新。
     /// </summary>
     public void Initialize(string? savedLanguage = null)
     {
@@ -96,20 +98,17 @@ public sealed class LocalizationProvider : INotifyPropertyChanged
         {
             try
             {
-                _currentCulture = new CultureInfo(savedLanguage);
+                CurrentCulture = new CultureInfo(savedLanguage);
             }
             catch
             {
-                _currentCulture = new CultureInfo("zh-CN");
+                CurrentCulture = new CultureInfo("zh-CN");
             }
         }
         else
         {
-            _currentCulture = new CultureInfo("zh-CN");
+            CurrentCulture = new CultureInfo("zh-CN");
         }
-
-        CultureInfo.CurrentUICulture = _currentCulture;
-        CultureInfo.CurrentCulture = _currentCulture;
     }
 
     // ── INotifyPropertyChanged ──

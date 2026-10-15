@@ -52,22 +52,23 @@
                                       Style="{StaticResource CustomComboBox}"/>
                         </Grid>
 
-                        <!-- 简单文本框（非自定义模式） -->
+                        <!-- 启动项字符串：始终可见；面板编辑联动生成此字符串并回显到预设（偏离预设后回显「自定义」，此时只读）。
+                             手改后失焦联动（LostFocus 而非 PropertyChanged 触发：避免每字符解析过早锁定字符串框） -->
                         <TextBox Text="{Binding LaunchOptions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 LostFocus="OnLaunchOptionsBoxLostFocus"
                                  Style="{StaticResource CustomTextBox}"
                                  AcceptsReturn="True" Height="60" TextWrapping="Wrap"
                                  VerticalScrollBarVisibility="Auto"
                                  FontFamily="{StaticResource FontFamilyMono}" FontSize="12"
                                  Margin="0,10,0,0"
-                                 Visibility="{Binding UseCustomLaunchOptions, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                 IsReadOnly="{Binding UseCustomLaunchOptions}"/>
 
-                        <!-- 自定义启动选项展开面板 -->
+                        <!-- 启动参数面板（常显；编辑即联动上方启动项字符串与预设回显） -->
                         <Border Background="{DynamicResource ControlBrush}"
                                 CornerRadius="{StaticResource RadiusSm}" Padding="12"
-                                Visibility="{Binding UseCustomLaunchOptions, Converter={StaticResource BoolToVisibilityConverter}}"
                                 Margin="0,10,0,0">
                             <StackPanel>
-                                <TextBlock Text="{loc:Loc Key=Apex.CustomLaunchOptions}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBlock Text="{loc:Loc Key=Apex.LaunchParams}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" Margin="0,0,0,4"/>
 
                                 <!-- 性能 -->
                                 <TextBlock Text="{loc:Loc Key=Apex.Performance}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,10,0,4"/>
@@ -98,7 +99,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.RefreshRate}" VerticalAlignment="Center"/>
                                     <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.Freq, Mode=TwoWay}"
-                                            Minimum="0" Maximum="360" Style="{StaticResource CustomSlider}" Margin="8,0"/>
+                                            Minimum="0" Maximum="500" Style="{StaticResource CustomSlider}" Margin="8,0"/>
                                     <TextBox Grid.Column="2" Text="{Binding CustomLaunchOptions.Freq, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
                                 </Grid>
                                 <Grid Margin="0,10,0,0">
@@ -144,7 +145,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.WindowWidth}" VerticalAlignment="Center"/>
                                     <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.Width, Mode=TwoWay}"
-                                            Minimum="800" Maximum="3840" Style="{StaticResource CustomSlider}" Margin="8,0"/>
+                                            Minimum="0" Maximum="3840" Style="{StaticResource CustomSlider}" Margin="8,0"/>
                                     <TextBox Grid.Column="2" Text="{Binding CustomLaunchOptions.Width, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
                                 </Grid>
                                 <Grid Margin="0,10,0,0">
@@ -155,7 +156,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.WindowHeight}" VerticalAlignment="Center"/>
                                     <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.Height, Mode=TwoWay}"
-                                            Minimum="600" Maximum="2160" Style="{StaticResource CustomSlider}" Margin="8,0"/>
+                                            Minimum="0" Maximum="2160" Style="{StaticResource CustomSlider}" Margin="8,0"/>
                                     <TextBox Grid.Column="2" Text="{Binding CustomLaunchOptions.Height, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
                                 </Grid>
                                 <Grid Margin="0,10,0,0">
@@ -169,6 +170,50 @@
                                             Minimum="0" Maximum="2.0" SmallChange="0.1" LargeChange="0.1"
                                             Style="{StaticResource CustomSlider}" Margin="8,0"/>
                                     <TextBox Grid.Column="2" Text="{Binding CustomLaunchOptions.MatLetterboxAspectMin, StringFormat={}{0:F1}, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
+                                </Grid>
+
+                                <!-- 游戏参数（数值 0 = 不输出对应启动参数令牌） -->
+                                <TextBlock Text="{loc:Loc Key=Apex.GameParams}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,14,0,4"/>
+                                <Grid Margin="0,6,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="160"/>
+                                        <ColumnDefinition Width="64"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.FieldOfView}" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.ClFovScale, Mode=TwoWay}"
+                                            Minimum="0" Maximum="3.0" SmallChange="0.05" LargeChange="0.1"
+                                            Style="{StaticResource CustomSlider}" Margin="8,0"/>
+                                    <TextBox Grid.Column="2" Text="{Binding CustomLaunchOptions.ClFovScale, StringFormat={}{0:F2}, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
+                                </Grid>
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="160"/>
+                                        <ColumnDefinition Width="64"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.MaxFPS}" VerticalAlignment="Center"/>
+                                    <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.FpsMax, Mode=TwoWay}"
+                                            Minimum="0" Maximum="600" Style="{StaticResource CustomSlider}" Margin="8,0"/>
+                                    <TextBox Grid.Column="2" Text="{Binding CustomLaunchOptions.FpsMax, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
+                                </Grid>
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.ShowFPS}" VerticalAlignment="Center"/>
+                                    <CheckBox Grid.Column="1"
+                                              IsChecked="{Binding CustomLaunchOptions.ClShowfps, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
+                                              Style="{StaticResource ToggleSwitch}"/>
+                                </Grid>
+                                <Grid Margin="0,6,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.ShowPosition}" VerticalAlignment="Center"/>
+                                    <CheckBox Grid.Column="1" IsChecked="{Binding CustomLaunchOptions.ClShowpos, Mode=TwoWay}" Style="{StaticResource ToggleSwitch}"/>
                                 </Grid>
 
                                 <!-- 网络 -->
@@ -193,7 +238,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.InterpRatio}" VerticalAlignment="Center"/>
                                     <Slider Grid.Column="1" Value="{Binding CustomLaunchOptions.ClInterpRatio, Mode=TwoWay}"
-                                            Minimum="1" Maximum="10" Style="{StaticResource CustomSlider}" Margin="8,0"/>
+                                            Minimum="0" Maximum="10" Style="{StaticResource CustomSlider}" Margin="8,0"/>
                                     <TextBox Grid.Column="2" Text="{Binding CustomLaunchOptions.ClInterpRatio, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
                                 </Grid>
 
@@ -216,24 +261,14 @@
                                     <CheckBox Grid.Column="1" IsChecked="{Binding CustomLaunchOptions.Console, Mode=TwoWay}" Style="{StaticResource ToggleSwitch}"/>
                                 </Grid>
 
-                                <!-- 汇总显示 -->
-                                <Border Background="{DynamicResource SurfaceBrush}"
-                                        BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1"
-                                        CornerRadius="{StaticResource RadiusSm}" Padding="8" Margin="0,12,0,0">
-                                    <StackPanel>
-                                        <TextBlock Text="{loc:Loc Key=Apex.GeneratedLaunchOptions}" Foreground="{DynamicResource AccentBrush}" FontSize="11" Margin="0,0,0,4"/>
-                                        <TextBlock Text="{Binding LaunchOptionsSummary}" TextWrapping="Wrap"
-                                                   FontFamily="{StaticResource FontFamilyMono}" FontSize="11"/>
-                                    </StackPanel>
-                                </Border>
                             </StackPanel>
                         </Border>
 
                         <Button Content="{loc:Loc Key=Action.CopyToClipboard}" Command="{Binding CopyLaunchOptionsCommand}"
                                 Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" Padding="12,4" FontSize="12" Margin="0,10,0,0"/>
 
-                        <!-- 游戏设置（settings.cfg；与启动参数同卡分区，与视频/画质等其他配置分开） -->
-                        <Separator Background="{DynamicResource BorderBrush}" Margin="0,14"/>
+                        <!-- 游戏设置（settings.cfg：鼠标灵敏度/加速；FOV、FPS 等游戏参数已并入上方自定义启动面板） -->
+                        <Separator Margin="0,14"/>
                         <TextBlock Text="{loc:Loc Key=Apex.GameSettings}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" Margin="0,0,0,4"/>
 
                         <!-- 鼠标灵敏度 -->
@@ -262,54 +297,6 @@
                                       Style="{StaticResource ToggleSwitch}"/>
                         </Grid>
 
-                        <!-- FOV -->
-                        <Grid Margin="0,10,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="160"/>
-                                <ColumnDefinition Width="64"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.FieldOfView}" VerticalAlignment="Center"/>
-                            <Slider Grid.Column="1" Value="{Binding SettingsConfig.ClFovScale, Mode=TwoWay}"
-                                    Minimum="1.0" Maximum="1.35" SmallChange="0.01" LargeChange="0.05"
-                                    Style="{StaticResource CustomSlider}" Margin="8,0"/>
-                            <TextBox Grid.Column="2" Text="{Binding SettingsConfig.ClFovScale, StringFormat={}{0:F2}, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
-                        </Grid>
-
-                        <!-- FPS -->
-                        <Grid Margin="0,10,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="160"/>
-                                <ColumnDefinition Width="64"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.MaxFPS}" VerticalAlignment="Center"/>
-                            <Slider Grid.Column="1" Value="{Binding SettingsConfig.FpsMax, Mode=TwoWay}"
-                                    Minimum="0" Maximum="300" Style="{StaticResource CustomSlider}" Margin="8,0"/>
-                            <TextBox Grid.Column="2" Text="{Binding SettingsConfig.FpsMax, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
-                        </Grid>
-
-                        <!-- 显示选项 -->
-                        <Grid Margin="0,10,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.ShowFPS}" VerticalAlignment="Center"/>
-                            <CheckBox Grid.Column="1"
-                                      IsChecked="{Binding SettingsConfig.ClShowfps, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
-                                      Style="{StaticResource ToggleSwitch}"/>
-                        </Grid>
-                        <Grid Margin="0,6,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.ShowPosition}" VerticalAlignment="Center"/>
-                            <CheckBox Grid.Column="1"
-                                      IsChecked="{Binding SettingsConfig.ClShowpos, Converter={StaticResource IntToBoolConverter}, Mode=TwoWay}"
-                                      Style="{StaticResource ToggleSwitch}"/>
-                        </Grid>
                     </StackPanel>
                 </Border>
 
@@ -318,44 +305,7 @@
                     <StackPanel>
                         <TextBlock Text="{loc:Loc Key=Apex.VideoSettings}" Style="{StaticResource SectionHeader}"/>
 
-                        <!-- 分辨率 -->
-                        <Grid Margin="0,10,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.Resolution}" VerticalAlignment="Center"/>
-                            <ComboBox Grid.Column="1" Width="160"
-                                      SelectedIndex="{Binding VideoConfig.ResolutionIndex, Mode=TwoWay}"
-                                      Style="{StaticResource CustomComboBox}">
-                                <ComboBoxItem Content="3840x2160"/>
-                                <ComboBoxItem Content="2560x1600"/>
-                                <ComboBoxItem Content="2560x1440"/>
-                                <ComboBoxItem Content="2560x1080"/>
-                                <ComboBoxItem Content="1920x1200"/>
-                                <ComboBoxItem Content="1920x1080"/>
-                                <ComboBoxItem Content="1680x1050"/>
-                                <ComboBoxItem Content="1600x900"/>
-                                <ComboBoxItem Content="1440x900"/>
-                                <ComboBoxItem Content="1280x1024"/>
-                                <ComboBoxItem Content="1280x960"/>
-                                <ComboBoxItem Content="1280x800"/>
-                                <ComboBoxItem Content="1280x720"/>
-                            </ComboBox>
-                        </Grid>
-
-                        <!-- 刷新率 -->
-                        <Grid Margin="0,10,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="160"/>
-                                <ColumnDefinition Width="64"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{loc:Loc Key=Apex.RefreshRate}" VerticalAlignment="Center"/>
-                            <Slider Grid.Column="1" Value="{Binding VideoConfig.RefreshRate, Mode=TwoWay}"
-                                    Minimum="60" Maximum="360" Style="{StaticResource CustomSlider}" Margin="8,0"/>
-                            <TextBox Grid.Column="2" Text="{Binding VideoConfig.RefreshRate, Mode=TwoWay}" Style="{StaticResource NumericTextBox}"/>
-                        </Grid>
+                        <!-- 分辨率/刷新率已并入启动选项卡（-w/-h/-freq 启动参数通道），此处仅保留 videoconfig.txt 专属项 -->
 
                         <!-- 亮度/伽马 -->
                         <Grid Margin="0,10,0,0">
@@ -752,7 +702,7 @@
                             </StackPanel>
                         </Border>
 
-                        <Separator Background="{DynamicResource BorderBrush}" Margin="0,12"/>
+                        <Separator Margin="0,12"/>
 
                         <!-- settings.cfg -->
                         <Grid Margin="0,0,0,0">
@@ -832,7 +782,7 @@
                             </StackPanel>
                         </Border>
 
-                        <Separator Background="{DynamicResource BorderBrush}" Margin="0,12"/>
+                        <Separator Margin="0,12"/>
 
                         <!-- 生成配置文件（启动项导出） -->
                         <Grid Margin="0,4,0,0">

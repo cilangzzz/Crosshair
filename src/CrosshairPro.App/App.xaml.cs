@@ -69,6 +69,7 @@ public partial class App : System.Windows.Application
                 .AddSingleton<GamesViewModel>()
                 .AddSingleton<ApexConfigViewModel>()
                 .AddSingleton<Cs2ConfigViewModel>()
+                .AddSingleton<PcOptimizeViewModel>()
                 .AddSingleton<MainViewModel>()
                 .AddSingleton<OverlayWindow>()
                 .AddTransient<MainWindow>()

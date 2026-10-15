@@ -3,23 +3,147 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:controls="clr-namespace:CrosshairPro.App.Controls"
       xmlns:loc="clr-namespace:CrosshairPro.App.Localization"
       mc:Ignorable="d"
-      d:DesignHeight="500" d:DesignWidth="800">
+      d:DesignHeight="700" d:DesignWidth="800">
 
-    <!-- 电脑优化占位页：仅空状态，无功能、无 ViewModel（边距由 GamesPage 统一控制） -->
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Path Data="{StaticResource SettingsIconGeometry}"
-              Width="48" Height="48" Stretch="Uniform"
-              Fill="{DynamicResource TextSecondaryBrush}"
-              HorizontalAlignment="Center"/>
-        <TextBlock Text="{loc:Loc Key=Games.PcOptimize}"
-                   FontSize="16" FontWeight="SemiBold"
-                   Foreground="{DynamicResource TextPrimaryBrush}"
-                   HorizontalAlignment="Center" Margin="0,16,0,4"/>
-        <TextBlock Text="{loc:Loc Key=Games.PcOptimizeDesc}"
-                   FontSize="12"
-                   Foreground="{DynamicResource TextSecondaryBrush}"
-                   HorizontalAlignment="Center"/>
-    </StackPanel>
+    <!-- 电脑优化页：仅提供优化项说明与对应系统管理页的快捷入口，
+         所有更改由用户手动完成（本工具不修改任何系统设置），见 design/pc-optimize-design.md -->
+
+    <UserControl.Resources>
+        <!-- 优化项条目模板：标题 + 期望收益 + 说明 + 打开入口 -->
+        <DataTemplate x:Key="PcOptimizeItemTemplate">
+            <Grid Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}">
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{StaticResource LocalizedTextConverter}">
+                                    <Binding Path="TitleKey"/>
+                                    <Binding Path="CurrentCulture" Source="{x:Static loc:LocalizationProvider.Instance}"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                        <TextBlock FontSize="11"
+                                   Foreground="{DynamicResource AccentBrush}"
+                                   Margin="8,1,0,0" VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{StaticResource LocalizedTextConverter}">
+                                    <Binding Path="GainKey"/>
+                                    <Binding Path="CurrentCulture" Source="{x:Static loc:LocalizationProvider.Instance}"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                    <TextBlock FontSize="12"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               Margin="0,2,0,0" TextWrapping="Wrap">
+                        <TextBlock.Text>
+                            <MultiBinding Converter="{StaticResource LocalizedTextConverter}">
+                                <Binding Path="DescKey"/>
+                                <Binding Path="CurrentCulture" Source="{x:Static loc:LocalizationProvider.Instance}"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Content="{loc:Loc Key=PcOptimize.Open}"
+                        Command="{Binding DataContext.OpenItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        CommandParameter="{Binding}"
+                        Style="{StaticResource SecondaryButton}"
+                        Padding="12,4" FontSize="12"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding HasEntry, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题 + 使用说明 -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="{loc:Loc Key=Games.PcOptimize}"
+                       FontSize="16" FontWeight="SemiBold"
+                       Foreground="{DynamicResource AccentBrush}"/>
+            <TextBlock Text="{loc:Loc Key=PcOptimize.Intro}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       FontSize="11"
+                       Margin="0,6,0,0"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <!-- 分类优化项列表 -->
+        <controls:SmoothScrollViewer Grid.Row="1" Style="{StaticResource SmoothScrollViewer}">
+            <StackPanel>
+                <ItemsControl ItemsSource="{Binding Categories}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionHeader}">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource LocalizedTextConverter}">
+                                                <Binding Path="TitleKey"/>
+                                                <Binding Path="CurrentCulture" Source="{x:Static loc:LocalizationProvider.Instance}"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                    <ItemsControl ItemsSource="{Binding Items}"
+                                                  ItemTemplate="{StaticResource PcOptimizeItemTemplate}"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- 避坑提示（不推荐的做法） -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Key=PcOptimize.MythsTitle}"
+                                   Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{loc:Loc Key=PcOptimize.MythsIntro}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="11" Margin="0,0,0,4"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock Text="{loc:Loc Key=PcOptimize.Myth.RegistryCleaners}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="12" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{loc:Loc Key=PcOptimize.Myth.ServiceDisabling}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="12" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{loc:Loc Key=PcOptimize.Myth.TimerResolution}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="12" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{loc:Loc Key=PcOptimize.Myth.RamCleaner}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="12" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{loc:Loc Key=PcOptimize.Myth.SsdDefrag}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="12" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{loc:Loc Key=PcOptimize.Myth.BoosterSuites}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="12" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 路径说明（以 Windows 11 为准） -->
+                <TextBlock Text="{loc:Loc Key=PcOptimize.WinVerNote}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           FontSize="11"
+                           Margin="0,0,0,8"
+                           HorizontalAlignment="Right"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </controls:SmoothScrollViewer>
+    </Grid>
 </UserControl>

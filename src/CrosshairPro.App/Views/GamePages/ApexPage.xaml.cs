@@ -65,4 +65,13 @@ public partial class ApexPage : UserControl
             video.VolumetricFog = 0;
         }
     }
+
+    // 启动项字符串失焦联动：文本模式手改后回填面板，偏离所选预设时回显切「自定义」（VM 内判断，见 NotifyLaunchOptionsEdited）
+    private void OnLaunchOptionsBoxLostFocus(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is ApexConfigViewModel viewModel)
+        {
+            viewModel.NotifyLaunchOptionsEdited();
+        }
+    }
 }
